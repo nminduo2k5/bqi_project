@@ -1,0 +1,14 @@
+{
+  "kind": "bode",
+  "key": "8a47e7752b",
+  "time": "2026-10-09 08:14:15",
+  "inputs": {
+    "gamma": 0.19
+  },
+  "outputs": {
+    "f_c_per_min": 0.030239439187460117,
+    "dc_gain": 0.0,
+    "gain_db_at_fc": -3.0102999566398116
+  },
+  "arrays": "outputs\\results\\model\\explorations\\bode\\8a47e7752b.npz"
+}

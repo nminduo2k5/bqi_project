@@ -1,0 +1,60 @@
+# Frozen analysis parameters (Q1_pipeline.md Sec 4-6, preregistration Sec 2).
+# Editable only while passing gates G0-G1; frozen when predictions.md is locked.
+
+seed: 42
+
+channels_common: [Fp1, Fp2, F7, F3, Fz, F4, F8, T7, C3, Cz, C4, T8, P7, P3, Pz, P4, P8, O1, O2]
+
+preprocess:
+  l_freq: 1.0
+  h_freq: 40.0
+  sfreq: 250.0
+  reference: average
+  epoch_s: 10.0
+  reject_uv: 150.0
+  bad_channel_z: 4.0
+  max_bad_channel_frac: 0.2
+  ica_iclabel_threshold: 0.8
+  min_epochs_per_condition: 20
+  csd_for_sync: true
+
+metrics:
+  lzc_norm: entropy
+  n_surrogates: 20
+  surrogate_multivariate: true
+  aperiodic: {fmin: 1.0, fmax: 40.0, backend: robust}
+  bands:
+    delta: [1.0, 4.0]
+    theta: [4.0, 8.0]
+    alpha: [8.0, 13.0]
+    beta: [13.0, 30.0]
+  sync_band: theta
+  # fiedler: normalised Laplacian of the FULL weighted wPLI matrix (thresholding disconnects 19-ch graphs)
+  network: {band: theta, fiedler: full_weighted_normalized, density: 0.2, density_range: [0.1, 0.2, 0.3], n_null: 10}
+  sce_threshold: 0.8
+  phi: {measure: phi_r, n_channels: 8, lag_ms: 20}
+
+datasets:
+  anphy: {primary_n: 15, windows_per_stage: 10}
+
+stats:
+  n_boot: 10000
+  n_perm: 5000
+  tost_bound_dz: 0.2
+  fdr_q: 0.05
+
+axis:
+  measures: [lzc_si, exponent, theta_r, theta_fiedler, lzc]
+  min_agreement: 0.5
+
+gates:
+  G0:
+    lzc_monotonic_spearman: 0.95
+    lzc_si_spectral_invariance_max_abs_z: 2.0
+    raw_lzc_spectral_sensitivity_min_range: 0.05
+    kuramoto_r_increase_min: 0.3
+    phi_ar_disconnected_max: 0.01
+    lz76_reference_mismatches: 0
+  G3:
+    max_rel_error: 0.2
+    params: [k_inh, A0, alpha, beta]

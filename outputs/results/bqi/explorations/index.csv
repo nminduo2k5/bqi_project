@@ -1,0 +1,21 @@
+time,kind,key,inputs,file
+2026-10-09 08:19:40,bpc_single,1be75f3b36,"{""n"": 5, ""eta"": 0.05, ""n_iter"": 200, ""pi_max"": 2.0, ""seed"": 42}",outputs\results\bqi\explorations\bpc_single\1be75f3b36.json
+2026-10-09 08:19:40,bpc_hier,9762013ec5,"{""levels"": 3, ""n_steps"": 200, ""eta"": 0.05, ""seed"": 42}",outputs\results\bqi\explorations\bpc_hier\9762013ec5.json
+2026-10-09 08:19:43,attention_run,024eccf60a,"{""n_q"": 6, ""n_s"": 24, ""d_model"": 16, ""n_heads"": 4, ""temp"": 4.0, ""seed"": 0}",outputs\results\bqi\explorations\attention_run\024eccf60a.json
+2026-10-09 08:19:44,bqi_run,7d57dd8c9e,"{""levels"": 3, ""T"": 100, ""eta"": 0.05, ""alpha"": 0.3, ""n_snis"": 64, ""obs_scale"": 1.0, ""seed"": 42}",outputs\results\bqi\explorations\bqi_run\7d57dd8c9e.json
+2026-10-09 08:19:45,com_run,b0dc45384c,"{""T"": 120, ""d_mu"": 6, ""n_snis"": 30, ""K_gain"": 0.4, ""eta_dmn"": 0.05, ""eta_F"": 0.05, ""eta_S"": 0.15, ""alpha"": 2.34, ""beta"": 1.87, ""target"": 1.0, ""seed"": 43}",outputs\results\bqi\explorations\com_run\b0dc45384c.json
+2026-10-09 08:19:46,phi_run,68ae108c02,"{""n"": 5, ""w_std"": 1.8, ""topology"": ""Ngẫu nhiên"", ""seed"": 45}",outputs\results\bqi\explorations\phi_run\68ae108c02.json
+2026-10-09 08:19:46,pci_sample,06059cfd2e,"{""n_ch"": 16, ""n_t"": 48, ""level"": 0.55, ""seed"": 46}",outputs\results\bqi\explorations\pci_sample\06059cfd2e.json
+2026-10-09 08:19:49,pci_dataset,c0b4ff861c,"{""n_ch"": 16, ""n_t"": 48, ""n_sub"": 8, ""seed"": 46}",outputs\results\bqi\explorations\pci_dataset\c0b4ff861c.json
+2026-10-09 08:19:52,pci_sweep,276797dc1f,"{""n_ch"": 16, ""n_t"": 48, ""seed"": 46}",outputs\results\bqi\explorations\pci_sweep\276797dc1f.json
+2026-10-09 08:19:53,ode_run,239b999222,"{""params_items"": [[""A_max"", 1.0], [""alpha"", 2.34], [""beta"", 1.87], [""gamma"", 0.19], [""k_d"", 0.034], [""k_inh"", 0.043], [""k_int"", 0.081], [""k_spont"", 0.027], [""sigma_xi"", 0.05]], ""t_end"": 40, ""seed"": 43}",outputs\results\bqi\explorations\ode_run\239b999222.json
+2026-10-09 08:19:55,meta_bootstrap,cee3d9a2d1,"{""names"": [""Brewer et al. (2011)"", ""Jang et al. (2011)"", ""Garrison et al. (2015)"", ""Panda et al. (2016)"", ""Tang et al. (2015)"", ""Berkovich-Ohana et al. (2022)"", ""Josipovic (2014)"", ""Lutz et al. (2008)"", ""Hölzel et al. (2011)"", ""Kilpatrick et al. (2011)"", ""Taylor et al. (2011)"", ""Manna et al. (2010)"", ""Pagnoni (2012)"", ""Van Dam et al. (2018)"", ""Farb et al. (2010)"", ""Simon & Engström (2015)""], ""n_boot"": 5000, ""seed"": 42}",outputs\results\bqi\explorations\meta_bootstrap\cee3d9a2d1.json
+2026-10-09 08:19:56,hop_curve,7051bf759f,"{""n"": 36, ""flip"": 0.1, ""beta"": 8.0, ""trials"": 8, ""max_p"": 300, ""seed"": 42}",outputs\results\bqi\explorations\hop_curve\7051bf759f.json
+2026-10-09 08:19:56,hop_demo,bcf8230474,"{""n"": 36, ""P"": 20, ""flip"": 0.1, ""beta"": 8.0, ""seed"": 42}",outputs\results\bqi\explorations\hop_demo\bcf8230474.json
+2026-10-09 08:19:56,graph_run,19a45a5bf0,"{""n_nodes"": 80, ""k"": 6, ""p"": 0.1, ""boost"": 0.08, ""seed"": 42}",outputs\results\bqi\explorations\graph_run\19a45a5bf0.json
+2026-10-09 08:19:57,ws_sweep,3f928661ee,"{""n_nodes"": 80, ""k"": 6, ""seed"": 42}",outputs\results\bqi\explorations\ws_sweep\3f928661ee.json
+2026-10-09 08:20:01,kuramoto_sweep,15cd30b5b5,"{""n_osc"": 50, ""seed"": 42}",outputs\results\bqi\explorations\kuramoto_sweep\15cd30b5b5.json
+2026-10-09 08:20:01,kuramoto_traces,0370d070e6,"{""n_osc"": 50, ""Ks"": [0.5, 1.5, 3.0], ""seed"": 42}",outputs\results\bqi\explorations\kuramoto_traces\0370d070e6.json
+2026-10-09 08:20:04,kuramoto_states,4f64e13172,"{""n_osc"": 50, ""n_trials"": 5, ""seed"": 42}",outputs\results\bqi\explorations\kuramoto_states\4f64e13172.json
+2026-10-09 08:20:04,quantum_run,fdd0ea9f21,"{""dim"": 4, ""gammas"": [0.3, 2.0, 10.0], ""T"": 3.0, ""purity"": 0.98, ""seed"": 42}",outputs\results\bqi\explorations\quantum_run\fdd0ea9f21.json
+2026-10-09 08:20:06,quantum_grid,659965bcb1,"{""seed"": 42}",outputs\results\bqi\explorations\quantum_grid\659965bcb1.json

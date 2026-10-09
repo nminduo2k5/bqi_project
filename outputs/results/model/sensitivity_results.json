@@ -1,0 +1,13 @@
+{
+  "params": [
+    "k_inh",
+    "A0",
+    "sigma_A",
+    "k_int",
+    "k_d",
+    "sigma_Phi",
+    "alpha",
+    "beta"
+  ],
+  "n_base": 16
+}

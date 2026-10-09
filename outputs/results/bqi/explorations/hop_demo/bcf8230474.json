@@ -1,0 +1,16 @@
+{
+  "scope": "bqi",
+  "kind": "hop_demo",
+  "key": "bcf8230474",
+  "time": "2026-10-09 08:19:56",
+  "inputs": {
+    "n": 36,
+    "P": 20,
+    "flip": 0.1,
+    "beta": 8.0,
+    "seed": 42
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\hop_demo\\bcf8230474.npz",
+  "frames": {}
+}

@@ -1,0 +1,91 @@
+state,band,trial,r
+Wakefulness (rest),theta,0,0.16818455160221515
+Wakefulness (rest),theta,1,0.21537367235267674
+Wakefulness (rest),theta,2,0.25869081304615327
+Wakefulness (rest),theta,3,0.37074052927712164
+Wakefulness (rest),theta,4,0.1714505279807142
+Wakefulness (rest),alpha,0,0.791379922625606
+Wakefulness (rest),alpha,1,0.6638814054577767
+Wakefulness (rest),alpha,2,0.4507860120020139
+Wakefulness (rest),alpha,3,0.2282204028172741
+Wakefulness (rest),alpha,4,0.7485859136406464
+Wakefulness (rest),gamma,0,0.14427093731451657
+Wakefulness (rest),gamma,1,0.3193506016648554
+Wakefulness (rest),gamma,2,0.09745270152568673
+Wakefulness (rest),gamma,3,0.20803493886112281
+Wakefulness (rest),gamma,4,0.2590474885451924
+Task-engaged,theta,0,0.2549144482064046
+Task-engaged,theta,1,0.2552196331768406
+Task-engaged,theta,2,0.25502361419468683
+Task-engaged,theta,3,0.2665721906446024
+Task-engaged,theta,4,0.42416507113516355
+Task-engaged,alpha,0,0.4863449663129665
+Task-engaged,alpha,1,0.5744621210382078
+Task-engaged,alpha,2,0.12405179058425016
+Task-engaged,alpha,3,0.7057688303193682
+Task-engaged,alpha,4,0.638420868026258
+Task-engaged,gamma,0,0.16197715031716997
+Task-engaged,gamma,1,0.4650705694031621
+Task-engaged,gamma,2,0.5981831572816999
+Task-engaged,gamma,3,0.07957132296872256
+Task-engaged,gamma,4,0.26701857591559236
+Light meditation,theta,0,0.49830665342126323
+Light meditation,theta,1,0.6133125442087511
+Light meditation,theta,2,0.23364042689673642
+Light meditation,theta,3,0.43893865459943965
+Light meditation,theta,4,0.6306638712720676
+Light meditation,alpha,0,0.6893286810832566
+Light meditation,alpha,1,0.8708498007014975
+Light meditation,alpha,2,0.6506978263755175
+Light meditation,alpha,3,0.8094176018886607
+Light meditation,alpha,4,0.7618808977078612
+Light meditation,gamma,0,0.4049393376069512
+Light meditation,gamma,1,0.4215327706447405
+Light meditation,gamma,2,0.1666105039678994
+Light meditation,gamma,3,0.27312823993590163
+Light meditation,gamma,4,0.5438050937059346
+Deep meditation,theta,0,0.9251668494865348
+Deep meditation,theta,1,0.8738467755199842
+Deep meditation,theta,2,0.8069921458347991
+Deep meditation,theta,3,0.8610394107808551
+Deep meditation,theta,4,0.8087327537702588
+Deep meditation,alpha,0,0.8666978366581738
+Deep meditation,alpha,1,0.8899013712130437
+Deep meditation,alpha,2,0.7208727874837451
+Deep meditation,alpha,3,0.8392893658999243
+Deep meditation,alpha,4,0.8763345488271724
+Deep meditation,gamma,0,0.701553537054547
+Deep meditation,gamma,1,0.8376071066062016
+Deep meditation,gamma,2,0.4104112483990518
+Deep meditation,gamma,3,0.7846172887799778
+Deep meditation,gamma,4,0.6973259953420866
+NREM sleep,theta,0,0.21329729100150152
+NREM sleep,theta,1,0.25303661021733215
+NREM sleep,theta,2,0.08319318207281666
+NREM sleep,theta,3,0.09925699469229088
+NREM sleep,theta,4,0.09632179269802812
+NREM sleep,alpha,0,0.10958070049759185
+NREM sleep,alpha,1,0.24801602587207955
+NREM sleep,alpha,2,0.13219796933681177
+NREM sleep,alpha,3,0.21631229308712158
+NREM sleep,alpha,4,0.34588694031843986
+NREM sleep,gamma,0,0.16029465696178127
+NREM sleep,gamma,1,0.278652468229098
+NREM sleep,gamma,2,0.17691360839227702
+NREM sleep,gamma,3,0.11531025215044066
+NREM sleep,gamma,4,0.054218045050577784
+Propofol anaesthesia,theta,0,0.057786474147292814
+Propofol anaesthesia,theta,1,0.1824060598890941
+Propofol anaesthesia,theta,2,0.17457629476228895
+Propofol anaesthesia,theta,3,0.2536718350277846
+Propofol anaesthesia,theta,4,0.12747125872081472
+Propofol anaesthesia,alpha,0,0.18558745047422304
+Propofol anaesthesia,alpha,1,0.12513354753303857
+Propofol anaesthesia,alpha,2,0.28209016437037376
+Propofol anaesthesia,alpha,3,0.26104814777253504
+Propofol anaesthesia,alpha,4,0.19793590161485994
+Propofol anaesthesia,gamma,0,0.12210037024339976
+Propofol anaesthesia,gamma,1,0.13120035169267555
+Propofol anaesthesia,gamma,2,0.22818426281273674
+Propofol anaesthesia,gamma,3,0.05621265001567135
+Propofol anaesthesia,gamma,4,0.13036257573245286

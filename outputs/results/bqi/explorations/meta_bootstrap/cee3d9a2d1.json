@@ -1,0 +1,31 @@
+{
+  "scope": "bqi",
+  "kind": "meta_bootstrap",
+  "key": "cee3d9a2d1",
+  "time": "2026-10-09 08:19:55",
+  "inputs": {
+    "names": [
+      "Brewer et al. (2011)",
+      "Jang et al. (2011)",
+      "Garrison et al. (2015)",
+      "Panda et al. (2016)",
+      "Tang et al. (2015)",
+      "Berkovich-Ohana et al. (2022)",
+      "Josipovic (2014)",
+      "Lutz et al. (2008)",
+      "Hölzel et al. (2011)",
+      "Kilpatrick et al. (2011)",
+      "Taylor et al. (2011)",
+      "Manna et al. (2010)",
+      "Pagnoni (2012)",
+      "Van Dam et al. (2018)",
+      "Farb et al. (2010)",
+      "Simon & Engström (2015)"
+    ],
+    "n_boot": 5000,
+    "seed": 42
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\meta_bootstrap\\cee3d9a2d1.npz",
+  "frames": {}
+}

@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "checks": {
+    "P1_correct_steady_states": {
+      "passed": true,
+      "residual_norm": 0.0,
+      "A_star": 0.0,
+      "QoC_star": 0.0
+    },
+    "P2_highpass_on_ode": {
+      "passed": true,
+      "step_QoC_end": -8.350514042367947e-09,
+      "step_drive_level": -3.7745,
+      "sinusoid_rel_err": [
+        0.00137,
+        0.0,
+        0.0
+      ]
+    },
+    "P3_paper_residual_nonzero": {
+      "passed": true,
+      "residual_norm": 5.276832,
+      "dA": -0.003384,
+      "dPhi": -0.0
+    },
+    "P4_lyapunov_residual": {
+      "passed": true,
+      "lyapunov_residual_norm": 0.0,
+      "QoC_star": 1.1079,
+      "qoc_var": 0.4774
+    },
+    "P5_qoc_distribution_gaussian": {
+      "passed": true,
+      "ks_stat": 0.0378,
+      "ks_p": 0.6024,
+      "mean_error": 0.0114,
+      "std_error": 0.0395
+    }
+  }
+}

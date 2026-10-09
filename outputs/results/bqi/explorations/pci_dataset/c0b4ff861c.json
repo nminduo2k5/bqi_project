@@ -1,0 +1,17 @@
+{
+  "scope": "bqi",
+  "kind": "pci_dataset",
+  "key": "c0b4ff861c",
+  "time": "2026-10-09 08:19:49",
+  "inputs": {
+    "n_ch": 16,
+    "n_t": 48,
+    "n_sub": 8,
+    "seed": 46
+  },
+  "outputs": {},
+  "arrays": null,
+  "frames": {
+    "value": "outputs\\results\\bqi\\explorations\\pci_dataset\\c0b4ff861c_value.csv"
+  }
+}

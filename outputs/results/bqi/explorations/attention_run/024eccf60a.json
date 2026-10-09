@@ -1,0 +1,17 @@
+{
+  "scope": "bqi",
+  "kind": "attention_run",
+  "key": "024eccf60a",
+  "time": "2026-10-09 08:19:43",
+  "inputs": {
+    "n_q": 6,
+    "n_s": 24,
+    "d_model": 16,
+    "n_heads": 4,
+    "temp": 4.0,
+    "seed": 0
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\attention_run\\024eccf60a.npz",
+  "frames": {}
+}

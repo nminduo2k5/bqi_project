@@ -1,0 +1,15 @@
+{
+  "scope": "bqi",
+  "kind": "bpc_hier",
+  "key": "9762013ec5",
+  "time": "2026-10-09 08:19:40",
+  "inputs": {
+    "levels": 3,
+    "n_steps": 200,
+    "eta": 0.05,
+    "seed": 42
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\bpc_hier\\9762013ec5.npz",
+  "frames": {}
+}

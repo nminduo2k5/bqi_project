@@ -1,0 +1,73 @@
+state,subject,pci
+Coma,0,0.5616188965266302
+Coma,1,0.5491384766038162
+Coma,2,0.7238643555232124
+Coma,3,0.3868930176072342
+Coma,4,0.4492951172213042
+Coma,5,0.6864230957547703
+Coma,6,0.6489818359863283
+Coma,7,0.5491384766038162
+Propofol anaesthesia (deep),0,0.7737860352144684
+Propofol anaesthesia (deep),1,0.7613056152916543
+Propofol anaesthesia (deep),2,0.8861098145197944
+Propofol anaesthesia (deep),3,0.7363447754460263
+Propofol anaesthesia (deep),4,0.7613056152916543
+Propofol anaesthesia (deep),5,0.8486685547513524
+Propofol anaesthesia (deep),6,0.7113839356003983
+Propofol anaesthesia (deep),7,0.9360314942110505
+NREM sleep (stage N3),0,1.0233944336707486
+NREM sleep (stage N3),1,0.8985902344426084
+NREM sleep (stage N3),2,0.9360314942110505
+NREM sleep (stage N3),3,0.9485119141338644
+NREM sleep (stage N3),4,0.8611489746741664
+NREM sleep (stage N3),5,0.9485119141338644
+NREM sleep (stage N3),6,0.9235510742882364
+NREM sleep (stage N3),7,0.9235510742882364
+Propofol sedation (light),0,1.0358748535935625
+Propofol sedation (light),1,1.0733161133620044
+Propofol sedation (light),2,0.9734727539794924
+Propofol sedation (light),3,1.0733161133620044
+Propofol sedation (light),4,1.0358748535935625
+Propofol sedation (light),5,0.9984335938251204
+Propofol sedation (light),6,1.0483552735163764
+Propofol sedation (light),7,0.9984335938251204
+REM sleep,0,1.0733161133620044
+REM sleep,1,1.0608356934391905
+REM sleep,2,1.0483552735163764
+REM sleep,3,1.0358748535935625
+REM sleep,4,1.0608356934391905
+REM sleep,5,1.0982769532076324
+REM sleep,6,1.0608356934391905
+REM sleep,7,1.0608356934391905
+Mindfulness (novice),0,1.0982769532076324
+Mindfulness (novice),1,1.0358748535935625
+Mindfulness (novice),2,1.0733161133620044
+Mindfulness (novice),3,1.0483552735163764
+Mindfulness (novice),4,1.1357182129760746
+Mindfulness (novice),5,1.0857965332848185
+Mindfulness (novice),6,1.0733161133620044
+Mindfulness (novice),7,1.0109140137479344
+Alert wakefulness,0,1.0483552735163764
+Alert wakefulness,1,1.0608356934391905
+Alert wakefulness,2,1.0857965332848185
+Alert wakefulness,3,1.0608356934391905
+Alert wakefulness,4,1.0358748535935625
+Alert wakefulness,5,1.0483552735163764
+Alert wakefulness,6,1.0608356934391905
+Alert wakefulness,7,1.0733161133620044
+Deep meditation (expert),0,1.0733161133620044
+Deep meditation (expert),1,1.0733161133620044
+Deep meditation (expert),2,1.0358748535935625
+Deep meditation (expert),3,1.0733161133620044
+Deep meditation (expert),4,1.0358748535935625
+Deep meditation (expert),5,1.0857965332848185
+Deep meditation (expert),6,1.0358748535935625
+Deep meditation (expert),7,1.0733161133620044
+Near-death experience (NDE),0,1.0608356934391905
+Near-death experience (NDE),1,1.0608356934391905
+Near-death experience (NDE),2,1.0982769532076324
+Near-death experience (NDE),3,1.0608356934391905
+Near-death experience (NDE),4,1.0483552735163764
+Near-death experience (NDE),5,1.0733161133620044
+Near-death experience (NDE),6,1.0857965332848185
+Near-death experience (NDE),7,1.0982769532076324

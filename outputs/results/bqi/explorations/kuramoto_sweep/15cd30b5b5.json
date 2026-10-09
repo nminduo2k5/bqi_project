@@ -1,0 +1,13 @@
+{
+  "scope": "bqi",
+  "kind": "kuramoto_sweep",
+  "key": "15cd30b5b5",
+  "time": "2026-10-09 08:20:01",
+  "inputs": {
+    "n_osc": 50,
+    "seed": 42
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\kuramoto_sweep\\15cd30b5b5.npz",
+  "frames": {}
+}

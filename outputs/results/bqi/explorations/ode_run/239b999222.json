@@ -1,0 +1,59 @@
+{
+  "scope": "bqi",
+  "kind": "ode_run",
+  "key": "239b999222",
+  "time": "2026-10-09 08:19:53",
+  "inputs": {
+    "params_items": [
+      [
+        "A_max",
+        1.0
+      ],
+      [
+        "alpha",
+        2.34
+      ],
+      [
+        "beta",
+        1.87
+      ],
+      [
+        "gamma",
+        0.19
+      ],
+      [
+        "k_d",
+        0.034
+      ],
+      [
+        "k_inh",
+        0.043
+      ],
+      [
+        "k_int",
+        0.081
+      ],
+      [
+        "k_spont",
+        0.027
+      ],
+      [
+        "sigma_xi",
+        0.05
+      ]
+    ],
+    "t_end": 40,
+    "seed": 43
+  },
+  "outputs": {
+    "value[2].A_DMN_star": 0.0,
+    "value[2].Phi_star": 2.3823529411764706,
+    "value[2].QoC_star": 0.0,
+    "value[2].A_DMN_stationary_sd": 0.004603461791425697,
+    "value[3].A_DMN_star": 0.07869646908725234,
+    "value[3].Phi_star": 2.1948701765862517,
+    "value[3].QoC_star": 27.80609794949995
+  },
+  "arrays": "outputs\\results\\bqi\\explorations\\ode_run\\239b999222.npz",
+  "frames": {}
+}

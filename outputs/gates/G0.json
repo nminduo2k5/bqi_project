@@ -1,0 +1,72 @@
+{
+  "gate": "G0",
+  "description": "Kiểm định công cụ trên dữ liệu tổng hợp (mục 8)",
+  "passed": true,
+  "time_utc": "2026-10-03T13:39:01+00:00",
+  "details": {
+    "lz76_matches_reference": {
+      "passed": true,
+      "mismatches": 0,
+      "n": 200
+    },
+    "lzc_monotonic_in_complexity": {
+      "passed": true,
+      "spearman": 1.0,
+      "lzc_range": [
+        0.051,
+        0.96
+      ]
+    },
+    "surrogate_preserves_spectra": {
+      "passed": true,
+      "amplitude": true,
+      "cross_spectrum": true
+    },
+    "raw_lzc_is_spectrum_sensitive": {
+      "passed": true,
+      "raw_lzc": [
+        1.019,
+        1.013,
+        0.861,
+        0.386,
+        0.147
+      ]
+    },
+    "lzc_si_is_spectrum_invariant": {
+      "passed": true,
+      "z": [
+        -0.06,
+        -1.05,
+        0.83,
+        -0.0,
+        0.79
+      ]
+    },
+    "kuramoto_r_tracks_coupling": {
+      "passed": true,
+      "r_low_K": 0.259,
+      "r_high_K": 0.994
+    },
+    "wpli_fiedler_tracks_coupling": {
+      "passed": true,
+      "fiedler_norm_low_K": 0.305,
+      "fiedler_norm_high_K": 0.95
+    },
+    "phi_r_detects_integration": {
+      "passed": true,
+      "phi_r_independent": 0.0022,
+      "phi_r_coupled": 0.2229,
+      "phi_wms_coupled": -0.7841
+    },
+    "axis_recovers_planted_structure": {
+      "passed": true,
+      "cos_u": 0.9986,
+      "c_mean": 0.428,
+      "c_ci": [
+        0.35,
+        0.51
+      ],
+      "residual_p": 0.0004997501249375312
+    }
+  }
+}

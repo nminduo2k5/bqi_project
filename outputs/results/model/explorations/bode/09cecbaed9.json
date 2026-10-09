@@ -1,0 +1,16 @@
+{
+  "scope": "model",
+  "kind": "bode",
+  "key": "09cecbaed9",
+  "time": "2026-10-09 08:29:23",
+  "inputs": {
+    "gamma": 0.47
+  },
+  "outputs": {
+    "f_c_per_min": 0.0748028232531908,
+    "dc_gain": 0.0,
+    "gain_db_at_fc": -3.0102999566398116
+  },
+  "arrays": "outputs\\results\\model\\explorations\\bode\\09cecbaed9.npz",
+  "frames": {}
+}

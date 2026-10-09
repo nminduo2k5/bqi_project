@@ -1,0 +1,7 @@
+time,kind,key,inputs,file
+2026-10-09 08:14:15,bode,8a47e7752b,"{""gamma"": 0.19}",outputs\results\model\explorations\bode\8a47e7752b.json
+2026-10-09 08:15:19,crb_custom,16907d5529,"{""n_subjects"": 12, ""session_min"": 45.0, ""probe_every_min"": 2.0, ""r_obs"": 0.1, ""config"": ""d""}",outputs\results\model\explorations\crb_custom\16907d5529.json
+2026-10-09 08:16:22,control,90fef188a0,"{""target_qoc"": 2.0, ""u_max"": 2.0, ""lambda"": 0.1, ""n_epochs"": 270, ""seed"": 0}",outputs\results\model\explorations\control\90fef188a0.json
+2026-10-09 08:29:23,bode,09cecbaed9,"{""gamma"": 0.47}",outputs\results\model\explorations\bode\09cecbaed9.json
+2026-10-09 08:57:14,bode,428b613377,"{""gamma"": 1.0}",outputs\results\model\explorations\bode\428b613377.json
+2026-10-09 08:57:25,bode,ec6034738c,"{""gamma"": 0.26}",outputs\results\model\explorations\bode\ec6034738c.json

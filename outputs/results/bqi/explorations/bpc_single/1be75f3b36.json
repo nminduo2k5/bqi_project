@@ -1,0 +1,20 @@
+{
+  "scope": "bqi",
+  "kind": "bpc_single",
+  "key": "1be75f3b36",
+  "time": "2026-10-09 08:19:40",
+  "inputs": {
+    "n": 5,
+    "eta": 0.05,
+    "n_iter": 200,
+    "pi_max": 2.0,
+    "seed": 42
+  },
+  "outputs": {
+    "F_star": 1.101654239041486,
+    "lam_min": 2.5445632857832168,
+    "lam_max": 3.7495784001927195
+  },
+  "arrays": "outputs\\results\\bqi\\explorations\\bpc_single\\1be75f3b36.npz",
+  "frames": {}
+}

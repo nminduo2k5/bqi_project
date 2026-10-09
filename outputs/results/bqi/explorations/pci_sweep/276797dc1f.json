@@ -1,0 +1,14 @@
+{
+  "scope": "bqi",
+  "kind": "pci_sweep",
+  "key": "276797dc1f",
+  "time": "2026-10-09 08:19:52",
+  "inputs": {
+    "n_ch": 16,
+    "n_t": 48,
+    "seed": 46
+  },
+  "outputs": {},
+  "arrays": "outputs\\results\\bqi\\explorations\\pci_sweep\\276797dc1f.npz",
+  "frames": {}
+}

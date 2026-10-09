@@ -1,0 +1,17 @@
+{
+  "scope": "bqi",
+  "kind": "pci_sample",
+  "key": "06059cfd2e",
+  "time": "2026-10-09 08:19:46",
+  "inputs": {
+    "n_ch": 16,
+    "n_t": 48,
+    "level": 0.55,
+    "seed": 46
+  },
+  "outputs": {
+    "value[1]": 1.0483552735163764
+  },
+  "arrays": "outputs\\results\\bqi\\explorations\\pci_sample\\06059cfd2e.npz",
+  "frames": {}
+}

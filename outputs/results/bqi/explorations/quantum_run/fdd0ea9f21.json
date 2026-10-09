@@ -1,0 +1,24 @@
+{
+  "scope": "bqi",
+  "kind": "quantum_run",
+  "key": "fdd0ea9f21",
+  "time": "2026-10-09 08:20:04",
+  "inputs": {
+    "dim": 4,
+    "gammas": [
+      0.3,
+      2.0,
+      10.0
+    ],
+    "T": 3.0,
+    "purity": 0.98,
+    "seed": 42
+  },
+  "outputs": {
+    "0.3.S_max": 1.3862943611198906,
+    "2.0.S_max": 1.3862943611198906,
+    "10.0.S_max": 1.3862943611198906
+  },
+  "arrays": "outputs\\results\\bqi\\explorations\\quantum_run\\fdd0ea9f21.npz",
+  "frames": {}
+}
