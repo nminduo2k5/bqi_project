@@ -168,7 +168,7 @@ ABSENT_BY_CONFIG: dict = {}
 def identifiability_table(model: StateSpaceDMN, n_subjects: int = CFG.REFERENCE.n_subjects,
                            session_min: float = CFG.REFERENCE.session_min,
                            probe_every_min: float = CFG.REFERENCE.probe_every_min,
-                           seed: int = 42) -> pd.DataFrame:
+                           seed: int = CFG.SEED) -> pd.DataFrame:
     """Build Table 2: relative CRB of every parameter by observation configuration,
     from the exact expected Fisher information (no simulated data; `seed` unused,
     kept for a uniform interface). Parameters that are absent from the likelihood
@@ -198,7 +198,7 @@ def identifiability_table(model: StateSpaceDMN, n_subjects: int = CFG.REFERENCE.
     return df.pivot(index="param", columns="config", values="relative_se").reindex(list(StateSpaceDMN.FREE))
 
 
-def run(seed: int = 42, verbose: bool = True, output_dir: str | None = None) -> dict:
+def run(seed: int = CFG.SEED, verbose: bool = True, output_dir: str | None = None) -> dict:
     """Entry point for main.py model identifiability subcommand."""
     from model.fisher import Design, fisher_exact
     model = StateSpaceDMN()

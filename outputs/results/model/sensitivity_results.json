@@ -1,13 +1,34 @@
 {
+  "n_base": 256,
+  "n_boot": 1000,
   "params": [
     "k_inh",
     "A0",
-    "sigma_A",
+    "cv_A",
     "k_int",
     "k_d",
     "sigma_Phi",
     "alpha",
     "beta"
   ],
-  "n_base": 16
+  "sampler": "sobol_qmc",
+  "log_outputs": [
+    "qoc_variance",
+    "crb_k_inh",
+    "lqg_efficiency"
+  ],
+  "cv_A_range": [
+    0.05,
+    0.4
+  ],
+  "factor_range": [
+    0.25,
+    4.0
+  ],
+  "convergence_max_abs_dST_half": {
+    "qoc_stationary": 0.10190574159351334,
+    "qoc_variance": 0.012751652199682606,
+    "crb_k_inh": 0.07568558910275924,
+    "lqg_efficiency": 0.030341148224909492
+  }
 }

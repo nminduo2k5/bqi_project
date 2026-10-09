@@ -146,18 +146,23 @@ def m1_stationary_moments(model: StateSpaceDMN) -> dict:
 # P5 — stationary distribution of QoC is Gaussian
 # =============================================================================
 def qoc_stationary_distribution(model: StateSpaceDMN, n_samples: int = CFG.P5_N_SAMPLES,
-                                 dt: float = CFG.DT, seed: int = 0) -> dict:
+                                 dt: float = CFG.DT, seed: int = CFG.SEED,
+                                 n_chains: int = CFG.P5_N_CHAINS) -> dict:
     """Compare the QoC distribution with the theoretical N(QoC*, h^T P h).
 
     Consecutive epochs are strongly autocorrelated (time constant 1/min(k_inh, k_d),
     ~30 min = ~180 epochs here), which invalidates a KS test on a raw chain.
-    The chain is therefore thinned to one sample every 5 slowest time constants,
-    giving ~independent draws.
+    Each chain is therefore thinned to one sample every 5 slowest time constants
+    (~independent draws), and `n_chains` independent chains (seeds seed, seed+1, ...)
+    are pooled so that the verdict does not hinge on one path's luck: a single
+    long path can sit 2-3 SE off the mean for hundreds of thinned samples.
     """
     tau = 1.0 / min(model.k_inh, model.k_d)
     stride = int(np.ceil(CFG.GATES.m0_p5_thin_time_constants * tau / dt))
-    sim = model.simulate(n_samples * stride, dt=dt, probe_every=None, seed=seed)
-    qoc_sim = sim["QoC"][::stride]
+    per_chain = max(1, n_samples // n_chains)
+    qoc_sim = np.concatenate([
+        model.simulate(per_chain * stride, dt=dt, probe_every=None, seed=seed + k)["QoC"][::stride]
+        for k in range(n_chains)])
     ss = model.steady_states()
     h = model.readout()
     P = model.stationary_cov()
@@ -170,6 +175,7 @@ def qoc_stationary_distribution(model: StateSpaceDMN, n_samples: int = CFG.P5_N_
     n = len(qoc_sim)
     mean_z = (emp_mean - qoc_mean_theory) / (qoc_std_theory / np.sqrt(n))
     return {"ks_stat": float(ks_stat), "ks_p": float(ks_p), "n_independent": n, "stride_epochs": stride,
+            "n_chains": n_chains,
             "theoretical_mean": qoc_mean_theory, "theoretical_std": qoc_std_theory,
             "empirical_mean": emp_mean, "empirical_std": emp_std,
             "mean_error": abs(emp_mean - qoc_mean_theory), "mean_z": float(mean_z),
@@ -179,7 +185,7 @@ def qoc_stationary_distribution(model: StateSpaceDMN, n_samples: int = CFG.P5_N_
 # =============================================================================
 # Gate M0
 # =============================================================================
-def gate_M0(cfg: dict | None = None, verbose: bool = True, force: bool = False) -> dict:
+def gate_M0(cfg: dict | None = None, verbose: bool = True, force: bool = False, seed: int = CFG.SEED) -> dict:
     """Run P1-P5 and record gate M0."""
     model = StateSpaceDMN()
     params = ODE_PARAMS_REFERENCE
@@ -216,7 +222,7 @@ def gate_M0(cfg: dict | None = None, verbose: bool = True, force: bool = False) 
          "QoC_star": round(p4["QoC_star"], 4), "qoc_var": round(p4["qoc_stationary_variance"], 4)})
 
     # P5
-    p5 = qoc_stationary_distribution(model)
+    p5 = qoc_stationary_distribution(model, seed=seed)
     log("P5_qoc_distribution_gaussian", p5["gaussian_ok"],
         {"ks_stat": round(p5["ks_stat"], 4), "ks_p": round(p5["ks_p"], 4),
          "mean_error": round(p5["mean_error"], 4), "std_error": round(p5["std_error"], 4)})
@@ -228,10 +234,10 @@ def gate_M0(cfg: dict | None = None, verbose: bool = True, force: bool = False) 
     return {"passed": passed, "checks": checks}
 
 
-def run(seed: int = 42, verbose: bool = True, output_dir: str | None = None) -> dict:
+def run(seed: int = CFG.SEED, verbose: bool = True, output_dir: str | None = None) -> dict:
     """Entry point for main.py model theory subcommand."""
     import json
-    result = gate_M0(verbose=verbose)
+    result = gate_M0(verbose=verbose, seed=seed)
     CFG.snapshot(output_dir)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)

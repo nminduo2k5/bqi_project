@@ -270,7 +270,14 @@
     ],
     "n_base_fast": 16,
     "n_base_default": 64,
-    "n_base_paper": 256
+    "n_base_paper": 256,
+    "sampler": "sobol_qmc",
+    "log_outputs": [
+      "qoc_variance",
+      "crb_k_inh",
+      "lqg_efficiency"
+    ],
+    "n_boot": 1000
   },
   "gates": {
     "m0_residual_tol": 1e-06,
@@ -293,7 +300,8 @@
     ],
     "p2_step_xi": 2.0,
     "p2_t_end_min": 600.0,
-    "p5_n_samples": 400
+    "p5_n_samples": 2000,
+    "p5_n_chains": 5
   },
   "profiles": {
     "params": [

@@ -66,7 +66,7 @@ def _fisher_one_subject(model: StateSpaceDMN, cell: dict, dt_s: float, config: s
 
 
 def _crb_for_cell(model: StateSpaceDMN, cell: dict, dt_s: float = CFG.EPOCH_S,
-                  seed: int = 42) -> dict:
+                  seed: int = CFG.SEED) -> dict:
     """Relative CRB of KEY_PARAMS for a design cell.
 
     Exact expected Fisher information over ALL 12 free parameters (the MLE

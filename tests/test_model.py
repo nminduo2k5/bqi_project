@@ -152,7 +152,7 @@ def test_probe_schedule_optimiser_returns_valid_schedules():
 # ---------------------------------------------------------------- sensitivity.py
 def test_sobol_estimator_recovers_additive_linear_model():
     from model.sensitivity import saltelli_sample, sobol_indices
-    s = saltelli_sample(n_base=2000, seed=0)
+    s = saltelli_sample(n_base=2048, seed=0)
     w = np.array([3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # Y = 3 x1 + x2 -> S1 = 0.9, 0.1
     f = lambda X: X @ w
     idx = sobol_indices(s, "lin", f(s["A"]), f(s["B"]), [f(M) for M in s["ABi"]])
@@ -198,3 +198,46 @@ def test_shared_config_is_consistent_across_packages():
     assert control.DT_DEFAULT == CFG.DT
     snap = CFG.as_dict()
     assert snap["seed"] == 42 and snap["control"]["target_qoc"] == 2.0
+
+
+def test_sobol_bootstrap_ci_and_log_scale_and_resave_roundtrip(tmp_path):
+    import pandas as pd
+    from model import config as CFG
+    from model.sensitivity import (SENSITIVITY_PARAMS, evaluations_table, indices_from_evaluations,
+                                   saltelli_sample, sobol_indices)
+    s = saltelli_sample(n_base=512, seed=1)                      # power of 2 -> balanced Sobol sequence
+    w = np.array([3.0, 1.0, 0, 0, 0, 0, 0, 0])
+    f = lambda X: X @ w
+    idx = sobol_indices(s, "lin", f(s["A"]), f(s["B"]), [f(M) for M in s["ABi"]], n_boot=300, seed=0)
+    assert idx["scale"] == "raw" and idx["ST_ci"][0][0] <= 0.9 <= idx["ST_ci"][0][1]
+    assert idx["max_abs_dST_half"] < 0.1
+    # multiplicative output: log scale makes the index of an additive-in-log model clean
+    g = lambda X: np.exp(2.0 * X[:, 2] + 0.5 * X[:, 3])
+    idx_log = sobol_indices(s, "crb_k_inh", g(s["A"]), g(s["B"]), [g(M) for M in s["ABi"]], n_boot=100, seed=0)
+    assert idx_log["scale"] == "log" and abs(idx_log["S1"][2] - 16 / 16.25) < 0.08
+    # saved-evaluations round trip reproduces the indices exactly
+    evals = [{"lin": float(v), "crb_k_inh": float(u)} for v, u in zip(
+        np.concatenate([f(s["A"]), f(s["B"])] + [f(M) for M in s["ABi"]]),
+        np.concatenate([g(s["A"]), g(s["B"])] + [g(M) for M in s["ABi"]]))]
+    table = evaluations_table(s, evals, ["lin", "crb_k_inh"])
+    table.to_csv(tmp_path / "e.csv", index=False)
+    back = indices_from_evaluations(pd.read_csv(tmp_path / "e.csv"), n_boot=10, seed=0, verbose=False)
+    assert np.allclose(back["results"]["lin"]["ST"], idx["ST"]) and back["n_base"] == 512
+    assert set(table.columns) >= {"block", "row", *[f"f_{p}" for p in SENSITIVITY_PARAMS], "lin"}
+
+
+def test_robustness_uses_each_cells_noise_level_for_the_truth():
+    """A perfectly estimated parameter set must give ~0 % loss, whatever the cell's r_obs."""
+    import json
+    import pandas as pd
+    from model.control import control_efficiency_vs_param_error
+    m = StateSpaceDMN()
+    rows = []
+    for r in (0.05, 0.2):
+        exact = {k: getattr(m, k) for k in StateSpaceDMN.FREE}
+        exact["r_A"] = exact["r_Phi"] = r
+        rows.append({"N": 12, "session_min": 45.0, "probe_every_min": 2.0, "r_obs": r,
+                     "mle_k_inh": 0.0, "mle_A0": 0.0, "mle_alpha": 0.0, "mle_beta": 0.0, "fits": json.dumps([exact])})
+    out = control_efficiency_vs_param_error(m, pd.DataFrame(rows), n_trials=3, n_epochs=200, seed=0)
+    assert all(abs(o["efficiency_loss_pct_median"]) < 1e-9 for o in out)
+    assert out[0]["cost_true"] != out[1]["cost_true"]

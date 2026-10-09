@@ -31,10 +31,10 @@
     },
     "P5_qoc_distribution_gaussian": {
       "passed": true,
-      "ks_stat": 0.0378,
-      "ks_p": 0.6024,
-      "mean_error": 0.0114,
-      "std_error": 0.0395
+      "ks_stat": 0.0195,
+      "ks_p": 0.424,
+      "mean_error": 0.0052,
+      "std_error": 0.0074
     }
   }
 }

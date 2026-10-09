@@ -1,11 +1,11 @@
 # Mô hình động lực của thiền: sửa sai, khả năng xác định tham số, thiết kế thí nghiệm tối ưu và điều khiển vòng kín
 
 **Pipeline nghiên cứu (chỉ dùng hệ thống hiện có, không tải dữ liệu ngoài)**
-Phiên bản 1.2 — cập nhật 09/10/2026
+Phiên bản 1.3 — cập nhật 09/10/2026 (phần máy hoàn tất)
 Loại bài: lý thuyết / tính toán. Dữ liệu = thí nghiệm *in silico* sinh từ mô hình, có seed, tái tạo 100%.
 Thay thế tạm thời cho `Q1_pipeline.md` (hướng EEG, hoãn vì dung lượng tải).
 
-**Trạng thái cổng (09/10/2026):** M0 ✅ PASS · M1 ⏳ chưa chạy xong (dừng ở ô 7/24, chạy lại cuối tuần) · M2 ✅ PASS.
+**Trạng thái cổng (09/10/2026):** M0 ✅ · M1 ✅ (100% ô khớp, trung vị RMSE/CRB 0.98) · M2 ✅. Toàn bộ 8 hình + 3 bảng đã xuất (`outputs/paper/model/manifest.json`: 0 bỏ qua). 85 test pass. **Phần máy đã xong; còn phần viết.**
 Kiểm tra bất kỳ lúc nào: `python main.py gates`. Kết quả số: `outputs/results/model/`; hình/bảng: `outputs/paper/model/`.
 
 ---
@@ -105,7 +105,7 @@ Lệnh: `python main.py model theory` (vài giây). Kết quả: `outputs/result
 | P2 | Hàm truyền từ (αΦ − βA) sang QoC là `s/(s+γ)` (thông cao) → độ lợi DC = 0 | **Trên ODE thật**, không trên công thức: bước nhảy ξ → mức drive −3.77 nhưng QoC → −8·10⁻⁹ (suy giảm > 10⁸); kích thích sin ở ω = 0.05, 0.2, 1.0 cho tỉ số biên độ khớp \|H(jω)\| với sai số 0.14%, 0, 0 |
 | P3 | Eq. 55–57 của bài không thoả phương trình dừng | Phần dư ‖·‖ = 5.28 (dA: −3.4·10⁻³, dQoC: γ·27.8) |
 | P4 | M1: mean dừng −M⁻¹u, hiệp phương sai dừng nghiệm Lyapunov MP + PMᵀ + GGᵀ = 0, QoC\* ≠ 0 | Phần dư Lyapunov = 0 (máy); QoC\* = 1.108, Var = 0.477 |
-| P5 | Phân phối dừng của QoC trong M1 là Gauss N(QoC\*, hᵀPh) | KS trên chuỗi **đã thưa** mỗi 5 hằng số thời gian (tránh tự tương quan): KS = 0.038, p = 0.60; sai số mean 0.011, sd 0.040 |
+| P5 | Phân phối dừng của QoC trong M1 là Gauss N(QoC\*, hᵀPh) | KS trên 2.000 mẫu **thưa** (mỗi 5 hằng số thời gian, tự tương quan đo được −0.03) **gộp từ 5 chuỗi độc lập** (seed 42–46): KS = 0.020, p = 0.42; sai số mean 0.005, sd 0.007. Lý do gộp nhiều chuỗi: một đường đơn có thể lệch 2–3 SE suốt hàng trăm mẫu thưa (seed 42 đơn lẻ cho z = 3.5), nên cổng không được phụ thuộc vận may của một seed; kiểm trên 12 seed: sd(z) = 0.99, không thiên lệch |
 
 Việc còn lại cho gói này: **viết Appendix A** (chứng minh P1–P5 bằng đại số tuyến tính + Laplace). Không cần máy.
 
@@ -134,9 +134,9 @@ Còn lại: Hình 3 (profile likelihood k_inh, k_int, k_d) — `python main.py m
 
 ---
 
-## 6. Gói kết quả 3 — Thiết kế thí nghiệm · cổng **M1 ⏳ CHƯA XONG**
+## 6. Gói kết quả 3 — Thiết kế thí nghiệm · cổng **M1 ✅ PASS** (09/10/2026)
 
-Lệnh: `python main.py model design --seed 42` (5–8 giờ, 3 tiến trình). Phần CRB (144 ô, ~2 phút) **đã có**: `design_grid_crb.csv`, Hình 5, Bảng 3. Phần phục hồi MLE (24 ô × 5 lần) **chưa**: dừng ở ô 7/24 ngày 09/10, chưa ghi file vì chỉ ghi khi đủ 24 ô.
+Lệnh: `python main.py model design --seed 42` (~7 giờ trên máy 4 nhân với `OMP/MKL_NUM_THREADS=1`; đã chạy ở máy 2, kết quả chép về). Đầu ra: `design_grid_crb.csv` (144 ô), `design_grid_mle.csv` (24 ô × 5 lần), `design_results.json`, `gates/M1.json`; Hình 4, 5; Bảng 3.
 
 | Biến thiết kế | Giá trị |
 |---|---|
@@ -153,13 +153,11 @@ Lệnh: `python main.py model design --seed 42` (5–8 giờ, 3 tiến trình). 
 - Thiết kế rẻ nhất đạt CRB ≤ 20% (Bảng 3): k_inh cần **24 người × 20 phút**; A0, α, β đạt ngay ở 6 người × 20 phút. → k_inh (tốc độ ức chế DMN) là tham số khó đo nhất.
 - Lịch probe: đều là tốt nhất trong các họ đã thử (luỹ thừa p ∈ [0.4, 2.5], theo cặp cách 1–12 epoch); tuyên bố trong bài giới hạn ở "không thua lịch không đều thông dụng".
 
-**Dấu hiệu từ 7 ô đã chạy**: RMSE(k_inh)/CRB ≈ 1.3–2.3 ở N = 6; ≈ 1.3 ở N = 12. M1 có thể FAIL ở cỡ mẫu nhỏ. Khi đó chạy lại `--n-starts 6` để tách nguyên nhân tối ưu hoá khỏi nguyên nhân thống kê (mục 10).
-
-Đầu ra khi xong: `design_grid_mle.csv`, `design_results.json`, `outputs/gates/M1.json`, Hình 4.
+**Kết quả M1 (Hình 4)**: 24/24 ô đạt tiêu chí; trung vị RMSE/CRB = 0.98 (k_inh 0.97, A0 0.97, α 1.01, β 1.04); không ô nào vượt ×2; 5 tỉ số dưới 0.5 (thấp nhất 0.40) là nhiễu của RMSE từ 5 lần lặp, nằm *dưới* cận. Lo ngại "CRB lạc quan ở N nhỏ" không xảy ra (N = 6: tỉ số 0.9–1.3). Ô kiểu ds001787: RMSE(k_inh) 19.7% so với CRB 15.5% (tỉ số 1.27). ⇒ Bản đồ thiết kế từ CRB (Hình 5, Bảng 3) được phép dùng thay mô phỏng; không cần chạy `--n-starts 6`.
 
 ---
 
-## 7. Gói kết quả 4 — Điều khiển vòng kín · cổng **M2 ✅ PASS** (09/10/2026)
+## 7. Gói kết quả 4 — Điều khiển vòng kín · cổng **M2 ✅ PASS** (09/10/2026; độ bền đã có)
 
 Lệnh: `python main.py model control` (~1 phút; ~10 phút khi có `design_grid_mle.csv` để tính độ bền). Kết quả: `control_results.json`, `outputs/gates/M2.json`. Hình: F6 (đã có), F7 (chờ M1).
 
@@ -180,17 +178,21 @@ u_ss = 0.024 (mục tiêu 2.0 chỉ cao hơn QoC\* = 1.11 nên cần đầu vào
 
 Lưu ý khi viết: so sánh trên chi phí bậc hai là hàm mục tiêu của chính LQG; bài phải nói rõ bang-bang giải bài toán khác (max QoC(T), ràng buộc hộp) và báo thêm hai chỉ số trung lập đã có trong kết quả: MSE bám mục tiêu và RMS của u.
 
-**Còn lại**: độ bền (Hình 7) — thiết kế LQG (độ lợi **và** bộ lọc) trên từng bộ tham số *thực sự ước lượng được* ở M1, chạy trên tham số thật → mất mát hiệu quả theo thiết kế thí nghiệm. Tự chạy khi `model control` thấy `design_grid_mle.csv`.
+**Độ bền (Hình 7, đã có)** — LQG (độ lợi **và** bộ lọc) thiết kế trên từng bộ tham số *thực sự ước lượng được* ở M1, chạy trên hệ thật **của chính ô đó** (cùng mức nhiễu EEG r; bản đầu dùng r cố định 0.1 cho mọi ô và gán nhầm 15% mất mát do lệch nhiễu cho sai số ước lượng — đã sửa, có test). Kết quả: mất mát trung vị giảm theo N và độ dài phiên; ô sạch (N ≥ 24, phiên ≥ 45 phút, r = 0.05) 0.2–0.7%; ô kiểu ds001787 2.6% (q90 11%); thiết kế nhỏ (N = 6, 20 phút) có thể mất 38% (q90 55%), N = 12, 20 phút, r = 0.2 có q90 98% — tức thiết kế không đủ để ước lượng thì neurofeedback dựa trên nó cũng không dùng được. Nối thẳng Gói 3 với ứng dụng.
 
 ---
 
-## 8. Gói kết quả 5 — Phân tích độ nhạy toàn cục (bản nháp đã có, bản cho bài chưa)
+## 8. Gói kết quả 5 — Phân tích độ nhạy toàn cục (bản cho bài đã có: n_base 256, QMC, log, bootstrap)
 
-Lệnh: `python main.py model sensitivity --n-base 256` (~1.5 giờ). Hiện chỉ có bản nhanh n_base = 16 (chỉ số bị cắt ở 1.0, chưa dùng được).
+Lệnh: `python main.py model sensitivity --n-base 256` (~30 phút với 3 tiến trình và `OMP/MKL_NUM_THREADS=1`); tính lại không mô phỏng: `--from-saved`.
 
-- Sobol (Saltelli/Jansen, NumPy), 8 tham số, dải ×0.25–×4 log-uniform quanh danh nghĩa. Mọi đầu ra **tất định** (dạng đóng hoặc Fisher chính xác): QoC\*, Var_∞(QoC), CRB(k_inh) cho thiết kế ds001787, tỉ số chi phí LQG/không điều khiển.
+**Kết quả (Hình 8, ST với CI 95%)**: Var(QoC): α 0.36 [0.30, 0.42], σ_Φ 0.26, A0 0.19 (hội tụ: max|ΔST| 0.013). **CRB(k_inh): A0 0.58 [0.44, 0.73], CV(A) 0.36 [0.27, 0.46], còn chính k_inh chỉ 0.13 [0.10, 0.17]** — đo được tốc độ ức chế DMN hay không do mức nền và độ ồn của A quyết định, không do giá trị k_inh (hội tụ 0.076). Hiệu quả LQG: β 0.29, α 0.29, A0 0.23, không tham số nào thống trị (0.030). QoC\* (thang thô): A0 0.44 [0.23, 0.88], k_d 0.36, k_int 0.32 — thứ tự rõ nhưng CI rộng, hội tụ 0.10; trong bài chỉ tuyên bố "A0, k_d, k_int chi phối; α, β không đáng kể"; muốn CI hẹp hơn chạy `--n-base 512` (~1 giờ).
+
+- Sobol (Saltelli S1 / Jansen ST, NumPy), 8 tham số, dải ×0.25–×4 log-uniform quanh danh nghĩa; **mẫu quasi-ngẫu nhiên Sobol có xáo trộn** (scipy `qmc`, n_base là luỹ thừa 2). Mọi đầu ra **tất định** (dạng đóng hoặc Fisher chính xác): QoC\*, Var_∞(QoC), CRB(k_inh) cho thiết kế tham chiếu, tỉ số chi phí LQG/không điều khiển.
+- **Thang log** cho ba đầu ra dương (Var, CRB, hiệu quả): trên thang thô chúng biến thiên hàng chục lần nên vài mẫu cực đoan chiếm hết phương sai — chỉ số bị cắt ở 1.00 và S1 ≪ ST giả tạo (đã thấy ở lần chạy thô đầu tiên: A0→QoC\* = 1.00, cv_A→Var = 1.00). QoC\* giữ thang thô vì có thể âm.
+- **Khoảng tin cậy 95% bootstrap** (B = 1.000, lấy lại mẫu theo hàng) cho mọi S1, ST; **kiểm tra hội tụ** bằng chỉ số tính trên nửa đầu mẫu (báo max|ΔST|).
+- **Lưu toàn bộ giá trị đánh giá thô** (`sobol_evaluations.csv`): mọi phân tích lại chạy bằng `model sensitivity --from-saved` trong vài giây, không mô phỏng lại.
 - Nhiễu của A tham số hoá bằng **hệ số biến thiên dừng** CV_∞(A) = σ_A/(A0√(2k_inh)) ∈ [0.05, 0.4] thay vì σ_A: quét σ_A độc lập ×4 cùng k_inh ×0.25 làm A_DMN < 0 ~30% thời gian (ngoài miền [0, A_max]); với CV ≤ 0.4, P(A < 0) ≤ 0.6% (đã kiểm trên 200 mẫu).
-- Dấu hiệu từ bản nháp: QoC\* do k_int, A0, k_d; Var(QoC) do k_inh; CRB(k_inh) do CV(A); hiệu quả LQG do CV(A) và β. Chờ bản đầy đủ để kết luận.
 
 Đầu ra: Hình 8.
 
@@ -257,16 +259,16 @@ Phần `eeg/metrics/`, `eeg/preprocess.py`, `eeg/loaders/`, `preregistration/` t
 | Gói 1 + M0 | ✅ xong | — |
 | Gói 2, Bảng 2 | ✅ xong | Hình 3 cần `figures --profiles` |
 | Gói 3: lưới CRB, Hình 5, Bảng 3 | ✅ xong | — |
-| Gói 3: phục hồi MLE, **M1**, Hình 4 | ⏳ cuối tuần | `model design --seed 42` (qua đêm, tắt chế độ ngủ) |
+| Gói 3: phục hồi MLE, **M1**, Hình 4 | ✅ xong (máy 2, ~7 giờ) | — |
 | Gói 4 + M2, Hình 6 | ✅ xong | — |
-| Gói 4: độ bền, Hình 7 | ⏳ sau M1 | `model control --seed 42` |
-| Gói 5 bản cho bài, Hình 8 | ⏳ cuối tuần | `model sensitivity --n-base 256 --seed 42` (độc lập, chạy trước) |
-| Xuất lại hình/bảng | ⏳ sau tất cả | `model figures --profiles` |
+| Gói 4: độ bền, Hình 7 | ✅ xong | — |
+| Gói 5 bản cho bài, Hình 8 | ✅ xong (n_base 256) | tuỳ chọn `--n-base 512` cho QoC\* |
+| Xuất lại hình/bảng | ✅ xong (11 tệp, 0 bỏ qua) | — |
 | Appendix A (chứng minh P1–P5, đối xứng config a/c) | ⏳ không cần máy | viết tay |
 | Bản thảo | ⏳ | sau khi có M1 |
 | Chạy lại từ đầu trên máy sạch (`model all --n-base 256`), nộp + preprint | ⏳ | — |
 
-Thứ tự cuối tuần: `sensitivity --n-base 256` (1.5 h) → `design` (5–8 h) → `control` → `figures --profiles` → `gates`.
+Lưu ý vận hành: đặt `OMP_NUM_THREADS=1` và `MKL_NUM_THREADS=1` trước mọi bước chạy song song (3 worker × 4 luồng MKL trên 4 nhân làm chậm 5–6 lần). Hai máy chạy `sensitivity` và `design` song song được vì không chia sẻ đầu vào; chép 5 file (`design_grid_*.csv`, `design_results.json`, `config_snapshot.json`, `gates/M1.json`) về máy chính rồi chạy `control` → `figures --profiles`.
 
 ---
 
@@ -322,12 +324,12 @@ Thứ tự cuối tuần: `sensitivity --n-base 256` (1.5 h) → `design` (5–8
 - [x] P1–P5 kiểm chứng số (cổng M0 PASS)
 - [ ] P1–P5 có chứng minh viết (Appendix A)
 - [x] Bảng identifiability cho 4 cấu hình quan sát (Bảng 2)
-- [ ] Profile likelihood (Hình 3, `--profiles`)
+- [x] Profile likelihood (Hình 3)
 - [x] Bản đồ thiết kế + khuyến nghị tối thiểu (Hình 5, Bảng 3)
-- [ ] CRB khớp phục hồi mô phỏng (cổng M1, Hình 4)
+- [x] CRB khớp phục hồi mô phỏng (cổng M1 PASS, Hình 4)
 - [x] LQG vs bang-bang (cổng M2 PASS, Hình 6)
-- [ ] Độ bền theo tham số ước lượng (Hình 7, sau M1)
-- [ ] Sobol bản cho bài (n_base ≥ 256, Hình 8)
+- [x] Độ bền theo tham số ước lượng (Hình 7)
+- [x] Sobol bản cho bài (n_base 256, QMC, log, bootstrap CI; Hình 8)
 - [x] Một lệnh xuất toàn bộ hình/bảng (`model figures`)
 - [ ] Mã + kết quả công bố (GitHub + Zenodo DOI)
 - [x] Không còn số liệu nào từ bảng của bài BQI trong `model/` và `run_model_paper.py`

@@ -127,6 +127,11 @@ class Sensitivity:
     n_base_fast: int = 16
     n_base_default: int = 64
     n_base_paper: int = 256
+    sampler: str = "sobol_qmc"                # scrambled Sobol sequence (scipy.stats.qmc), n_base = power of 2
+    # outputs analysed on log scale: they vary multiplicatively over the range, and on the
+    # raw scale a few extreme samples dominate the variance (indices clip at 1, S1 << ST)
+    log_outputs: tuple = ("qoc_variance", "crb_k_inh", "lqg_efficiency")
+    n_boot: int = 1000                        # bootstrap resamples (rows) for index confidence intervals
 
 
 SENSITIVITY = Sensitivity()
@@ -150,7 +155,8 @@ GATES = Gates()
 P2_OMEGAS = (0.05, 0.2, 1.0)
 P2_STEP_XI = 2.0
 P2_T_END_MIN = 600.0
-P5_N_SAMPLES = 400                            # thinned samples for the KS test
+P5_N_SAMPLES = 2000                           # thinned samples for the KS test, pooled over independent chains
+P5_N_CHAINS = 5                               # seeds SEED, SEED+1, ... (a single path can drift for 100s of samples)
 
 # Profile likelihood (Fig. 3): parameters and log-range around the truth
 PROFILE_PARAMS = ("k_inh", "k_int", "k_d")
@@ -164,7 +170,7 @@ def as_dict() -> dict:
             "grid": asdict(GRID), "schedule": asdict(SCHEDULE), "control": asdict(CONTROL),
             "sensitivity": asdict(SENSITIVITY), "gates": asdict(GATES),
             "theory": {"p2_omegas": P2_OMEGAS, "p2_step_xi": P2_STEP_XI, "p2_t_end_min": P2_T_END_MIN,
-                       "p5_n_samples": P5_N_SAMPLES},
+                       "p5_n_samples": P5_N_SAMPLES, "p5_n_chains": P5_N_CHAINS},
             "profiles": {"params": PROFILE_PARAMS, "log_half_range": PROFILE_LOG_HALF_RANGE, "n_grid": PROFILE_N_GRID}}
 
 

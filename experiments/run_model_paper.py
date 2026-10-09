@@ -227,13 +227,18 @@ def fig3_profiles(w: Writer, do: bool, seed: int):
             rows += [{"param": p, "value": g, "loglik": l, "mle_loglik": base["loglik"]} for g, l in zip(grid, ll)]
         prof = pd.DataFrame(rows)
         prof.to_csv(cache, index=False)
-    fig, axes = plt.subplots(1, len(CFG.PROFILE_PARAMS), figsize=(7.2, 2.4))
+    from matplotlib.ticker import NullFormatter
+    fig, axes = plt.subplots(1, len(CFG.PROFILE_PARAMS), figsize=(7.2, 2.5))
     for ax, p in zip(axes, CFG.PROFILE_PARAMS):
-        d = prof[prof.param == p]
-        ax.plot(d.value, d.loglik - d.loglik.max(), "o-", color=BLUE)
+        d = prof[prof.param == p].sort_values("value")
+        truth = getattr(StateSpaceDMN(), p)
+        ax.plot(d.value / truth, d.loglik - d.loglik.max(), "o-", color=BLUE)
         ax.axhline(-1.92, color=ORANGE, ls="--", label=r"$\chi^2_1$ 95 %")
-        ax.axvline(getattr(StateSpaceDMN(), p), color=GRAY, ls=":")
-        ax.set(xscale="log", xlabel=KEY_TEX[p], title=f"profile of {KEY_TEX[p]}")
+        ax.axvline(1.0, color=GRAY, ls=":", label="truth")
+        ax.set_xscale("log")
+        ax.set_xticks([0.5, 0.7, 1.0, 1.4, 2.0], ["0.5", "0.7", "1", "1.4", "2"])
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.set(xlabel=f"{KEY_TEX[p]} / true value", title=f"profile of {KEY_TEX[p]}")
     axes[0].set_ylabel(r"$\ell_p - \ell_{\max}$")
     axes[0].legend(frameon=False)
     fig.tight_layout()
@@ -401,18 +406,28 @@ def fig8_sobol(w: Writer):
              if p in set(sob["param"])]
     pv = sob.pivot(index="param", columns="output", values="ST").reindex(order)
     pv = pv[[c for c in labels if c in pv.columns]]
-    fig, ax = plt.subplots(figsize=(4.6, 3.4))
-    im = ax.imshow(pv.values, cmap="Blues", vmin=0, vmax=1, aspect="auto")
-    ax.set_xticks(range(len(pv.columns)), [labels[c] for c in pv.columns])
+    has_ci = {"ST_lo", "ST_hi"} <= set(sob.columns)
+    lo = sob.pivot(index="param", columns="output", values="ST_lo").reindex(order)[pv.columns] if has_ci else None
+    hi = sob.pivot(index="param", columns="output", values="ST_hi").reindex(order)[pv.columns] if has_ci else None
+    scale = sob.drop_duplicates("output").set_index("output")["scale"].to_dict() if "scale" in sob.columns else {}
+    fig, ax = plt.subplots(figsize=(5.4, 3.9))
+    im = ax.imshow(np.clip(pv.values, 0, 1), cmap="Blues", vmin=0, vmax=1, aspect="auto")
+    ax.set_xticks(range(len(pv.columns)),
+                  [labels[c] + ("\n(log scale)" if scale.get(c) == "log" else "\n(raw)") for c in pv.columns],
+                  fontsize=8)
     ax.set_yticks(range(len(pv.index)), [KEY_TEX[i] for i in pv.index])
     for i in range(pv.shape[0]):
         for j in range(pv.shape[1]):
             v = pv.values[i, j]
-            ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=7.5, color="white" if v > 0.6 else "k")
+            txt = f"{v:.2f}"
+            if has_ci:
+                txt += f"\n[{lo.values[i, j]:.2f}, {hi.values[i, j]:.2f}]"
+            ax.text(j, i, txt, ha="center", va="center", fontsize=6.3, color="white" if v > 0.6 else "k")
     fig.colorbar(im, ax=ax, label="total-order Sobol index $S_T$")
     nb = meta.get("n_base", "?")
-    ax.set_title(f"Global sensitivity (×0.25–×4 log-uniform, CV$_\\infty$(A) ∈ [0.05, 0.4]; n_base = {nb})",
-                 fontsize=8.5)
+    nboot = meta.get("n_boot")
+    ax.set_title(f"Total-order Sobol indices $S_T$ (×0.25–×4 log-uniform, CV$_\\infty$(A) ∈ [0.05, 0.4]; "
+                 f"n_base = {nb}" + (f", 95 % bootstrap CI, B = {nboot}" if nboot else "") + ")", fontsize=7.5)
     fig.tight_layout()
     w.fig(fig, "fig8_sobol")
 

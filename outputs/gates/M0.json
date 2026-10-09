@@ -2,7 +2,7 @@
   "gate": "M0",
   "description": "Mệnh đề P1-P5: mô hình gốc M0 có lỗi toán học, M1 nhất quán",
   "passed": true,
-  "time_utc": "2026-10-09T08:02:03+00:00",
+  "time_utc": "2026-10-09T10:14:30+00:00",
   "details": {
     "P1_correct_steady_states": {
       "passed": true,
@@ -34,10 +34,10 @@
     },
     "P5_qoc_distribution_gaussian": {
       "passed": true,
-      "ks_stat": 0.0378,
-      "ks_p": 0.6024,
-      "mean_error": 0.0114,
-      "std_error": 0.0395
+      "ks_stat": 0.0195,
+      "ks_p": 0.424,
+      "mean_error": 0.0052,
+      "std_error": 0.0074
     }
   }
 }

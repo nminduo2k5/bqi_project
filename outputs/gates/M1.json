@@ -1,0 +1,787 @@
+{
+  "gate": "M1",
+  "description": "Fisher/CRB khớp sai số phục hồi tại >= 80% ô đại diện",
+  "passed": true,
+  "time_utc": "2026-10-09T14:04:38+00:00",
+  "details": {
+    "fraction_matching": 1.0,
+    "threshold": 2.0,
+    "min_fraction": 0.8,
+    "n_cells": 24,
+    "ratio_rmse_over_crb": {
+      "median": 0.9762269977375908,
+      "q10": 0.6095495365205644,
+      "q90": 1.3977276120636584
+    },
+    "per_param": [
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 1.2554948824853325
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 1.1529885225168366
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 1.1975999237712223
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 0.9811155662933009
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 1.0712253573846695
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 1.3572674971045187
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.052719781564718
+      },
+      {
+        "N": 6,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.9560274463591908
+      },
+      {
+        "N": 6,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.9199018322203119
+      },
+      {
+        "N": 6,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.9045019802737991
+      },
+      {
+        "N": 6,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 0.706609891628498
+      },
+      {
+        "N": 6,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 1.4706318389740982
+      },
+      {
+        "N": 6,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 1.3034443689922044
+      },
+      {
+        "N": 6,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 1.2338765835645196
+      },
+      {
+        "N": 6,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 0.9089444243160016
+      },
+      {
+        "N": 6,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 1.2356322230963626
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.9594133646218604
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.7856357876116885
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.9346453694794004
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.9717591452218315
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.2,
+        "param": "k_inh",
+        "ratio": 0.9298965678410378
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.2,
+        "param": "A0",
+        "ratio": 1.088503244018573
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.2,
+        "param": "alpha",
+        "ratio": 1.910579769932793
+      },
+      {
+        "N": 12,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.2,
+        "param": "beta",
+        "ratio": 1.0395109478590157
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 1.2661999881014294
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.8629522761914329
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.0444575159323097
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 1.070710886375951
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 0.5106299682494356
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 1.1947934850715147
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 0.8104425404991737
+      },
+      {
+        "N": 12,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 0.4625205609149288
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 1.251448772167702
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.8643216767627833
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 0.46686377553734404
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.9704296208789679
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "k_inh",
+        "ratio": 1.109486335146384
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "A0",
+        "ratio": 0.9221947086662086
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "alpha",
+        "ratio": 1.0054980541779328
+      },
+      {
+        "N": 12,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "beta",
+        "ratio": 0.8040389404159446
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 1.3912816879927719
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 1.3729534667847836
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 0.6669578162092383
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 1.2721753329422476
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.5176249738462877
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.972011522061731
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 0.44180887051306955
+      },
+      {
+        "N": 24,
+        "session_min": 20.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 1.243880396408298
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.912945967105715
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 1.0811564642854827
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.6060937505040336
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.9576805379099435
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "k_inh",
+        "ratio": 0.39782597268434977
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "A0",
+        "ratio": 0.6031820628502275
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "alpha",
+        "ratio": 1.4041735361345449
+      },
+      {
+        "N": 24,
+        "session_min": 45.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "beta",
+        "ratio": 0.8599723799753607
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 0.9695302900937796
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 0.920729951031785
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 0.7121129746935996
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 1.197766871548745
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.9667282520856995
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 1.154602447762419
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.2853736671299276
+      },
+      {
+        "N": 24,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 1.2234532640666806
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 1.0637994085981592
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.7238009172752186
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 0.9513715207405444
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 1.124414506767281
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "k_inh",
+        "ratio": 1.7310760421664884
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "A0",
+        "ratio": 0.8795890713958991
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "alpha",
+        "ratio": 0.6159170101909014
+      },
+      {
+        "N": 48,
+        "session_min": 20.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "beta",
+        "ratio": 1.0948913400317444
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 0.695988629553475
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 1.0684168186691865
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 1.6473086539549247
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 0.5059585752908876
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.8780720117721933
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 0.40548711785200825
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 0.8813347265738772
+      },
+      {
+        "N": 48,
+        "session_min": 45.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.8916517069806689
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 0.9601995873075486
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 0.9804424734134507
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 1.590771552366007
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 1.0,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 1.250922543888804
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "k_inh",
+        "ratio": 0.7362765390397418
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "A0",
+        "ratio": 1.1343107908848156
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "alpha",
+        "ratio": 1.4720984601321792
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 2.0,
+        "r_obs": 0.1,
+        "param": "beta",
+        "ratio": 0.9272722178084283
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "k_inh",
+        "ratio": 0.7088595966314111
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "A0",
+        "ratio": 0.9658569375280175
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "alpha",
+        "ratio": 0.5314734774326382
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 4.0,
+        "r_obs": 0.2,
+        "param": "beta",
+        "ratio": 1.694603327359161
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "k_inh",
+        "ratio": 1.0735597336858362
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "A0",
+        "ratio": 0.8474836455840024
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "alpha",
+        "ratio": 0.9846083218051439
+      },
+      {
+        "N": 48,
+        "session_min": 90.0,
+        "probe_every_min": 0.5,
+        "r_obs": 0.05,
+        "param": "beta",
+        "ratio": 1.1290204417238283
+      }
+    ]
+  }
+}

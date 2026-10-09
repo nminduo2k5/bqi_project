@@ -311,7 +311,7 @@ def cmd_model(args):
         if step == "design":
             kw.update(n_reps=args.n_reps, n_starts=args.n_starts)
         if step == "sensitivity":
-            kw["n_base"] = args.n_base
+            kw.update(n_base=args.n_base, from_saved=args.from_saved)
         if step == "control":
             kw["mle_csv"] = os.path.join(out_dir, "design_grid_mle.csv")
         mod.run(**kw)
@@ -440,6 +440,8 @@ def build_parser():
     p_model.add_argument("step", choices=["theory", "identifiability", "design", "control", "sensitivity",
                                           "figures", "all"])
     p_model.add_argument("--profiles", action="store_true", help="figures: tính thêm profile likelihood (chậm)")
+    p_model.add_argument("--from-saved", action="store_true",
+                         help="sensitivity: tinh lai chi so tu sobol_evaluations.csv da luu (vai giay, khong mo phong)")
     p_model.add_argument("--n-base", type=int, default=None,
                          help="sensitivity: số mẫu gốc Saltelli (mặc định 64; bài: >= 256)")
     p_model.add_argument("--n-reps", type=int, default=None, help="design: số lần phục hồi mỗi ô (mặc định 5)")

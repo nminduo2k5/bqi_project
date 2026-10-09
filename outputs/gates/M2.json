@@ -2,16 +2,16 @@
   "gate": "M2",
   "description": "LQG trên tham số thật thắng bang-bang và không điều khiển",
   "passed": true,
-  "time_utc": "2026-10-09T08:02:06+00:00",
+  "time_utc": "2026-10-09T14:21:54+00:00",
   "details": {
-    "lqg": 0.037548803788874166,
-    "bangbang": 0.5546734437040169,
-    "no_control": 1.1143766658144312,
-    "lqg_analytic": 0.03357452070931295,
+    "lqg": 0.03941744459329345,
+    "bangbang": 0.5614569712980699,
+    "no_control": 1.4807612938303643,
+    "lqg_analytic": 0.033574520709313,
     "lqg_sim_stationary": 0.03461282854777564,
     "lqg_beats_bangbang": true,
     "lqg_beats_nocontrol": true,
-    "u_ss": 0.02396649810366652,
+    "u_ss": 0.02396649810366648,
     "analytic_matches_simulation": true
   }
 }

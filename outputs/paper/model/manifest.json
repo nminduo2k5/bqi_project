@@ -4,28 +4,18 @@
     "fig1_highpass_qoc",
     "fig2_m1_stationary",
     "table2_identifiability",
+    "fig3_profiles",
+    "fig4_crb_vs_mle",
     "fig5_design_map",
     "table3_min_designs",
     "fig6_control_trajectories",
+    "fig7_robustness",
     "fig8_sobol"
   ],
-  "skipped": [
-    [
-      "fig3_profiles",
-      "chạy với --profiles (chậm, ~30 phút) để tính profile likelihood"
-    ],
-    [
-      "fig4_crb_vs_mle",
-      "cần design_grid_mle.csv (cổng M1, `model design`)"
-    ],
-    [
-      "fig7_robustness",
-      "cần phần độ bền trong control_results.json (chạy `model control` sau khi có M1)"
-    ]
-  ],
+  "skipped": [],
   "gates": {
     "M0": true,
-    "M1": null,
+    "M1": true,
     "M2": true
   },
   "seed": 42

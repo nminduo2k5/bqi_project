@@ -221,15 +221,28 @@ def control_efficiency_vs_param_error(model: StateSpaceDMN, mle_df, target_qoc: 
                                       seed: int = CFG.SEED) -> list[dict]:
     """Robustness: for every design cell, design the LQG controller (gains AND
     filter) on each *actually fitted* parameter set stored in mle_df['fits']
-    and run it on the true model. Efficiency loss = (cost_est - cost_true)/cost_true.
+    and run it on the true model of THAT cell. Efficiency loss =
+    (cost_est - cost_true) / cost_true, in per cent.
+
+    The true model of a cell is the nominal model with the cell's EEG noise
+    level (r_A = r_Phi = r_obs): the fits were obtained from data generated at
+    that level, so comparing against a fixed-r truth would attribute the
+    filter/plant noise mismatch to estimation error (a 15 % "loss" appeared
+    for every r = 0.05 cell regardless of N before this was fixed).
     """
-    st = state_space_with_control(model, b_control)
-    ctrl_true = solve_lqg(st, target_qoc=target_qoc)
     seeds = [seed + i for i in range(n_trials)]
-    cost_true = float(np.mean([simulate_policy(model, ctrl_true, "lqg", n_epochs, b_control, u_max, s, st)["cost"]
-                               for s in seeds]))
     out = []
+    cache: dict[float, tuple] = {}
     for _, row in mle_df.iterrows():
+        r = float(row["r_obs"])
+        if r not in cache:
+            m_true = model.with_params(r_A=r, r_Phi=r)
+            st = state_space_with_control(m_true, b_control)
+            ctrl_true = solve_lqg(st, target_qoc=target_qoc)
+            c_true = float(np.mean([simulate_policy(m_true, ctrl_true, "lqg", n_epochs, b_control, u_max, s, st)["cost"]
+                                    for s in seeds]))
+            cache[r] = (m_true, st, c_true)
+        m_true, st, cost_true = cache[r]
         fits = row["fits"]
         fits = json.loads(fits) if isinstance(fits, str) else fits
         losses = []
@@ -240,7 +253,7 @@ def control_efficiency_vs_param_error(model: StateSpaceDMN, mle_df, target_qoc: 
                 ctrl = solve_lqg(st_est, target_qoc=target_qoc)
                 ctrl.update({"F": st_est["F"], "c": st_est["c"], "B": st_est["B"], "h": st_est["h"],
                              "gamma0": st_est["gamma0"], "x0_hat": m_est.stationary_mean()})
-                cost = float(np.mean([simulate_policy(model, ctrl, "lqg", n_epochs, b_control, u_max, s, st)["cost"]
+                cost = float(np.mean([simulate_policy(m_true, ctrl, "lqg", n_epochs, b_control, u_max, s, st)["cost"]
                                       for s in seeds]))
                 losses.append((cost - cost_true) / cost_true * 100)
             except (ValueError, np.linalg.LinAlgError):

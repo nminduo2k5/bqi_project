@@ -30,12 +30,91 @@ exercised and tested end-to-end.
 > paper's claims — it is not a claim that the numeric magnitudes are
 > empirically validated.
 
+---
+
+## 🎯 Bài Q1 — Pipeline mô hình (đọc phần này trước)
+
+Repo có **hai phần**. Phần tái hiện bài BQI (các mục bên dưới) chỉ là minh hoạ thuật toán.
+**Phần nghiên cứu mới** nằm trong `model/`, được viết để nộp tạp chí Q1, và **không dùng bất kỳ
+bảng số liệu nào của bài gốc**: mọi kết quả là thí nghiệm *in silico* sinh từ mô hình, có seed, tái tạo 100%.
+
+### Câu hỏi
+
+Bài BQI đề xuất hệ ODE DMN–Φ–QoC (eq. 52–54) cho động lực của thiền. Pipeline hỏi ba câu kiểm chứng được bằng toán và mô phỏng:
+
+| # | Câu hỏi | Gói kết quả | Cổng |
+|---|---|---|---|
+| 1 | Mô hình có **nhất quán** không? | `theory` — mệnh đề P1–P5; mô hình gốc có QoC\* ≡ 0, đề xuất M1 có mức dừng ≠ 0 | **M0** |
+| 2 | Tham số có **đo được** từ thiết kế experience-sampling thông dụng không? | `identifiability` (Rothenberg trên Fisher chính xác) + `design` (bản đồ CRB, phục hồi MLE) | **M1** |
+| 3 | **Điều khiển vòng kín** (neurofeedback) làm được gì khi tham số chỉ biết gần đúng? | `control` (LQG vs bang-bang, độ bền) | **M2** |
+| + | Kết luận có đứng vững trên dải tham số rộng không? | `sensitivity` (Sobol, QMC, bootstrap) | — |
+
+### Trạng thái (09/10/2026): phần máy đã xong
+
+```
+python main.py gates
+M0  PASS   Mệnh đề P1–P5: mô hình gốc M0 có lỗi toán học, M1 nhất quán
+M1  PASS   CRB khớp sai số phục hồi MLE ở 24/24 ô (trung vị RMSE/CRB = 0.98)
+M2  PASS   LQG thắng bang-bang và không điều khiển; chi phí dừng khớp dạng đóng (3 %)
+```
+85 test pass (`python -m pytest tests -q`).
+
+### Kết quả nằm ở đâu
+
+| Thứ cần xem | Đường dẫn |
+|---|---|
+| **Tóm tắt 1 trang cho người đọc** | [`outputs/paper/model/TOM_TAT_GUI_THAY.md`](outputs/paper/model/TOM_TAT_GUI_THAY.md) |
+| **8 hình + 3 bảng cho bài** (PNG 300 dpi + PDF, CSV + LaTeX) | [`outputs/paper/model/`](outputs/paper/model/) — `fig1`…`fig8`, `table1`…`table3`, `manifest.json` |
+| Số liệu thô của từng gói (JSON/CSV) + bản chụp cấu hình | [`outputs/results/model/`](outputs/results/model/) — `config_snapshot.json` ghi mọi thông số đã dùng |
+| Kết quả các cổng kiểm tra (timestamp + chi tiết số) | [`outputs/gates/M0.json`](outputs/gates/), `M1.json`, `M2.json` |
+| Pipeline đầy đủ: phương pháp, thông số, cổng, khung bài báo | [`Q1_pipeline_model.md`](Q1_pipeline_model.md) |
+| Mọi thông số của mọi thực nghiệm (một nguồn duy nhất) | [`model/config.py`](model/config.py) |
+| Khám phá tương tác | Dashboard → trang **Bài Q1 › Pipeline mô hình** (`python main.py dashboard`) |
+
+### Kết quả chính
+
+| Hình | Thông điệp |
+|---|---|
+| F1, F2, T1 | Mô hình gốc: QoC là bộ lọc thông cao của dΦ/dt, dA/dt → QoC\* ≡ 0; nghiệm dừng in trong bài (eq. 55–57) không thoả ODE. M1 sửa lại: mức dừng 1.11, phân phối Gauss khớp dạng đóng |
+| T2, F3 | Cần cả hai kênh EEG (A và Φ) mới ước lượng đủ 12 tham số; chỉ có rating thì hạng 6/10 |
+| F4 | Cận Cramér–Rao dự đoán sai số thật trong hệ số 2 ở 24/24 thiết kế → được phép dùng CRB thay mô phỏng |
+| **F5, T3** (hình chính) | **k_inh** (tốc độ ức chế DMN) là tham số khó đo nhất: cần **24 người × 20 phút** để sai số ≤ 20 %; A0, α, β đạt ngay với 6 người × 20 phút |
+| F6, F7 | LQG rẻ hơn bang-bang 14× và không điều khiển 38×; thiết kế thí nghiệm đủ tốt → neurofeedback mất < 3 % hiệu quả, thiết kế nhỏ mất tới 38–98 % |
+| F8 | Khả năng đo k_inh do mức nền A0 (S_T 0.58) và độ ồn của A (0.36) quyết định, không do chính k_inh (0.13) |
+
+### Tái tạo toàn bộ
+
+```bash
+pip install -r requirements.txt
+set OMP_NUM_THREADS=1              # Windows; Linux/macOS: export ...
+set MKL_NUM_THREADS=1              # (3 tiến trình × 4 luồng MKL trên 4 nhân làm chậm 5–6 lần)
+python main.py model all --seed 42 --n-base 256 --profiles     # ~8 giờ trên máy 4 nhân
+python main.py gates
+```
+Từng bước: `python main.py model theory | identifiability | design | control | sensitivity | figures`
+(`--fast` để thử nhanh; `design` là bước lâu nhất, ~7 giờ; kết quả giống hệt khi chạy trên máy khác với cùng seed).
+
+### Việc còn lại (không cần máy)
+
+Appendix A (chứng minh P1–P5, đối xứng không xác định), bản thảo theo khung `Q1_pipeline_model.md` §13, đưa mã + `outputs/` lên GitHub/Zenodo khi nộp.
+
+---
+
 ## Project structure
 
 ```
 bqi_project/
-├── main.py                        CLI trung tâm: generate-data / run-experiments / test / all / dashboard / ...
-├── bqi/                          Core algorithm package
+├── main.py                        CLI trung tâm: generate-data / run-experiments / test / all / dashboard / model / gates
+├── Q1_pipeline_model.md           ★ Pipeline bài Q1: phương pháp, thông số, cổng, khung bài
+├── model/                         ★ Bài Q1 — 5 gói kết quả + cổng M0–M2
+│   ├── config.py                  Một nguồn duy nhất cho mọi thông số thực nghiệm
+│   ├── fisher.py                  Fisher kỳ vọng chính xác, CRB, phổ Rothenberg
+│   ├── theory.py                  Gói 1: P1–P5, cổng M0
+│   ├── identifiability.py         Gói 2: xác định tham số (Bảng 2)
+│   ├── design.py                  Gói 3: bản đồ thiết kế, phục hồi MLE, cổng M1
+│   ├── control.py                 Gói 4: LQG vs bang-bang, độ bền, cổng M2
+│   └── sensitivity.py             Gói 5: Sobol (QMC, log, bootstrap)
+├── bqi/                          Core algorithm package (tái hiện bài BQI)
 │   ├── predictive_coding.py      Sec 3.1 — Bayesian Predictive Coding
 │   ├── attention.py               Sec 3.3 — SNIS attention (Definition 3.4)
 │   ├── bqi_algorithm.py           Sec 4.5 — Algorithm 1 (BQI belief update)
@@ -51,15 +130,20 @@ bqi_project/
 │   ├── generate_datasets.py       Generates all synthetic datasets (CSV)
 │   └── generated/                 Output CSVs (created on first run)
 ├── experiments/
-│   └── run_all.py                 Runs every algorithm, saves figures + JSON summary
-├── tests/                         pytest test suite (42 tests, one per module)
+│   ├── run_all.py                 Runs every algorithm, saves figures + JSON summary (phần BQI)
+│   └── run_model_paper.py         ★ Xuất 8 hình + 3 bảng của bài Q1 → outputs/paper/model
+├── eeg/, preregistration/         Hướng EEG thực nghiệm (Q1_pipeline.md) — HOÃN, không dùng trong bài
+├── tests/                         pytest (85 test; test_model.py cho bài Q1)
 ├── dashboard/                     Giao diện trực quan Streamlit (python main.py dashboard)
 │   ├── app.py                     Điểm vào: điều hướng giữa các trang
 │   ├── core.py                    Dùng chung: đăng ký module, màu, chạy CLI/pytest, scorecard
-│   └── views/                     overview · lab · data · experiments · tests
+│   └── views/                     overview · lab · data · experiments · tests · model (★ Bài Q1)
 ├── outputs/
-│   ├── figures/                   PNG figures reproducing the paper's plots
-│   └── results/                   summary.json with all numeric results
+│   ├── paper/model/               ★ KẾT QUẢ BÀI Q1: fig1–fig8, table1–table3, TOM_TAT_GUI_THAY.md
+│   ├── results/model/             ★ số liệu thô 5 gói + config_snapshot.json
+│   ├── gates/                     ★ M0.json, M1.json, M2.json (PASS/FAIL + timestamp + chi tiết)
+│   ├── figures/                   PNG figures reproducing the paper's plots (phần BQI)
+│   └── results/                   summary.json with all numeric results (phần BQI)
 ├── requirements.txt
 └── README.md
 ```
@@ -243,20 +327,3 @@ against the paper's qualitative claims, e.g.:
   rates) are either taken directly from the paper's tables or chosen to
   produce paper-consistent qualitative behaviour; they are not fit to real
   neuroimaging data.
-
-
-# 1. Sobol bản cho bài — độc lập, chạy trước         (~1.5 giờ)
-python main.py model sensitivity --n-base 256 --seed 42
-
-# 2. Cổng M1 — phục hồi MLE 24 ô                       (5–8 giờ, để qua đêm)
-python main.py model design --seed 42
-
-# 3. Điều khiển bản đầy đủ + độ bền theo tham số ước lượng   (~10 phút, cần kết quả bước 2)
-python main.py model control --seed 42
-
-# 4. Profile likelihood + xuất lại toàn bộ hình/bảng   (~30 phút)
-python main.py model figures --profiles
-
-# 5. Kiểm tra
-python main.py gates                                    # M0, M1, M2 phải PASS
-python -m pytest tests -q                               # 83 test
