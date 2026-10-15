@@ -11,3 +11,6 @@ outputs/gates/overrides.log
 
 # LaTeX build logs
 template_latex/*.log
+
+# GHDL work library
+hw/vhdl/work/

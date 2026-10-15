@@ -94,9 +94,21 @@ python main.py gates
 Từng bước: `python main.py model theory | identifiability | design | control | sensitivity | figures`
 (`--fast` để thử nhanh; `design` là bước lâu nhất, ~7 giờ; kết quả giống hệt khi chạy trên máy khác với cùng seed).
 
-### Việc còn lại (không cần máy)
+### Bản thảo
 
-Appendix A (chứng minh P1–P5, đối xứng không xác định), bản thảo theo khung `Q1_pipeline_model.md` §13, đưa mã + `outputs/` lên GitHub/Zenodo khi nộp.
+Bản thảo đầy đủ (tiếng Anh + tiếng Việt) ở [`template_latex/`](template_latex/): `paper_reference.tex`, `paper_reference_vi.tex`, hướng dẫn biên dịch `HUONG_DAN_BIEN_DICH.md`. Còn lại: email cơ quan, DOI preprint của bài BQI, đưa mã + `outputs/` lên GitHub/Zenodo khi nộp.
+
+### Hướng tiếp theo: "neural design" — mạch neural dấu chấm tĩnh + VHDL ([`hw/README.md`](hw/README.md))
+
+Vòng kín Kalman + LQG của Gói 4 được viết lại thành mạch neural 3 lớp, 6 nơ-ron tuyến tính (làm tròn + bão hoà), chạy một lần mỗi epoch 10 s, mô hình hoá bằng VHDL để chạy neurofeedback thời gian thực trên FPGA.
+
+```bash
+python main.py model hardware            # quét số bit (Q4.6 … Q4.18), chọn định dạng, sinh hw/vhdl/gen/{lqg_params_pkg.vhd, vectors.txt}
+python -m pytest tests/test_hardware.py  # bản Python bit-exact: 5 test
+powershell -File hw\run_ghdl.ps1         # mô phỏng VHDL, so từng bit với Python (cần cài GHDL)
+```
+
+Kết quả 15/10/2026: định dạng **Q4.8 (13 bit)** đủ, chi phí vòng kín chỉ cao hơn dấu chấm động 0,8 %; dưới 8 bit phân số suy giảm nhanh (6 bit: +40 %). Mã VHDL (`hw/vhdl/`) đã mô phỏng bằng GHDL 6.0.0: **270/270 epoch khớp từng bit với Python**.
 
 ---
 

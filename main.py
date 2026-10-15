@@ -45,6 +45,7 @@ VÍ DỤ SỬ DỤNG
   python main.py model sensitivity --n-base 256   # Sobol/Saltelli cho bài (~1.5 giờ; mặc định 64 ~20 phút)
   python main.py model figures             # xuất hình PNG/PDF + bảng CSV/LaTeX vào outputs/paper/model
   python main.py model all --seed 42       # 5 bước + xuất hình: tái tạo toàn bộ bài
+  python main.py model hardware            # "neural design": mạch neural dấu chấm tĩnh của vòng kín + VHDL (hw/)
 
   # Pipeline Q1 (Q1_pipeline.md): kiểm định công cụ, cổng, đăng ký trước
   python main.py validate-tools            # cổng G0 (dữ liệu tổng hợp)
@@ -314,6 +315,8 @@ def cmd_model(args):
             kw.update(n_base=args.n_base, from_saved=args.from_saved)
         if step == "control":
             kw["mle_csv"] = os.path.join(out_dir, "design_grid_mle.csv")
+        if step == "hardware":
+            kw["fast"] = args.fast
         mod.run(**kw)
     print(f"\n✔ Kết quả trong {out_dir}; trạng thái cổng: python main.py gates")
 
@@ -438,7 +441,8 @@ def build_parser():
     p_model = sub.add_parser("model", help="Bài mô hình (Q1_pipeline_model.md): theory | identifiability | "
                                            "design | control | sensitivity | all.")
     p_model.add_argument("step", choices=["theory", "identifiability", "design", "control", "sensitivity",
-                                          "figures", "all"])
+                                          "figures", "hardware", "all"],
+                         help="hardware: mạch neural dấu chấm tĩnh (Kalman + LQG) + sinh VHDL, không thuộc 'all'")
     p_model.add_argument("--profiles", action="store_true", help="figures: tính thêm profile likelihood (chậm)")
     p_model.add_argument("--from-saved", action="store_true",
                          help="sensitivity: tinh lai chi so tu sobol_evaluations.csv da luu (vai giay, khong mo phong)")
