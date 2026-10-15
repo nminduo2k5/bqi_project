@@ -8,3 +8,6 @@ outputs/results/*.json
 # Q1 pipeline data (raw downloads and derivatives are large)
 data/
 outputs/gates/overrides.log
+
+# LaTeX build logs
+template_latex/*.log

@@ -169,10 +169,12 @@ Lệnh: `python main.py model control` (~1 phút; ~10 phút khi có `design_grid
 
 | Chính sách | Chi phí phiên |
 |---|---|
-| LQG | **0.0375** |
-| Bang-bang | 0.555 |
-| Không điều khiển | 1.114 |
+| LQG | **0.0394** (MSE bám 0.035, RMS u 0.22) |
+| Bang-bang | 0.561 (MSE bám 0.162, RMS u 2.00) |
+| Không điều khiển | 1.481 |
 | LQG dừng: dạng đóng / mô phỏng dài có burn-in | 0.0336 / 0.0346 (lệch 3%) |
+
+(Số của lần chạy cuối 09/10/2026 21:22, trùng `outputs/gates/M2.json`; bản thảo dùng đúng các số này.)
 
 u_ss = 0.024 (mục tiêu 2.0 chỉ cao hơn QoC\* = 1.11 nên cần đầu vào trung bình nhỏ).
 
@@ -186,7 +188,7 @@ Lưu ý khi viết: so sánh trên chi phí bậc hai là hàm mục tiêu của
 
 Lệnh: `python main.py model sensitivity --n-base 256` (~30 phút với 3 tiến trình và `OMP/MKL_NUM_THREADS=1`); tính lại không mô phỏng: `--from-saved`.
 
-**Kết quả (Hình 8, ST với CI 95%)**: Var(QoC): α 0.36 [0.30, 0.42], σ_Φ 0.26, A0 0.19 (hội tụ: max|ΔST| 0.013). **CRB(k_inh): A0 0.58 [0.44, 0.73], CV(A) 0.36 [0.27, 0.46], còn chính k_inh chỉ 0.13 [0.10, 0.17]** — đo được tốc độ ức chế DMN hay không do mức nền và độ ồn của A quyết định, không do giá trị k_inh (hội tụ 0.076). Hiệu quả LQG: β 0.29, α 0.29, A0 0.23, không tham số nào thống trị (0.030). QoC\* (thang thô): A0 0.44 [0.23, 0.88], k_d 0.36, k_int 0.32 — thứ tự rõ nhưng CI rộng, hội tụ 0.10; trong bài chỉ tuyên bố "A0, k_d, k_int chi phối; α, β không đáng kể"; muốn CI hẹp hơn chạy `--n-base 512` (~1 giờ).
+**Kết quả (Hình 8, ST với CI 95%)**: Var(QoC): α 0.36 [0.30, 0.42], σ_Φ 0.26, A0 0.19 (hội tụ: max|ΔST| 0.013). **CRB(k_inh): A0 0.58 [0.44, 0.73], CV(A) 0.36 [0.27, 0.46], còn chính k_inh chỉ 0.13 [0.10, 0.17]** — đo được tốc độ ức chế DMN hay không do mức nền và độ ồn của A quyết định, không do giá trị k_inh (hội tụ 0.076). Hiệu quả LQG: β 0.29, α 0.29, A0 0.23, không tham số nào thống trị (0.030). QoC\* (thang thô): A0 0.44 [0.23, 0.88], k_d 0.36, k_int 0.32 — thứ tự rõ nhưng CI rộng, hội tụ 0.10; trong bài chỉ tuyên bố "A0, k_d, k_int, α chi phối; β không đáng kể" (α có S_T 0.30 [0.13, 0.57] nên không thể gọi là không đáng kể; đúng với dạng đóng QoC\* = αk_int(1 − A0)/k_d − βA0); muốn CI hẹp hơn chạy `--n-base 512` (~1 giờ).
 
 - Sobol (Saltelli S1 / Jansen ST, NumPy), 8 tham số, dải ×0.25–×4 log-uniform quanh danh nghĩa; **mẫu quasi-ngẫu nhiên Sobol có xáo trộn** (scipy `qmc`, n_base là luỹ thừa 2). Mọi đầu ra **tất định** (dạng đóng hoặc Fisher chính xác): QoC\*, Var_∞(QoC), CRB(k_inh) cho thiết kế tham chiếu, tỉ số chi phí LQG/không điều khiển.
 - **Thang log** cho ba đầu ra dương (Var, CRB, hiệu quả): trên thang thô chúng biến thiên hàng chục lần nên vài mẫu cực đoan chiếm hết phương sai — chỉ số bị cắt ở 1.00 và S1 ≪ ST giả tạo (đã thấy ở lần chạy thô đầu tiên: A0→QoC\* = 1.00, cv_A→Var = 1.00). QoC\* giữ thang thô vì có thể âm.
@@ -214,7 +216,7 @@ Lệnh: `python main.py model sensitivity --n-base 256` (~30 phút với 3 tiế
 | Cổng | Điều kiện PASS | Lệnh | Trạng thái | Nếu FAIL |
 |---|---|---|---|---|
 | **M0** | P1–P5 đều đúng: phần dư < 1e-6; P2 suy giảm DC > 10⁴ và sai số biên độ < 1%; P5 KS p > 0.01 trên chuỗi thưa | `model theory` | ✅ PASS 09/10 | Sửa chứng minh trước khi viết |
-| **M1** | Ở ≥ 80% trong 24 ô đại diện, ≥ nửa số tham số chính có RMSE/CRB ∈ [0.5, 2] | `model design` | ⏳ dừng ở 7/24 | (1) Chạy lại `--n-starts 6`: nếu RMSE giảm → lỗi tối ưu, dùng kết quả mới. (2) Nếu không đổi → CRB lạc quan ở N nhỏ: giữ kết quả, bản đồ thiết kế báo rõ vùng tin cậy; đây là kết quả khoa học, không phải lỗi |
+| **M1** | Ở ≥ 80% trong 24 ô đại diện, ≥ nửa số tham số chính có RMSE/CRB ∈ [0.5, 2] | `model design` | ✅ PASS 09/10 (24/24 ô, trung vị 0.98) | (1) Chạy lại `--n-starts 6`: nếu RMSE giảm → lỗi tối ưu, dùng kết quả mới. (2) Nếu không đổi → CRB lạc quan ở N nhỏ: giữ kết quả, bản đồ thiết kế báo rõ vùng tin cậy; đây là kết quả khoa học, không phải lỗi |
 | **M2** | LQG (tham số thật) rẻ hơn bang-bang và không điều khiển; chi phí dừng dạng đóng khớp mô phỏng có burn-in trong 20% | `model control` | ✅ PASS 09/10 (lệch 3%) | Kiểm Riccati / rời rạc hoá |
 
 Phụ thuộc khai báo trong `eeg/gates.py`: M1 ← M0, M2 ← M1. **Hiện các bước `model …` chưa gọi `gates.require`**, nên chạy được theo thứ tự bất kỳ (vì vậy M2 đã PASS trước M1); ràng buộc thực tế duy nhất là **phần độ bền của Gói 4 chỉ chạy khi có `design_grid_mle.csv`** (kết quả M1). Mỗi cổng ghi `outputs/gates/M*.json` (timestamp UTC + chi tiết số); `python main.py gates` in trạng thái. Trước khi nộp, chạy lại toàn bộ theo đúng thứ tự `model all` để M0 → M1 → M2 có timestamp tăng dần.
@@ -264,8 +266,8 @@ Phần `eeg/metrics/`, `eeg/preprocess.py`, `eeg/loaders/`, `preregistration/` t
 | Gói 4: độ bền, Hình 7 | ✅ xong | — |
 | Gói 5 bản cho bài, Hình 8 | ✅ xong (n_base 256) | tuỳ chọn `--n-base 512` cho QoC\* |
 | Xuất lại hình/bảng | ✅ xong (11 tệp, 0 bỏ qua) | — |
-| Appendix A (chứng minh P1–P5, đối xứng config a/c) | ⏳ không cần máy | viết tay |
-| Bản thảo | ⏳ | sau khi có M1 |
+| Appendix A (chứng minh P1–P5, đối xứng config b/c) | ✅ xong 10/10 | trong `template_latex/paper_reference.tex`, Phụ lục A–B; đối xứng kiểm lại bằng số (cosine 1.000) |
+| Bản thảo | ✅ bản đầy đủ 10/10 (31 trang, 8 hình, 9 bảng) | `template_latex/paper_reference.tex`; còn TODO: đồng tác giả, lời cảm ơn, DOI bài BQI |
 | Chạy lại từ đầu trên máy sạch (`model all --n-base 256`), nộp + preprint | ⏳ | — |
 
 Lưu ý vận hành: đặt `OMP_NUM_THREADS=1` và `MKL_NUM_THREADS=1` trước mọi bước chạy song song (3 worker × 4 luồng MKL trên 4 nhân làm chậm 5–6 lần). Hai máy chạy `sensitivity` và `design` song song được vì không chia sẻ đầu vào; chép 5 file (`design_grid_*.csv`, `design_results.json`, `config_snapshot.json`, `gates/M1.json`) về máy chính rồi chạy `control` → `figures --profiles`.
