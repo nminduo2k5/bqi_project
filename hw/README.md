@@ -94,6 +94,22 @@ PASS: 270 epochs bit-exact with model/hardware.py
 Kiểm tra ngược: sửa sai 1 LSB của `u` ở epoch 100 trong file vectơ thì testbench báo
 `MISMATCH epoch 100 ... u=-3 ... expected u=-2` và `FAIL: 1 of 270 epochs differ`, tức phép so sánh có hiệu lực.
 
+### Xem dạng sóng (giao diện)
+
+GHDL chỉ chạy dòng lệnh. Để nhìn mạch chạy theo từng nhịp đồng hồ:
+
+1. `powershell -ExecutionPolicy Bypass -File hw\run_ghdl.ps1 -Wave` → tạo `hw\vhdl\work\tb_dmn_lqg_core.vcd` và `.ghw`.
+2. Tải **Surfer** bản Windows dựng sẵn (một file `.exe`, không cần cài):
+   https://gitlab.com/api/v4/projects/42073614/jobs/artifacts/main/raw/surfer_win.zip?job=windows_build
+   (link chính thức trên surfer-project.org; **không** clone repo `.git`, đó là mã nguồn).
+   Có thể dùng GTKWave thay thế, nhưng phải tải đúng bản `gtkwave-3.3.100-bin-win64.zip`; các gói `gtkwave-gtk3-3.3.1xx` chỉ là mã nguồn.
+3. Kéo thả file `.vcd` vào Surfer, mở `tb_dmn_lqg_core` → `dut`, thêm `clk`, `start`, `state`, `xhat`, `u_r`, `qoc_r`, `done`;
+   đặt định dạng số là signed decimal (giá trị thật = số nguyên / 256 với Q4.8).
+
+Mỗi epoch thấy `start` lên một nhịp, `state` đi IDLE → PREDICT → CORRECT → CONTROL, `done` bật và `u_r`, `xhat` đổi giá trị.
+
+### Giới hạn của bộ vectơ hiện tại
+
 Giới hạn của bộ vectơ hiện tại: trong phiên seed 42, `u` nằm trong [−106, 233] so với giới hạn ±512 và
 không có giá trị nào chạm bão hoà W bit, nên nhánh `clip`/`saturate` của VHDL **chưa được kiểm thử**
 (xem "Việc tiếp theo", mục 6).
@@ -119,5 +135,9 @@ Ba lỗi đã sửa khi chạy GHDL lần đầu (ghi lại để tránh lặp l
 3. Phiên bản dùng chung một bộ nhân (18 chu kỳ/epoch) để so tài nguyên.
 4. Mô hình đối tượng (M1 + nhiễu LFSR) cũng bằng VHDL để mô phỏng vòng kín hoàn toàn trên FPGA.
 5. Độ bền kết hợp: bộ điều khiển thiết kế trên tham số ước lượng (24 ô của Hình 7) **và** lượng tử hoá Q4.8.
+7. **Thay phương trình DMN bằng mạng neural học từ dữ liệu** (cách hiểu thứ hai của "neural design", chưa làm, chờ thầy xác nhận).
+   Các nơ-ron hiện tại là tuyến tính với trọng số tính sẵn từ phương trình, không học. Không có dữ liệu thật thì mạng neural chỉ học lại M1;
+   cách làm có ý nghĩa: sinh dữ liệu từ một "não giả" phi tuyến (chuyển trạng thái, rating thứ bậc), fit cả M1 và một neural ODE/RNN nhỏ,
+   so độ chính xác dự đoán với khả năng xác định tham số, rồi đưa mạng học được sang VHDL bằng khung mạch này.
 6. Kiểm tra khi QoC bão hoà: `clip` và `saturate` đã có, nhưng cần vectơ kiểm tra có đầu vào cực đoan
    (y ngoài dải, u chạm ±u_max) để kiểm thử nhánh bão hoà của VHDL.

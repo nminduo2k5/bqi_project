@@ -57,7 +57,7 @@ M0  PASS   Mệnh đề P1–P5: mô hình gốc M0 có lỗi toán học, M1 nh
 M1  PASS   CRB khớp sai số phục hồi MLE ở 24/24 ô (trung vị RMSE/CRB = 0.98)
 M2  PASS   LQG thắng bang-bang và không điều khiển; chi phí dừng khớp dạng đóng (3 %)
 ```
-85 test pass (`python -m pytest tests -q`).
+89 test pass, 2 bỏ qua khi không có `mne` (`python -m pytest tests -q`).
 
 ### Kết quả nằm ở đâu
 
@@ -105,10 +105,11 @@ Vòng kín Kalman + LQG của Gói 4 được viết lại thành mạch neural 
 ```bash
 python main.py model hardware            # quét số bit (Q4.6 … Q4.18), chọn định dạng, sinh hw/vhdl/gen/{lqg_params_pkg.vhd, vectors.txt}
 python -m pytest tests/test_hardware.py  # bản Python bit-exact: 5 test
-powershell -File hw\run_ghdl.ps1         # mô phỏng VHDL, so từng bit với Python (cần cài GHDL)
+powershell -ExecutionPolicy Bypass -File hw\run_ghdl.ps1         # mô phỏng VHDL, so từng bit với Python (cần GHDL)
+powershell -ExecutionPolicy Bypass -File hw\run_ghdl.ps1 -Wave   # như trên + xuất dạng sóng hw\vhdl\work\*.vcd, *.ghw
 ```
 
-Kết quả 15/10/2026: định dạng **Q4.8 (13 bit)** đủ, chi phí vòng kín chỉ cao hơn dấu chấm động 0,8 %; dưới 8 bit phân số suy giảm nhanh (6 bit: +40 %). Mã VHDL (`hw/vhdl/`) đã mô phỏng bằng GHDL 6.0.0: **270/270 epoch khớp từng bit với Python**.
+Kết quả 15/10/2026: định dạng **Q4.8 (13 bit)** đủ, chi phí vòng kín chỉ cao hơn dấu chấm động 0,8 %; dưới 8 bit phân số suy giảm nhanh (6 bit: +40 %). Mã VHDL (`hw/vhdl/`) đã mô phỏng bằng GHDL 6.0.0: **270/270 epoch khớp từng bit với Python**. Cài GHDL, xem dạng sóng bằng Surfer, và việc còn lại (kiểm nhánh bão hoà, tổng hợp FPGA, thay phương trình DMN bằng mạng neural học từ dữ liệu): xem [`hw/README.md`](hw/README.md).
 
 ---
 
@@ -125,7 +126,12 @@ bqi_project/
 │   ├── identifiability.py         Gói 2: xác định tham số (Bảng 2)
 │   ├── design.py                  Gói 3: bản đồ thiết kế, phục hồi MLE, cổng M1
 │   ├── control.py                 Gói 4: LQG vs bang-bang, độ bền, cổng M2
-│   └── sensitivity.py             Gói 5: Sobol (QMC, log, bootstrap)
+│   ├── sensitivity.py             Gói 5: Sobol (QMC, log, bootstrap)
+│   └── hardware.py                ★ Neural design: mạch neural dấu chấm tĩnh bit-exact, sinh VHDL
+├── hw/                            ★ Neural design — xem hw/README.md
+│   ├── vhdl/                      neuron_pkg, dmn_lqg_core, testbench; gen/ = hằng số + vectơ sinh tự động
+│   └── run_ghdl.ps1 / .sh         Mô phỏng GHDL (tuỳ chọn -Wave: xuất dạng sóng)
+├── template_latex/                ★ Bản thảo: paper_reference.tex (EN), paper_reference_vi.tex (VI), HUONG_DAN_BIEN_DICH.md
 ├── bqi/                          Core algorithm package (tái hiện bài BQI)
 │   ├── predictive_coding.py      Sec 3.1 — Bayesian Predictive Coding
 │   ├── attention.py               Sec 3.3 — SNIS attention (Definition 3.4)
@@ -145,7 +151,7 @@ bqi_project/
 │   ├── run_all.py                 Runs every algorithm, saves figures + JSON summary (phần BQI)
 │   └── run_model_paper.py         ★ Xuất 8 hình + 3 bảng của bài Q1 → outputs/paper/model
 ├── eeg/, preregistration/         Hướng EEG thực nghiệm (Q1_pipeline.md) — HOÃN, không dùng trong bài
-├── tests/                         pytest (85 test; test_model.py cho bài Q1)
+├── tests/                         pytest (89 test + 2 bỏ qua khi thiếu mne; test_model.py bài Q1, test_hardware.py mạch)
 ├── dashboard/                     Giao diện trực quan Streamlit (python main.py dashboard)
 │   ├── app.py                     Điểm vào: điều hướng giữa các trang
 │   ├── core.py                    Dùng chung: đăng ký module, màu, chạy CLI/pytest, scorecard
