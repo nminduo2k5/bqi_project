@@ -110,7 +110,7 @@ Mỗi epoch thấy `start` lên một nhịp, `state` đi IDLE → PREDICT → C
 
 ### Giới hạn của bộ vectơ hiện tại
 
-Giới hạn của bộ vectơ hiện tại: trong phiên seed 42, `u` nằm trong [−106, 233] so với giới hạn ±512 và
+trong phiên seed 42, `u` nằm trong [−106, 233] so với giới hạn ±512 và
 không có giá trị nào chạm bão hoà W bit, nên nhánh `clip`/`saturate` của VHDL **chưa được kiểm thử**
 (xem "Việc tiếp theo", mục 6).
 
@@ -135,9 +135,9 @@ Ba lỗi đã sửa khi chạy GHDL lần đầu (ghi lại để tránh lặp l
 3. Phiên bản dùng chung một bộ nhân (18 chu kỳ/epoch) để so tài nguyên.
 4. Mô hình đối tượng (M1 + nhiễu LFSR) cũng bằng VHDL để mô phỏng vòng kín hoàn toàn trên FPGA.
 5. Độ bền kết hợp: bộ điều khiển thiết kế trên tham số ước lượng (24 ô của Hình 7) **và** lượng tử hoá Q4.8.
+6. Kiểm tra khi QoC bão hoà: `clip` và `saturate` đã có, nhưng cần vectơ kiểm tra có đầu vào cực đoan
+   (y ngoài dải, u chạm ±u_max) để kiểm thử nhánh bão hoà của VHDL.
 7. **Thay phương trình DMN bằng mạng neural học từ dữ liệu** (cách hiểu thứ hai của "neural design", chưa làm, chờ thầy xác nhận).
    Các nơ-ron hiện tại là tuyến tính với trọng số tính sẵn từ phương trình, không học. Không có dữ liệu thật thì mạng neural chỉ học lại M1;
    cách làm có ý nghĩa: sinh dữ liệu từ một "não giả" phi tuyến (chuyển trạng thái, rating thứ bậc), fit cả M1 và một neural ODE/RNN nhỏ,
    so độ chính xác dự đoán với khả năng xác định tham số, rồi đưa mạng học được sang VHDL bằng khung mạch này.
-6. Kiểm tra khi QoC bão hoà: `clip` và `saturate` đã có, nhưng cần vectơ kiểm tra có đầu vào cực đoan
-   (y ngoài dải, u chạm ±u_max) để kiểm thử nhánh bão hoà của VHDL.
