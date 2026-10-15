@@ -34,7 +34,9 @@ Thứ tự tính trong một epoch đúng như `simulate_policy` của Gói 4: n
 | `hw/vhdl/tb_dmn_lqg_core.vhd` | Testbench đọc `gen/vectors.txt`, so **từng bit** 4 đầu ra ở mỗi epoch với Python |
 | `hw/vhdl/gen/lqg_params_pkg.vhd` | **Sinh tự động**: W, FRAC và mọi trọng số/độ lệch đã lượng tử hoá |
 | `hw/vhdl/gen/vectors.txt` | **Sinh tự động**: 270 epoch của một phiên vòng kín (seed 42) |
-| `hw/run_ghdl.ps1`, `hw/run_ghdl.sh` | Chạy mô phỏng với GHDL |
+| `hw/run_ghdl.ps1`, `hw/run_ghdl.sh` | Chạy mô phỏng với GHDL (`-Wave`: xuất dạng sóng) |
+| `hw/report/bao_cao_neural_design.tex` → `.pdf` | **Báo cáo kỹ thuật** (tiếng Việt, 15 trang): sơ đồ mạch neural, nơ-ron, hệ thống, RTL, FSM, luồng thiết kế, quét số bit, kiểm chứng 3 mức, dạng sóng, tài nguyên sau tổng hợp, mã VHDL ở phụ lục |
+| `hw/report/make_assets.py` | Tổng hợp bằng `ghdl --synth`, thống kê netlist, mô phỏng **sau tổng hợp**, vẽ hình dạng sóng và phiên 45 phút cho báo cáo |
 | `tests/test_hardware.py` | 5 test: làm tròn/bão hoà, đường float trùng `simulate_policy` tới 1e-12, dấu chấm tĩnh ≈ float, mạch tất định và vectơ tự nhất quán, file sinh ra hợp lệ |
 
 ## Định dạng số và ngữ nghĩa nơ-ron (Python và VHDL phải giống hệt)
@@ -90,6 +92,10 @@ powershell -ExecutionPolicy Bypass -File hw\run_ghdl.ps1
 tb_dmn_lqg_core: 270 vectors, W=13 FRAC=8
 PASS: 270 epochs bit-exact with model/hardware.py
 ```
+
+**Sau tổng hợp** (`python hw/report/make_assets.py`): `ghdl --synth` sinh netlist cổng logic
+(`hw/vhdl/work/netlist_synth.vhd`, 870 dòng: 18 bộ nhân hằng số trong đó 16 khác 0, 24 bộ cộng, 107 bit thanh ghi);
+cùng testbench chạy trên netlist này cũng **PASS 270/270**. Kết quả trong `hw/report/assets/synth_stats.json`.
 
 Kiểm tra ngược: sửa sai 1 LSB của `u` ở epoch 100 trong file vectơ thì testbench báo
 `MISMATCH epoch 100 ... u=-3 ... expected u=-2` và `FAIL: 1 of 270 epochs differ`, tức phép so sánh có hiệu lực.

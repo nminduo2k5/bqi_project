@@ -14,3 +14,10 @@ template_latex/*.log
 
 # GHDL work library
 hw/vhdl/work/
+
+# hardware report build files
+hw/report/*.log
+hw/report/*.aux
+hw/report/*.out
+hw/report/*.toc
+hw/vhdl/work_ps/

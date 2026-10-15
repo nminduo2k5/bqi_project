@@ -1,0 +1,38 @@
+{
+  "ghdl": "GHDL 6.0.0 (6.0.0.r0.ge589c698c.dirty) [Dunoon edition]",
+  "rtl_simulation": "PASS: 270 epochs bit-exact with model/hardware.py",
+  "post_synthesis_simulation": "PASS: 270 epochs bit-exact with model/hardware.py",
+  "netlist": {
+    "lines": 870,
+    "constant_multipliers": 18,
+    "constant_multipliers_nonzero": 16,
+    "adders": 24,
+    "subtractors": 6,
+    "registers": 13,
+    "flipflop_bits": 113,
+    "register_widths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      13,
+      13,
+      26,
+      26,
+      26
+    ],
+    "mux_branches": 122,
+    "comparators": 234
+  },
+  "session": {
+    "cost_fixed": 0.04599903003363662,
+    "cost_float": 0.045769123731236885,
+    "max_abs_du": 0.02503280813562503,
+    "u_min": -0.4140625,
+    "u_max": 1.7734375
+  }
+}
