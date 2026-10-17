@@ -138,6 +138,58 @@ SENSITIVITY = Sensitivity()
 
 
 @dataclass(frozen=True)
+class RealData:
+    """Real-data section (Q1_pipeline.md v2.0): ds001787, M1 in deviation form."""
+    dataset: str = "ds001787"
+    bids_dir: str = "ds001787"                 # git clone of the OpenNeuro metadata (events, json, annex pointers)
+    data_dir: str = os.path.join("data", "ds001787")   # downloaded BDF, code/, derivatives/
+    s3_base: str = "https://s3.amazonaws.com/openneuro.org/ds001787"
+    epoch_s: float = EPOCH_S
+    time_resolution_s: float = 0.1             # observation times rounded to this (bounds the F/Q cache)
+    probe_pad_after_s: float = 3.0             # mask: probe onset .. last response + pad
+    probe_no_response_s: float = 15.0          # mask length when a probe has no response
+    min_probes_per_session: int = 8
+    max_missing_frac: float = 0.40
+    # nominal deviation-form parameters (k_int plays kappa = k_int / A_max)
+    nominal_dev: tuple = (("k_inh", 0.20), ("k_int", 0.081), ("k_d", 0.034), ("sigma_A", 0.10), ("sigma_Phi", 0.05),
+                          ("alpha", 2.34), ("beta", 1.87), ("r_A", 0.10), ("r_Phi", 0.10), ("r_Q", 0.30))
+    rho_generic: float = 0.2                   # for the 11-parameter rank check (not hidden by 0)
+    key_params: tuple = ("k_inh", "k_d", "alpha", "beta")
+    n_starts: int = 6
+    n_boot: int = 200
+    n_boot_fast: int = 12
+    n_loso_boot: int = 2000
+    profile_params: tuple = ("k_inh", "k_int", "k_d")
+    # EEG features (Sec 5): primary pair and the three locked alternatives
+    feature_y_A: str = "alpha_post"
+    feature_y_Phi: str = "lzc_si"
+    feature_alternatives: tuple = ("alpha_specparam", "theta_front", "exponent_neg")
+    posterior_channels: tuple = ("Pz", "POz", "P3", "P4", "PO3", "PO4", "O1", "O2", "Oz")
+    frontal_channels: tuple = ("AFz", "Fz", "FCz", "Cz")
+    alpha_band: tuple = (8.0, 12.0)
+    theta_band: tuple = (4.0, 7.0)
+    n_surrogates: int = 20
+    l_freq: float = 1.0
+    h_freq: float = 40.0
+    notch_hz: float = 50.0
+    reject_uv: float = 150.0
+    # gates
+    e0_min_match: float = 0.95
+    e0_min_known: float = 0.90
+    e0_max_offset_s: float = 0.5
+    e1_eig_tol: float = 1e-7
+    e2_ratio_bounds: tuple = (0.5, 2.0)
+    e2_min_params: int = 3
+    e3_min_lb_p: float = 0.01
+
+    def nominal(self) -> dict:
+        return dict(self.nominal_dev)
+
+
+REALDATA = RealData()
+
+
+@dataclass(frozen=True)
 class Gates:
     m0_residual_tol: float = 1e-6
     m0_p2_min_attenuation: float = 1e4
@@ -168,7 +220,7 @@ def as_dict() -> dict:
     return {"seed": SEED, "epoch_s": EPOCH_S, "dt_min": DT, "nominal": NOMINAL, "key_params": KEY_PARAMS,
             "target_rel_error": TARGET_REL_ERROR, "reference": asdict(REFERENCE), "structural": asdict(STRUCTURAL),
             "grid": asdict(GRID), "schedule": asdict(SCHEDULE), "control": asdict(CONTROL),
-            "sensitivity": asdict(SENSITIVITY), "gates": asdict(GATES),
+            "sensitivity": asdict(SENSITIVITY), "gates": asdict(GATES), "realdata": asdict(REALDATA),
             "theory": {"p2_omegas": P2_OMEGAS, "p2_step_xi": P2_STEP_XI, "p2_t_end_min": P2_T_END_MIN,
                        "p5_n_samples": P5_N_SAMPLES, "p5_n_chains": P5_N_CHAINS},
             "profiles": {"params": PROFILE_PARAMS, "log_half_range": PROFILE_LOG_HALF_RANGE, "n_grid": PROFILE_N_GRID}}

@@ -1,354 +1,415 @@
-# Thiền nằm ở đâu trên trục ý thức? Kiểm định các dự đoán định lượng của mô hình BQI trên EEG mở
+# Fit mô hình M1 trên EEG thật: ví dụ ds001787 cho bài model
 
-> **HOÃN (03/10/2026)** — cần tải ~90 GB dữ liệu EEG. Hướng đang làm: `Q1_pipeline_model.md` (chỉ dùng hệ thống hiện có).
-
-**Pipeline nghiên cứu đã chốt và hướng dẫn triển khai**
-Phiên bản 1.0 — tháng 10/2026
-Mục tiêu: một bài Q1 (journal) chỉ cần laptop + dữ liệu mở, tái dùng tối đa `bqi_project`.
+> **Phiên bản 2.1 — 17/10/2026.** Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+> **Vai trò:** mục "Application to an experience-sampling EEG dataset" của bài trong `Q1_pipeline_model.md`. Không phải bài riêng.
+> **Dữ liệu:** chỉ ds001787, 6,1 GB, tải được trong một buổi.
+>
+> **Trạng thái 17/10/2026:** mã đã viết đủ cho mọi bước (`python main.py realdata …`, 9 test mới, 99 test toàn repo pass). **E0 PASS** (950/983 probe giải mã, giả thuyết "phím 0 không có trigger" xác nhận 0/741), **E1 PASS** (hạng 10/10 và 11/11 trên lịch probe thật; CRB(k_inh) dự đoán 9,1 % gộp, 12,4 % expert, 13,5 % novice; MDE hiệu log k_inh 0,51). `preregistration/predictions_realdata.md` đã soạn, **chưa khoá**. Chưa tải BDF (6,1 GB) — chờ khoá đăng ký. Ba sửa đổi so với v2.0 ghi ở §4 mục 6, §2 và `predictions_realdata.md` §4.
 
 ---
 
 ## Mục lục
 
 1. Luận điểm và định vị
-2. Câu hỏi và giả thuyết (đăng ký trước)
-3. Dữ liệu
-4. Tiền xử lý thống nhất
-5. Bộ chỉ số
-6. Thiết kế phân tích
-7. Mô hình động lực (phần lý thuyết)
-8. Kiểm định công cụ bằng dữ liệu tổng hợp
-9. Cổng dừng (kill criteria)
-10. Cấu trúc mã nguồn (gắn vào hệ thống hiện tại)
-11. Lộ trình 16 tuần
-12. Khung bài báo và nơi nộp
-13. Câu hỏi phản biện và câu trả lời chuẩn bị sẵn
-14. Những chỗ hay hỏng
-15. Quy tắc liêm chính với bài BQI gốc
-16. Checklist trước khi nộp
+2. Dữ liệu ds001787
+3. Câu hỏi và dự đoán đăng ký trước
+4. Tiền xử lý
+5. Đặc trưng EEG và rating
+6. Fit mô hình (M1-dev)
+7. Kiểm tra mô hình
+8. Cổng kiểm tra và tiêu chí dừng
+9. Cấu trúc mã và lệnh chạy
+10. Lộ trình 8 tuần
+11. Đưa vào bài model
+12. Câu hỏi phản biện
+13. Những chỗ hay hỏng
+14. Quy tắc liêm chính
+15. Checklist trước khi nộp
+- Phụ lục A. Hướng trục mức-ý-thức (v1.0, hoãn)
 
 ---
 
 ## 1. Luận điểm và định vị
 
-### 1.1 Luận điểm trung tâm
+Phần này thêm vào bài model một ví dụ trên dữ liệu thật: fit M1 lên ds001787 và kiểm tra xem bản đồ thiết kế in silico có dự đoán đúng những gì dữ liệu thật cho phép ước lượng hay không.
 
-> Nhiều mô hình lý thuyết (trong đó có BQI) khẳng định thiền là trạng thái ý thức *cao hơn* thức tỉnh: phức tạp hơn, đồng bộ hơn, tích hợp hơn. Khẳng định này chưa từng được kiểm tra bằng **cùng một pipeline** đặt thiền cạnh các tương phản ý thức đã được xác lập (ngủ, gây mê), và chưa tách khỏi nhiễu phổ (1/f, alpha). Chúng tôi dựng **trục mức-ý-thức** từ các tương phản không gây tranh cãi, rồi định vị thiền trên trục đó.
+**Câu hỏi trung tâm.** Với một bộ experience-sampling thật (24 người, ~45 phút/phiên, probe ~1,5 phút/lần, EEG 64 kênh), những tham số nào của M1 xác định được, với sai số bao nhiêu, và mô hình có dự đoán rating tốt hơn các mô hình rỗng không?
 
-Kết quả nào cũng công bố được:
-- Thiền vượt thức tỉnh theo hướng trục → ủng hộ dự đoán BQI.
-- Thiền nằm cùng chỗ với thức tỉnh (tương đương, TOST) → bác dự đoán.
-- Thiền lệch *vuông góc* với trục → thiền là trạng thái khác loại, không phải "cao hơn". Đây là kết quả thú vị nhất.
+**Vì sao ds001787.**
+- Thiết kế tham chiếu của bài (N = 12, 45 phút, probe mỗi 2 phút) vốn đã lấy theo bộ này.
+- Chỉ 6,1 GB.
+- Là bộ duy nhất trong kế hoạch có probe dày xen EEG liên tục, đúng cấu trúc quan sát (13)–(14) của M1.
 
-### 1.2 Khoảng trống
+**Đóng góp thêm cho bài.**
+1. Kiểm chứng ngoài mô phỏng: CRB dự đoán so với SE tại MLE và RMSE bootstrap trên đúng lịch probe và khoảng trống thật.
+2. Trả lời phản biện "có ai đo được không": ước lượng k_inh, k_d trên dữ liệu người, có CI.
+3. Kiểm định ngoài mẫu: M1 so với mô hình chỉ rating và mô hình hồi quy tức thời.
 
-| Hướng đã có | Còn thiếu |
-|---|---|
-| LZc giảm theo độ sâu NREM, giảm khi gây mê (Schartner 2015; Aamodt 2021; nhiều bài 2022–2023) | Không đặt thiền vào cùng hệ quy chiếu |
-| LZc và độ dốc 1/f cùng thay đổi theo trạng thái (Sci Rep 2023) | Ít bài tách độ phức tạp "độc lập phổ" khỏi phổ, đặc biệt cho thiền |
-| Gamma tăng ở thiền giả (Braboszcz 2017, chính dữ liệu ds003969) | Chưa có chỉ số phức tạp/tích hợp và so với ngủ/gây mê |
-| Cessation trong thiền làm *tăng* độ phức tạp (Shinozuka 2025, bioRxiv) | Mâu thuẫn với khung "phức tạp = mức ý thức"; cần phân xử trên dữ liệu lớn hơn |
-
-### 1.3 Ba đóng góp tuyên bố
-
-1. **Phương pháp**: trục mức-ý-thức hiệu chuẩn từ ngủ + gây mê, với chỉ số phức tạp đã khử phổ bằng surrogate; mã và dữ liệu dẫn xuất công bố.
-2. **Thực nghiệm**: vị trí của thiền (3 truyền thống, 2 bộ dữ liệu độc lập) trên trục, đối chiếu với các dự đoán định lượng đã đăng ký trước.
-3. **Mô hình**: sửa và kiểm định mô hình động lực DMN–Φ–QoC (chứng minh dạng gốc có QoC\* ≡ 0; đề xuất dạng không gian trạng thái ngẫu nhiên, fit trên chuỗi probe).
+**Không tuyên bố.** Không nói đặc trưng EEG "là" DMN hay Φ: chúng là proxy có nhiễu, và câu hỏi là mô hình quan sát có đứng được không. Không nói thiền "làm tăng" ý thức. Không so giá trị tuyệt đối của A, Φ với tham số danh nghĩa, vì đặc trưng thật không có đơn vị tự nhiên (mục 6).
 
 ---
 
-## 2. Câu hỏi và giả thuyết (đăng ký trước)
+## 2. Dữ liệu ds001787
 
-Chốt **trước khi tải dữ liệu thiền**: `python main.py preregister` khoá `preregistration/predictions.md` bằng SHA-256 + thời điểm vào `predictions.lock`; mã tải dữ liệu thiền từ chối chạy nếu chưa có lock hoặc file đã bị sửa sau khi khoá. Có thể đẩy thêm lên OSF khi nộp. Ngưỡng lấy từ bài BQI và tài liệu.
+Số liệu lấy trực tiếp từ metadata của https://github.com/OpenNeuroDatasets/ds001787 (clone 16/10/2026, phiên bản 1.1.1) và bài gốc Brandmeyer & Delorme (Exp. Brain Res. 236, 2519–2528; bản tác giả: https://sccn.ucsd.edu/~arno/mypapers/brandmeyer2016_author.pdf). Chưa tải file BDF nào.
 
-| Mã | Dự đoán | Nguồn | Phép thử chính | Ủng hộ khi |
+| Mục | Giá trị | Ghi chú cho pipeline |
+|---|---|---|
+| Người | 24: sub-001–012 expert, sub-013–024 novice | Thiền mantra Himalayan Yoga, ghi tại Rishikesh |
+| Phiên | 40 (1–3 phiên/người) | sub-022 có 3 phiên; 9 người chỉ 1 phiên |
+| Độ dài phiên | 966–3629 s, trung vị 2718 s (45 phút) | Tổng 27,6 giờ: expert 15,0 h (22 phiên), novice 12,6 h (18 phiên) |
+| Probe | 983, tức 9–42/phiên | Khoảng cách trung vị 72–134 s tuỳ phiên, cực trị 16–410 s |
+| EEG | 64 kênh Biosemi ActiveTwo, nhãn 10-20 sẵn | Tham chiếu CMS/DRL, chưa lọc phần mềm |
+| Lấy mẫu | 256 Hz (hạ từ 2048 Hz bằng decimator Biosemi) | |
+| Điện lưới | 50 Hz | Notch 50 Hz |
+| Kênh phụ | EXG1–8, GSR, Resp, Plet, Temp | Không có nhãn EOG; không dùng |
+| Dung lượng | 6,1 GB, 40 file BDF (~120–170 MB/phiên 45 phút) | Vẫn tải theo subject cho gọn |
+
+**Cấu trúc probe.** Mỗi probe gồm ba câu nối tiếp, thang 0–3: Q1 độ sâu thiền, Q2 độ sâu mind-wandering, Q3 độ buồn ngủ. Cả ba đánh giá khoảng ngay trước câu đầu tiên. Thiết kế gốc: probe cách nhau ngẫu nhiên 30–90 s; khoảng giữa hai lần bắt đầu probe đo được dài hơn vì cộng thời gian trả lời (~10 s).
+
+**Vấn đề mã hoá phản hồi (phải giải trước khi fit).** `events.tsv` chỉ có ba mã phản hồi 2, 4, 8 (cộng 16 = phản hồi không chủ ý, 254 = mã lạ, 5 lần), trong khi thang có bốn mức. Số phản hồi mỗi probe: 0 ở 8 probe, 1 ở 171, 2 ở 440, 3 ở 364. Giả thuyết hợp lý nhất: phím 1/2/3 sinh mã 2/4/8, phím 0 không sinh trigger. Khi đó probe có hai phản hồi nghĩa là một câu được trả lời 0, nhưng không biết câu nào. Độ trễ phản hồi (~3 s, ~5,5 s, ~9 s sau mốc 128) giúp phân loại một phần. Nguồn giải quyết: `code/MW_Current_TextFileBIDS.zip` (360 KB, thêm ở bản 1.1.0) và `code/run_mw_experiment6.m`. Xem cổng E0.
+
+**Kết quả E0 (17/10/2026, `python main.py realdata ratings`).** Script gốc `run_mw_experiment6.m` xác nhận cơ chế: phím k bật đường k+1 của cổng song song, nên phím 1/2/3 → mã 2/4/8 và phím 0 → mã 1, mã này không có trong events.tsv. Đối chiếu 42 file hành vi với 40 phiên EEG (gán file cho phiên bằng căn chỉnh thời điểm probe, vì hậu tố `_2` của tên file không phải chỉ số phiên: `sub14_info.txt` không khớp phiên duy nhất của sub-014, `sub14_2_info.txt` mới khớp 24/24): 950/983 probe khớp trong 0,5 s (96,6 %), Q1 và Q2 biết được ở 96,6 % probe, mã trigger khớp phím ở 99,4 %, và **0/741 lần bấm phím 0 có trigger**. Ngoại lệ: sub-013 ses-01 (file hành vi là một lần chạy khác, 3/25 khớp; chỉ 4 probe đủ 3 phản hồi giải mã được từ events) và sub-021 (33/37). Kết quả: `data/ds001787/derivatives/probes.csv`, `e0_summary.json` (bản sao trong `outputs/results/realdata/`).
+
+**Cách tải.** Repo GitHub chỉ chứa metadata và symlink git-annex; nội dung nằm trên S3 của OpenNeuro. Repo này được clone vào `ds001787/` ở gốc dự án (không đưa vào git của dự án; `.gitignore`), còn file tải về nằm trong `data/ds001787/`. `eeg/fetch.py` tải thẳng từ S3 theo subject, kiểm MD5 theo khoá annex, và **từ chối tải BDF khi chưa có `predictions_realdata.lock`**.
+
+```bash
+# Cách 1: DataLad (khuyên dùng, kiểm checksum tự động)
+datalad install https://github.com/OpenNeuroDatasets/ds001787.git
+cd ds001787
+datalad get code/ participants.tsv '*_events.tsv' '*_eeg.json'   # vài MB, làm E0 trước
+datalad get sub-001                                              # rồi từng subject
+
+# Cách 2: openneuro-py
+openneuro-py download --dataset ds001787 --include code --include 'sub-001/*'
+```
+
+Ghi mọi file đã tải vào `data/manifest.csv` (subject, phiên, MD5 trong tên annex, kích thước, ngày tải).
+
+---
+
+## 3. Câu hỏi và dự đoán đăng ký trước
+
+Khoá dự đoán **sau E0 và E1, trước khi tải bất kỳ file EEG nào**: `python main.py preregister --file predictions_realdata.md` ghi SHA-256 + timestamp vào `predictions.lock`; `fetch.py` từ chối tải BDF nếu chưa có lock hoặc file đã bị sửa. Khai báo trung thực trong bài: metadata và file hành vi đã được xem trước khi khoá; EEG thì chưa.
+
+**Dự đoán định lượng rút từ bản đồ thiết kế.** ds001787 có 1656 phút-người, gấp ~3 lần mức 480–540 phút mà bài cần để CRB(k_inh) ≈ 15%. Ngoại suy theo Bảng 6 (CRB ∝ N^−0,50 T^−0,46), ở SNR danh nghĩa: gộp 40 phiên ≈ 9%; expert (22 phiên) ≈ 12%, novice (18) ≈ 13%; hiệu log k_inh phát hiện được nếu ≥ 0,50 đơn vị log.
+
+**Tính lại chính xác ở E1 (17/10/2026, `python main.py realdata design-crb`)**, bằng Fisher chính xác trên đúng thời điểm probe trong `events.tsv` của 40 phiên, với 20,1 % epoch bị che quanh probe:
+
+| | k_inh | κ | k_d | α | β | σ_A | σ_Φ | r_A | r_Φ | r_Q |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Gộp 40 phiên | **9,1 %** | 11,1 % | 14,1 % | 2,0 % | 4,0 % | 3,0 % | 3,6 % | 1,1 % | 0,9 % | 2,7 % |
+| Expert (22) | 12,4 % | | 19,1 % | 2,7 % | 5,3 % | | | | | |
+| Novice (18) | 13,5 % | | 21,0 % | 3,0 % | 5,9 % | | | | | |
+
+Hạng Rothenberg 10/10 (trị riêng tương đối nhỏ nhất 0,20) và 11/11 khi thêm r_AΦ. MDE của hiệu log k_inh expert − novice (lực 80 %, α = 0,05): 0,51 đơn vị log, tức hệ số 1,67. Ngoại suy từ bản đồ thiết kế đúng đến ±1 điểm phần trăm. Số liệu: `outputs/results/realdata/e1_design_crb.json`.
+
+| Mã | Dự đoán | Nguồn | Phép thử | Ủng hộ khi |
 |---|---|---|---|---|
-| H1 | Độ phức tạp (LZc khử phổ) thiền > mind-wandering | BQI Table 4, Remark 6.1 | LMM paired, ds003969 | d > 0, CI 95% loại 0 |
-| H2 | Thiền dịch về phía "cao" của trục mức-ý-thức | BQI §6–7 | Chiếu Δ(thiền−MW) lên trục (mục 6.3) | hệ số chiếu > 0, CI loại 0 |
-| H3 | Đồng bộ pha theta tăng khi thiền (BQI: r_θ 0.42 → 0.71) | BQI Table 11 | Kuramoto r trên dữ liệu CSD, băng 4–8 Hz | Δr > 0 |
-| H4 | Thiền làm "giảm nhiệt độ" (BQI Cor. 12.1) → phổ dốc hơn | BQI Cor. 12.1 | Exponent aperiodic (specparam) | exponent thiền > MW |
-| H5 | Algebraic connectivity (Fiedler) tăng (BQI: 0.18 → 0.31) | BQI Table 11 | λ₂ của mạng wPLI theta | Δλ₂ > 0 |
+| E-H1 | Nếu SNR đặc trưng DMN đạt mức danh nghĩa (sd∞(A)/r_A ≥ 1,58), sai số tương đối của k_inh gộp ≤ 20% | Bài model, mục 4.4 và 4.6 | SE từ Fisher tại MLE + bootstrap tham số | Điều kiện SNR đúng và SE ≤ 0,20; nếu SNR thấp hơn, so SE với CRB dự đoán tại SNR đã fit |
+| E-H2 | M1 dự đoán rating ngoài mẫu tốt hơn mô hình rỗng | Lý do tồn tại của mô hình | LPD tại probe, leave-one-session-out | ΔLPD > 0, CI 95% bootstrap theo phiên loại 0, với cả hai mô hình rỗng (mục 7) |
+| E-H3 | Proxy tích hợp liên hệ dương với rating: α > 0 | v1.0 H1 (phức tạp thiền > MW) | CI 95% của α | CI nằm trên 0 |
+| E-H4 | Dấu của β (hai phía) | BQI: alpha sau là proxy DMN nên β > 0. Brandmeyer: alpha tăng khi thiền nên β < 0 | CI 95% của β | Báo dấu; β < 0 nghĩa là alpha sau không đóng vai DMN trong mô hình |
+| E-H5 | k_inh expert > novice | v1.0 mục 7.2 | Hiệu log k_inh, fit theo nhóm | Hiệu > 0, CI loại 0; nếu CI chứa 0 thì báo kèm MDE |
 
-**Mâu thuẫn được đăng ký trước:** H1 (phức tạp ↑) và H4 (nhiễu ↓, phổ dốc ↑) kéo ngược nhau vì phổ dốc thường đi kèm LZc thô thấp. Kết quả của surrogate (mục 5.2) phân xử.
+**Câu hỏi ước lượng (không có giả thuyết).** Hằng số thời gian 1/k_inh gần 5 phút (danh nghĩa của bài) hay 23 phút (giá trị in trong [40])? Báo CI và đối chiếu với Limitations của bài.
 
-Giả thuyết phụ (khám phá, báo cáo riêng): hiệu ứng tăng theo số năm kinh nghiệm thiền; khác biệt giữa 3 truyền thống.
-
----
-
-## 3. Dữ liệu
-
-| Vai trò | Bộ dữ liệu | Người | Kênh | Tương phản dùng | Ghi chú |
-|---|---|---|---|---|---|
-| Trục: gây mê | Chennu et al., Cambridge repository | 20 | 91 | baseline vs mild vs moderate vs recovery | Đã lọc 0.5–45 Hz, epoch 10 s → **không có gamma** |
-| Trục: giấc ngủ | ANPHY-Sleep, OSF (10.17605/OSF.IO/R26FH) | 27 trên OSF (bài mô tả 29); phân tích chính 15 người đầu theo ID | 83 | wake vs N2 vs N3 vs REM | Zip ~3 GB/người, 82.5 GB tổng: tải từng người, đọc lười các cửa sổ 30 s đã chấm, lưu 19 kênh rồi xoá file gốc |
-| Chính: thiền | ds003969 (Braboszcz/Delorme 2017) | ~64 (3 truyền thống + đối chứng) | 64 (Biosemi) | thiền vs instructed mind-wandering | Có nhóm đối chứng → kiểm tra trait vs state |
-| Lặp lại: thiền | ds001787 (Brandmeyer & Delorme 2018) | 24 (12 expert, 12 novice) | 64, 256 Hz | thiền sâu vs MW theo probe | ≥ 30 probe/người → dùng cho mô hình (mục 7) |
-
-Quy tắc:
-- Kiểm tra số người, tần số lấy mẫu và dung lượng thực tế khi tải; ghi vào `data/manifest.csv`. Tải **theo từng subject**, không tải cả bộ.
-- Băng phân tích chung: **1–40 Hz** (giới hạn bởi Chennu). Gamma 60–110 Hz chỉ phân tích khám phá trên ds003969.
-- So sánh giữa bộ dữ liệu chỉ qua **effect size chuẩn hoá trong từng bộ**, không bao giờ so giá trị tuyệt đối.
+**Khám phá, báo riêng.** Q3 như covariate của rating; xu hướng theo thời gian trong phiên; khác biệt giữa các phiên của cùng người.
 
 ---
 
-## 4. Tiền xử lý thống nhất
+## 4. Tiền xử lý
 
-Một hàm duy nhất cho mọi bộ dữ liệu, tham số trong `config.yaml`:
+Khác biệt cốt lõi so với bài gốc: Brandmeyer chỉ lấy một epoch 10 s trước mỗi probe; M1 cần chuỗi epoch 10 s **liên tục suốt phiên**, vì y_A, y_Φ là kênh dày. Epoch xấu **không bị xoá mà đánh dấu thiếu**; bộ lọc Kalman bỏ qua bước cập nhật ở đó (Phụ lục D của bài đã hỗ trợ).
 
-1. Chọn tập kênh: (a) **19 kênh 10-20 chung** cho phân tích xuyên bộ; (b) toàn bộ montage cho phân tích trong bộ.
-2. Lọc 1–40 Hz (FIR zero-phase), notch nếu cần, hạ mẫu về 250 Hz.
-3. Re-reference trung bình; đánh dấu kênh xấu (RANSAC/z-score), nội suy.
-4. ICA loại mắt/cơ (ICLabel ngưỡng 0.8) — Chennu đã sạch thì bỏ qua.
-5. Cắt epoch **10 s**, loại epoch biên độ > 150 µV.
-6. **Cân bằng số epoch** giữa các điều kiện trong cùng người (lấy mẫu ngẫu nhiên có seed) — LZc nhạy với độ dài.
-7. Biến đổi CSD (surface Laplacian) cho mọi chỉ số đồng bộ/kết nối (chống volume conduction).
+Tham số trong `eeg/config.yaml`:
 
-Mọi bước ghi log vào `derivatives/<dataset>/<sub>/prep_log.json`.
+1. Đọc BDF bằng `mne.io.read_raw_bdf`, montage `biosemi64`, bỏ EXG/GSR/Resp/Plet/Temp.
+2. Lọc 1–40 Hz (FIR zero-phase), notch 50 Hz. Giữ 256 Hz.
+3. Tham chiếu trung bình. Kênh xấu bằng RANSAC (`pyprep`) hoặc z-score; nội suy spline. Ghi số kênh nội suy mỗi phiên (bài gốc: 0–20, trung bình 6).
+4. ICA: Picard trên bản lọc 1 Hz, nhãn ICLabel, loại mắt/cơ có xác suất ≥ 0,8.
+5. Che khoảng probe: từ mốc 128 đến phản hồi cuối của probe + 3 s; probe không có phản hồi che 15 s.
+6. **Lưới epoch đều từ đầu bản ghi, rating tại đúng mốc 128** (sửa đổi v2.1, thay cho lưới neo theo probe của v2.0): epoch kết thúc tại t_k = 10k s. Rating là một quan sát của QoC tại **đúng thời điểm** mốc 128; bộ lọc Kalman và Fisher chính xác hỗ trợ bước thời gian thay đổi (`eeg/model_fit.kalman_filter_irregular`, `model/fisher.IrregularDesign`), nên không cần dịch hay xoá epoch để gán rating. Lý do đổi: lưới neo theo probe tạo khoảng cách không đều giữa đoạn này và đoạn sau (vi phạm Δ = 10 s mà v2.0 muốn giữ), còn cách này giữ Δ = 10 s cho EEG và đặt rating đúng chỗ người tập đánh giá.
+7. Epoch biên độ > 150 µV hoặc có điểm bị che ở bước 5 → thiếu. Ghi tỉ lệ thiếu mỗi phiên.
+8. Mỗi bước ghi log vào `derivatives/ds001787/<sub>/<ses>/prep_log.json`.
+
+**Tiêu chí giữ phiên** (khoá cùng dự đoán): bỏ phiên có > 40% epoch thiếu hoặc < 8 probe có rating giải mã được. Báo số phiên bị bỏ theo nhóm.
+
+**Đầu ra.** Mỗi phiên một `epochs.parquet`: chỉ số epoch, thời điểm, cờ thiếu, và dữ liệu sạch 64 × 2560 mẫu mỗi epoch.
 
 ---
 
-## 5. Bộ chỉ số
+## 5. Đặc trưng EEG và rating
 
-### 5.1 Danh sách
+Chốt **một cặp đặc trưng chính và đúng ba phương án thay thế** trước khi thấy dữ liệu. Mọi phương án khác là khám phá.
 
-| Nhóm | Chỉ số | Cách tính | Gắn với |
+| Kênh mô hình | Chính | Thay thế (phân tích nhạy) | Cách tính |
 |---|---|---|---|
-| Phức tạp | LZc (Schartner 2015) | Nhị phân hoá biên độ Hilbert theo trung bình kênh, nối kênh, chuẩn hoá bằng chuỗi xáo trộn | H1, H2 |
-| Phức tạp | ACE, SCE | Amplitude / synchrony coalition entropy | H2 |
-| Phổ | Exponent aperiodic, offset | specparam 1–40 Hz | H4, covariate |
-| Phổ | Công suất tương đối delta/theta/alpha/beta | Welch | covariate, so với BQI Table 14 |
-| Đồng bộ | Kuramoto r, metastability (SD của r(t)) | Pha Hilbert theo băng, dữ liệu CSD | H3 |
-| Mạng | λ₂ của Laplacian chuẩn hoá trên ma trận wPLI theta **đầy đủ** (không ngưỡng); E_glob, σ trên đồ thị ngưỡng | Ngưỡng 10–30% chỉ cho E_glob/σ, so với null bảo toàn bậc (ngưỡng làm đồ thị 19 kênh rời rạc → λ₂ = 0, cổng G0 phát hiện) | H5 |
-| Tích hợp | ΦR = ΦAR (whole-minus-sum, Barrett & Seth 2011) + redundancy MMI (Mediano 2021) | Cụm 6–8 kênh, MIB vét cạn bipartition; ΦWMS có thể âm (cổng G0 phát hiện) nên chỉ báo kèm | Khám phá |
+| y_A (proxy DMN) | log công suất alpha 8–12 Hz vùng sau: Pz, POz, P3, P4, PO3, PO4, O1, O2, Oz | (i) alpha tuần hoàn từ specparam; (ii) log theta 4–7 Hz đường giữa trán: AFz, Fz, FCz, Cz | Welch, cửa sổ 2 s chồng 50% trong epoch 10 s, trung bình kênh |
+| y_Φ (proxy tích hợp) | LZc khử phổ trên 19 kênh 10-20 chung | (iii) exponent aperiodic specparam 1–40 Hz, đổi dấu | `eeg/metrics/lzc.py` + `surrogate.py`, 20 surrogate phase-randomized đa kênh mỗi epoch |
+| rating (QoC) | r = Q1 − Q2, thang −3…3 | Q1 riêng (0–3) | Gán cho epoch kết thúc tại mốc 128 của probe |
 
-### 5.2 Khử phổ (đóng góp phương pháp)
-
-Mỗi chỉ số phức tạp/đồng bộ X được tính trên dữ liệu thật và trên **50 surrogate phase-randomized** (giữ nguyên phổ từng kênh; phiên bản đa kênh giữ cả cross-spectrum):
+**Khử phổ** (giữ từ v1.0): mỗi chỉ số phức tạp X được tính trên dữ liệu thật và trên surrogate phase-randomized (giữ phổ từng kênh và cross-spectrum):
 
 ```
 X_spec-indep = (X_real − mean(X_surr)) / sd(X_surr)
 ```
 
-Báo cáo song song X thô và X_spec-indep cho mọi giả thuyết. Thêm phân tích nhạy: LMM với exponent và alpha power làm covariate.
+**Vì sao r = Q1 − Q2.** Brandmeyer cho thấy hiệu hai câu khử phần lớn thiên lệch chấm điểm của từng người. Thang 7 mức cũng đỡ vi phạm giả định Gauss của (14) hơn thang 4 mức. Q3 không vào rating.
+
+**Vì sao 20 surrogate thay vì 50.** Cả bộ ~11.000 epoch; 20 surrogate giữ chi phí vài giờ trên laptop. Kiểm trên 5 phiên ngẫu nhiên (seed cố định) rằng tương quan giữa bản 20 và 50 surrogate > 0,95; nếu không, dùng 50.
+
+**Đơn vị và chuẩn hoá** (mô hình viết ở dạng độ lệch, mục 6):
+1. Trừ trung bình theo phiên cho y_A, y_Φ và rating.
+2. Chia y_A, y_Φ cho độ lệch chuẩn gộp trong-phiên của toàn bộ dữ liệu (một hằng số mỗi đặc trưng), để SNR khác nhau giữa các phiên vẫn được giữ.
+3. Phân tích nhạy: z-score theo từng phiên.
+
+**QC trước khi fit (không phải kiểm định).** Tự tương quan của y_A, y_Φ theo trễ 1–30 epoch. OU có thời gian 5 phút cho ~0,97 ở trễ 1 trên biến ẩn, ~0,7 trên quan sát khi cộng nhiễu danh nghĩa. Trung vị < 0,3 ở trễ 1 → không có động lực để fit, dừng theo K2.
 
 ---
 
-## 6. Thiết kế phân tích
+## 6. Fit mô hình (M1-dev)
 
-### 6.1 Thống kê trong từng bộ
-
-- LMM: `metric ~ condition + (1 | subject)` (thêm `(1 | session)` cho ds001787).
-- Effect size: d_z paired, CI 95% bằng bootstrap theo subject (10.000 lần).
-- Theo kênh: cluster-based permutation (5.000 hoán vị).
-- Đa so sánh: FDR (Benjamini–Hochberg) trên tập chỉ số của mỗi giả thuyết.
-- Kết quả âm: **TOST** với vùng tương đương |d| < 0.2.
-
-### 6.2 Kiểm định pipeline (bắt buộc trước khi chạm dữ liệu thiền)
-
-Pipeline phải tái hiện kết quả đã biết:
-
-| Tương phản | Kết quả kỳ vọng (tài liệu) |
-|---|---|
-| ANPHY: wake vs N3 | LZc ↓, exponent dốc hơn |
-| ANPHY: wake vs REM | LZc REM gần wake |
-| Chennu: baseline vs moderate | LZc ↓ (Schartner 2015), alpha frontal tăng |
-| Chennu: recovery | Quay lại gần baseline |
-
-### 6.3 Trục mức-ý-thức (phân tích H2)
-
-1. Với mỗi người trong bộ ngủ và gây mê, lấy vector Δ của K chỉ số đã z-score trong bộ: Δ_sleep = wake − N3, Δ_prop = baseline − moderate.
-2. Trục **u** = thành phần chính thứ nhất của {Δ_sleep, Δ_prop} gộp (kiểm tra hai tương phản có cùng hướng: cosine > 0.5).
-3. Với mỗi người thiền: Δ_med = thiền − MW, chiếu lên **u** → hệ số chiếu `c` (đơn vị: "phần của khoảng wake→N3").
-4. Báo cáo cả phần dư vuông góc ‖Δ_med − c·u‖ — đây là phép thử "thiền khác loại".
-5. Kiểm định: bootstrap theo subject cho `c` và cho phần dư; so phần dư với phân phối null hoán vị nhãn điều kiện.
-
-Phiên bản chính dùng 19 kênh chung; phiên bản nhạy dùng chỉ số tổng hợp toàn montage.
-
----
-
-## 7. Mô hình động lực (phần lý thuyết)
-
-### 7.1 Sửa mô hình gốc (eq. 52–54 của bài BQI)
-
-- Vì E[ξ] = 0, nghiệm dừng là A\* = 0 chứ không phải (k_spont/k_inh)√(2πσ²) (eq. 55).
-- Đặt dQoC/dt = 0 khi dΦ/dt = dA/dt = 0 cho γ·QoC\* = 0 ⇒ **QoC\* ≡ 0** (eq. 57 sai): QoC chỉ là đáp ứng quá độ.
-- Với ξ là nhiễu trắng, A_DMN là quá trình Ornstein–Uhlenbeck: phân phối dừng N(0, k_spont²/(2k_inh)).
-
-### 7.2 Mô hình đề xuất (không gian trạng thái)
+Trên dữ liệu thật, M1 được fit ở **dạng độ lệch**. Khi đặc trưng không có đơn vị tự nhiên và trung bình đã bị trừ theo phiên, các mức A0, Φ\*, γ0 không còn xác định được. Đây là hệ quả cùng loại với đối xứng affine ở Phụ lục B của bài, không phải lỗi pipeline.
 
 ```
-dA = −k_inh (A − A₀) dt + σ_A dW              # OU có mức nền A₀ > 0
-dΦ = [k_int (1 − A/A_max) − k_d Φ] dt
-QoC = α Φ − β A + γ₀ + ε                       # đại số, có trạng thái dừng khác 0
-Quan sát: y_EEG(t) = H [A, Φ]ᵀ + η            # LZc_spec-indep, exponent
-          rating(t_probe) ~ ordinal(QoC(t_probe))
+dx̃ = M x̃ dt + G dW,      M = [[−k_inh, 0], [−κ, −k_d]],   κ = k_int / A_max
+y_A = Ã + η_A,   y_Φ = Φ̃ + η_Φ,   r = α Φ̃ − β Ã + ε     (tại epoch probe)
 ```
 
-- Fit trên ds001787 (mỗi người ≥ 30 probe): Kalman filter / EM, tham số theo nhóm (expert vs novice).
-- Phân tích identifiability (profile likelihood) trước khi diễn giải tham số.
-- Phép thử: k_inh expert > novice (dự đoán BQI); so sánh mô hình với baseline không động lực (hồi quy rating trên y_EEG tức thời) bằng cross-validation theo probe.
+θ_dev = (k_inh, κ, k_d, σ_A, σ_Φ, α, β, r_A, r_Φ, r_Q): 10 tham số. Hệ số tải cố định bằng 1 sau chuẩn hoá ở mục 5, nên không còn đối xứng co giãn (tương tự cấu hình (d)). κ, α, β ước lượng trên thang tuyến tính, dấu tự do (E-H4); các tham số dương còn lại trên thang log như bài.
 
-Phần này là **mục tiêu phụ**: nếu không identifiable, bài vẫn đứng bằng mục 6; báo cáo mô hình như phân tích lý thuyết + kết quả âm.
+**Hệ quả ghi rõ trong bài.** A0, một trong bốn tham số chính của bản đồ thiết kế, không ước lượng được nếu không có đặc trưng DMN đã hiệu chuẩn. Đại lượng diễn giải được: hai tốc độ k_inh, k_d (phút⁻¹, không phụ thuộc thang đặc trưng) và dấu/độ lớn tương đối của α, β, κ.
 
----
+```mermaid
+flowchart TD
+  F[Đặc trưng EEG<br/>y_A, y_Φ mỗi epoch 10 s] --> M[M1-dev · 10 tham số<br/>dạng độ lệch, tải = 1]
+  R[Rating tại probe<br/>r = Q1 − Q2] --> M
+  D[Thiết kế thật<br/>lịch probe + mặt nạ thiếu] --> M
+  M --> O[L-BFGS-B<br/>6 điểm xuất phát]
+  O --> A[a · Gộp 40 phiên<br/>+ profile k_inh, κ, k_d]
+  O --> B[b · Theo nhóm<br/>LR test k_inh → E-H5]
+  O --> C[c · Theo người<br/>meta-analysis REML → τ]
+  A --> BS[RMSE bootstrap<br/>200 lần, E2]
+  A --> SE[SE tại MLE<br/>Fisher tại θ̂]
+  D -- không cần EEG --> CRB[CRB dự đoán<br/>tham số danh nghĩa, E1]
+  BS -. RMSE ÷ SE: cổng M1 trên dữ liệu thật .- SE
+  SE -. SE ÷ CRB: bản đồ lạc quan hay bi quan .- CRB
+```
 
-## 8. Kiểm định công cụ bằng dữ liệu tổng hợp
+**Thay đổi mã.**
+1. `bqi/dmn_ode.py`: `StateSpaceDMN(deviation=True)`, bỏ u và γ0, tham số hoá theo κ.
+2. `model/fisher.py`: `Design` nhận `probe_idx` thật và mặt nạ thiếu cho từng kênh; Fisher chính xác chỉ việc bỏ các hàng tương ứng của S (Phụ lục E).
+3. `eeg/model_fit.py`: log-likelihood là tổng qua các phiên có độ dài và mặt nạ khác nhau; mỗi phiên bắt đầu từ N(0, P).
 
-Tái dùng các mô phỏng trong `bqi/`, đổi vai thành **kiểm thử có đáp án**:
+**Quy trình fit.**
+1. Sáu điểm xuất phát, giữ cực trị tốt nhất: tham số danh nghĩa quy về dạng độ lệch; ước lượng mô-men (k_inh từ tự tương quan trễ 1 của y_A, k_d từ y_Φ, α, β từ hồi quy rating lên y tại epoch probe); bốn điểm nhiễu quanh hai điểm đầu (seed 42).
+2. L-BFGS-B như Mục 3.2 của bài.
+3. Ba mức gộp: (a) gộp 40 phiên, một θ chung (giả định của bài); (b) theo nhóm, kiểm định tỉ số hợp lý k_inh riêng so với chung (1 bậc tự do) cho E-H5; (c) theo từng người, rồi meta-analysis hiệu ứng ngẫu nhiên (REML) trên log k_inh với SE từ Fisher, ước lượng độ dị biệt τ.
 
-| Mô phỏng | Phải chứng minh |
-|---|---|
-| `simulate_tms_eeg` (độ phức tạp đã biết) | LZc tăng đơn điệu theo `complexity_level`; LZc_spec-indep ≈ 0 với surrogate của chính nó |
-| Tín hiệu 1/f thuần với exponent khác nhau | LZc thô thay đổi theo exponent, LZc_spec-indep **không** đổi → chứng minh mục 5.2 cần thiết |
-| Kuramoto **trên đồ thị** với coupling đã biết | r tăng theo K; λ₂ của mạng wPLI phục hồi đúng thứ tự |
-| OU + Φ + QoC (mục 7.2) với tham số đã biết | Parameter recovery: sai số tương đối < 20% với số probe như ds001787 |
+**Ba con số sai số đặt cạnh nhau** cho k_inh, k_d, α, β:
 
-Đưa vào Supplementary làm bằng chứng tính hợp lệ của công cụ.
-
----
-
-## 9. Cổng dừng (kill criteria)
-
-| Cổng | Điều kiện dừng | Hành động |
+| Con số | Tính thế nào | Có khi nào |
 |---|---|---|
-| G0 (tuần 3) | Kiểm định công cụ mục 8 thất bại | Sửa chỉ số; không chạy dữ liệu thật |
-| G1 (tuần 5) | Pipeline không tái hiện wake > N3 và baseline > moderate về LZc | Sửa pipeline, **không** chạy dữ liệu thiền |
-| G2 (tuần 6) | Δ_sleep và Δ_prop không cùng hướng (cosine < 0.5) | Bỏ trục chung; báo cáo hai trục riêng, H2 thành khám phá |
-| G3 (tuần 9) | Parameter recovery mục 8 thất bại | Bỏ phần fit mô hình, giữ 7.1 (sửa toán) |
+| CRB dự đoán | Fisher chính xác tại tham số danh nghĩa, trên lịch probe và mặt nạ thật | Trước khi tải EEG (E1, khoá cùng dự đoán) |
+| SE tại MLE | Fisher kỳ vọng chính xác tại θ̂, đối chiếu Hessian số | Sau fit |
+| RMSE bootstrap | 200 bộ mô phỏng từ θ̂ trên đúng thiết kế thật, mỗi bộ fit lại | Sau fit (E2) |
 
-**Trạng thái 03/10/2026:** ANPHY tạm hoãn (82.5 GB). Chạy nửa Chennu của G1 trước; G1 tổng, G2 và việc khoá đăng ký trước chờ ANPHY.
-
-Mỗi cổng ghi kết quả vào `outputs/gates/G*.json`; bước sau đọc file này và từ chối chạy nếu cổng trước chưa pass (ghi đè chỉ bằng cờ `--force-gate` và được log lại).
+SE ÷ CRB cho biết bản đồ thiết kế lạc quan hay bi quan so với SNR thật. RMSE ÷ SE là bản lặp của cổng M1 trên thiết kế thật. Thêm profile likelihood cho k_inh, κ, k_d, 9 điểm trong ±0,8 log như Hình 3 của bài.
 
 ---
 
-## 10. Cấu trúc mã nguồn (gắn vào hệ thống hiện tại)
+## 7. Kiểm tra mô hình
+
+Ba lớp kiểm tra quyết định tham số có được diễn giải như tốc độ động lực hay không (E3).
+
+**Phần dư** (innovation chuẩn hoá của Kalman tại θ̂, theo phiên):
+- Độ trắng: Ljung–Box trễ 1–30 epoch cho y_A, y_Φ; tự tương quan theo probe cho rating.
+- Phân phối: QQ-plot, độ lệch, độ nhọn.
+- Tương quan chéo trễ 0 giữa innovation y_A và y_Φ. Cả hai lấy từ cùng epoch nên nhiễu quan sát có thể tương quan, trái với R chéo của (13). Nếu |ρ| > 0,2, phân tích chính dùng R đầy đủ (thêm r_AΦ); E1 đã kiểm tham số này xác định được.
+
+**Dự đoán ngoài mẫu (E-H2).** Leave-one-session-out: fit θ trên 39 phiên, lọc phiên còn lại, dự đoán rating tại từng probe.
+
+| Chế độ | Thông tin dùng để dự đoán rating tại probe k | M1 phải thắng |
+|---|---|---|
+| (a) chỉ EEG | y_A, y_Φ đến hết epoch probe k, không dùng rating | N2: hồi quy tức thời r = c + b_A·y_A + b_Φ·y_Φ tại epoch probe |
+| (b) EEG + rating quá khứ | như (a), cộng rating đến probe k−1 | N1: M1 chỉ có kênh rating (cấu hình (a) của bài) và N3: trung bình phiên |
+
+Thước đo chính: log predictive density Gauss. Phụ: MAE, Spearman với r thứ bậc. CI 95% bootstrap theo phiên (2000 lần). N2 là đối thủ quan trọng nhất: nếu M1 không thắng N2 ở chế độ (a), phần động lực không đóng góp gì cho việc đọc trạng thái từ EEG.
+
+**Dự đoán hậu nghiệm cho rating thứ bậc.** Mô phỏng rating từ θ̂ trên đúng lịch probe, làm tròn và cắt về −3…3; so phân phối các mức, tự tương quan giữa probe liên tiếp, và hiệu expert − novice với dữ liệu. Lệch lớn ở mức biên → ghi vào Limitations, đề xuất mô hình đọc ra thứ bậc.
+
+**Phân tích nhạy (khoá trước, báo tất cả).**
+1. Ba phương án đặc trưng thay thế (mục 5), mỗi lần thay một kênh.
+2. Z-score theo phiên.
+3. R đầy đủ.
+4. Chỉ phiên có ≤ 20% epoch thiếu.
+5. Chỉ 20 probe đầu mỗi phiên.
+
+Kết luận chính chỉ phát biểu nếu dấu α, β và khoảng 1/k_inh không đổi qua ít nhất 4/5 phân tích nhạy.
+
+---
+
+## 8. Cổng kiểm tra và tiêu chí dừng
+
+Bốn cổng E0–E3 (không trùng G0–G3 của v1.0), ghi vào `eeg/gates.py` theo cơ chế M0–M2 (`outputs/gates/E*.json`, timestamp UTC). Lần này các bước **gọi `gates.require` thật**: E1 ← E0, E2 ← E1, E3 ← E2; ghi đè chỉ bằng `--force-gate` và được log.
+
+| Cổng | PASS khi | Lệnh | Nếu FAIL |
+|---|---|---|---|
+| **E0** giải mã rating | File hành vi khớp `events.tsv` ở ≥ 95% probe (lệch < 0,5 s), xác nhận hoặc bác giả thuyết "phím 0 không có trigger"; Q1, Q2 biết được ở ≥ 90% probe | `eeg ratings` | Dự phòng: phân loại theo độ trễ, học trên probe đủ 3 phản hồi, kiểm chéo. Độ chính xác < 90% → K1 |
+| **E1** xác định cấu trúc trên thiết kế thật | Rothenberg cho M1-dev trên lịch probe thật: hạng 10/10 (và 11/11 khi thêm r_AΦ), trị riêng tương đối nhỏ nhất > 1e−7; CRB dự đoán đã tính. Việc khoá `predictions_realdata.md` được cưỡng chế ở bước tải (fetch từ chối BDF khi chưa có lock) | `realdata design-crb` rồi `realdata preregister --yes` | Tham số hoá lại trước khi tải EEG; ghi nhật ký sai lệch |
+| **E2** xác định thực hành | Ở ≥ 3/4 tham số chính (k_inh, k_d, α, β): RMSE bootstrap / SE ∈ [0,5; 2]; profile k_inh, κ, k_d đơn mốt trong ±0,8 log | `realdata boot` | Chạy lại 12 điểm xuất phát. Vẫn FAIL: đây là kết quả (không xác định được trên dữ liệu thật), báo kèm SNR đo được |
+| **E3** đủ tốt để diễn giải | Trung vị p Ljung–Box (y_A, y_Φ, trễ 1–30) > 0,01; đã chạy E-H2 và 5 phân tích nhạy | `realdata check` | Không diễn giải tham số như tốc độ; báo sai đặc tả |
+
+Trạng thái 17/10/2026: **E0 PASS, E1 PASS** (`outputs/gates/E0.json`, `E1.json`); E2, E3 chờ dữ liệu EEG.
+
+**Tiêu chí dừng.**
+- **K1** rating không giải mã được: bỏ kênh rating, vẫn fit động lực hai kênh EEG cho k_inh, k_d, κ; mất E-H2 đến E-H4.
+- **K2** đặc trưng gần nhiễu trắng (trung vị tự tương quan trễ 1 < 0,3 cho y_A chính): dừng fit; báo SNR đo được, đối chiếu bản đồ thiết kế.
+- **K3** > 50% phiên bị loại theo mục 4: dừng.
+- **K4** sau 6 tuần chưa qua E2: nộp bài model như hiện tại, giữ phần dữ liệu thật cho bài sau.
+
+Mọi kết cục, kể cả K1–K3, đều được báo cáo trong bài.
+
+---
+
+## 9. Cấu trúc mã và lệnh chạy
+
+Tái dùng `model/fisher.py`, `eeg/model_fit.py`, `eeg/metrics/`, `eeg/surrogate.py`, `eeg/preprocess.py` (kênh xấu, ánh xạ 19 kênh), `eeg/gates.py`. Thông số mới trong `model/config.py` (khối `REALDATA`). Trạng thái mã 17/10/2026: **đã viết và test** (9 test trong `tests/test_realdata.py`, trong đó một test chạy đủ fit → boot → check trên phiên mô phỏng theo lịch probe thật).
 
 ```
 bqi_project/
-  bqi/                     # giữ: lý thuyết
-    dmn_ode.py             # SỬA: OU + nghiệm dừng đúng + mô hình 7.2 + test
-    pci.py                 # SỬA: chuẩn hoá Casali 2013; giữ simulate_tms_eeg làm ground truth
-    spectral_graph.py      # SỬA: Kuramoto trên đồ thị (eq. 97 đúng như bài)
-  eeg/                     # MỚI
-    config.yaml            # mọi tham số tiền xử lý / chỉ số / thống kê
-    fetch.py               # tải theo subject, kiểm tra checksum, ghi manifest
-    loaders/               # chennu.py, anphy.py, ds003969.py, ds001787.py
-    preprocess.py          # mục 4
-    metrics/               # lzc.py, coalition.py, aperiodic.py, sync.py, network.py, phi_ar.py
-    surrogate.py           # phase randomization đơn/đa kênh
-    axis.py                # mục 6.3
-    stats.py               # LMM, bootstrap, cluster permutation, TOST
-    model_fit.py           # mục 7.2: Kalman/EM, profile likelihood
-  tests/                   # thêm: test_lzc_ground_truth, test_surrogate_spectrum, test_axis, test_ou_recovery
-  experiments/
-    validate_tools.py      # mục 8
-    run_pipeline.py        # mục 6, theo từng cổng
-  dashboard/views/         # thêm trang: QC dữ liệu, chỉ số theo trạng thái, trục mức-ý-thức
-  main.py                  # thêm subcommand: fetch-eeg, preprocess, metrics, stats, fit-model
-  preregistration/predictions.md
+  ds001787/                 # clone metadata OpenNeuro (events, json, annex pointers) — không vào git dự án
+  data/ds001787/            # code/ (file hành vi, đã tải), BDF (chưa tải), derivatives/{probes.csv, features/*.npz}
+  bqi/dmn_ode.py            # ĐÃ SỬA: DeviationDMN (dạng độ lệch, κ tuyến tính dấu tự do, rho_obs tuỳ chọn)
+  model/
+    config.py               # ĐÃ SỬA: khối REALDATA (đặc trưng, ngưỡng QC, bootstrap, cổng)
+    fisher.py               # ĐÃ SỬA: IrregularDesign (thời điểm bất kỳ, mặt nạ theo kênh, r_AΦ), Fisher dạng đóng e^{Mτ}
+    realdata.py             # MỚI: E1 design_crb; fit gộp/nhóm/người + REML; SE tại MLE; bootstrap (E2);
+                            #      profile; phần dư Ljung–Box; LOSO với N1–N3; 5 phân tích nhạy (E3)
+  eeg/
+    loaders/ds001787.py     # MỚI: phiên, events, file hành vi, căn chỉnh thời gian, giải mã Q1–Q3, gate_E0, thiết kế thật
+    fetch.py                # MỚI: tải S3 theo subject, MD5 theo khoá annex, manifest; từ chối BDF khi chưa có lock
+    realdata_features.py    # MỚI: BDF → lọc/notch/kênh xấu/ICA → lưới 10 s + mặt nạ → 5 đặc trưng → npz
+    model_fit.py            # ĐÃ SỬA: kalman_filter_irregular (bước thời gian thay đổi, mặt nạ, r_AΦ), fit(loglik=, starts=)
+    gates.py                # ĐÃ SỬA: E0–E3, lock riêng cho predictions_realdata.md
+  tests/test_realdata.py    # MỚI
+  preregistration/predictions_realdata.md   # ĐÃ SOẠN, chưa khoá
+  experiments/run_realdata.py   # CHƯA: Hình 9–10, Bảng 10–11 → outputs/paper/realdata (viết khi có fit)
 ```
 
-Phụ thuộc thêm: `mne`, `mne-bids`, `specparam`, `statsmodels`, `pingouin`, `openneuro-py`.
-Bỏ khỏi bài (giữ trong repo như lịch sử): `quantum_decoherence.py`, `com_algorithm.py`, `bqi_algorithm.py`, bảng `STUDIES_REFERENCE`.
+**Test bắt buộc trước khi chạy dữ liệu thật** (đã có trong `tests/test_realdata.py`):
+1. Phục hồi tham số M1-dev trên dữ liệu mô phỏng theo lịch probe và mặt nạ không đều ✅
+2. Kalman bước thay đổi = Kalman bước cố định trên lưới đều; = log-mật độ Gauss xếp chồng khi có mặt nạ và r_AΦ ≠ 0 ✅
+3. Mặt nạ che đúng các epoch chồng lên cửa sổ probe ✅ (thay cho "epoch cuối kết thúc tại mốc 128" của v2.0)
+4. Giải mã rating trên file events + hành vi tự tạo có probe 1, 2, 3 phản hồi và mã 254 ✅
+5. Surrogate đa kênh giữ phổ (test cũ của `eeg/surrogate.py`) ✅
 
-Nguyên tắc: mọi số liệu trong bài sinh ra từ `python main.py all-eeg --seed 42` trên dữ liệu đã tải.
+**Lệnh chạy theo thứ tự cổng.**
+
+```bash
+git clone https://github.com/OpenNeuroDatasets/ds001787.git     # metadata, 1 MB (đã làm)
+python main.py realdata ratings                 # E0: tải code/ (360 KB) + giải mã           ✅ PASS
+python main.py realdata design-crb              # E1: Rothenberg + CRB trên lịch thật        ✅ PASS
+python main.py realdata preregister --yes       # khoá predictions_realdata.md (không đảo ngược)
+python main.py realdata fetch --dry-run         # liệt kê 40 file, 6,11 GB
+python main.py realdata fetch                   # tải BDF, kiểm MD5 (hoặc --subjects sub-001 ...)
+set OMP_NUM_THREADS=1 && set MKL_NUM_THREADS=1
+python main.py realdata preprocess              # tiền xử lý + đặc trưng → data/ds001787/derivatives/features
+python main.py realdata fit   --seed 42         # fit gộp/nhóm/người, SE, profile
+python main.py realdata boot  --seed 42         # E2 (200 lần)
+python main.py realdata check --seed 42         # phần dư, LOSO, 5 phân tích nhạy → E3
+python main.py gates
+```
+
+Phụ thuộc: `mne` (đã cài, 1.13); tuỳ chọn `python-picard` (ICA nhanh hơn fastica), `mne-icalabel` (nhãn thành phần; nếu không có thì heuristic, ghi vào log). Không cần datalad/openneuro-py (tải thẳng S3). Thời gian ước tính: đặc trưng ~8 s/epoch với 20 surrogate LZc (đo trên epoch mô phỏng), ~11.000 epoch → 8–10 giờ với 3 tiến trình; bootstrap 200 lần × fit 40 phiên là bước nặng thứ hai.
 
 ---
 
-## 11. Lộ trình 16 tuần
+## 10. Lộ trình 8 tuần
+
+K4 cắt ở cuối tuần 6 nếu chưa qua E2.
 
 | Tuần | Việc | Đầu ra kiểm tra được |
 |---|---|---|
-| 1 | Viết `predictions.md` + khoá (`preregister`); sửa `dmn_ode.py`, `pci.py`, `spectral_graph.py` + test | `predictions.lock` có timestamp trước khi tải dữ liệu thiền |
-| 2 | `fetch.py`, loader Chennu + ANPHY; tiền xử lý | Manifest; QC từng subject trên dashboard |
-| 3 | Chỉ số mục 5.1 + surrogate; `validate_tools.py` | Mục 8 pass |
-| 4–5 | Chạy ngủ + gây mê | **Cổng G1** |
-| 6 | Trục mức-ý-thức | **Cổng G2**; Figure 2 |
-| 7–8 | Loader + tiền xử lý ds003969, ds001787; chạy H1–H5 | Bảng kết quả chính |
-| 9–10 | Mô hình 7.2: recovery → fit ds001787 | **Cổng G3**; Figure 5 |
-| 11 | Phân tích nhạy (covariate, montage, độ dài epoch, ngưỡng mạng) | Bảng robustness |
-| 12–14 | Viết bản thảo | Bản thảo hoàn chỉnh |
-| 15 | Tự phản biện theo mục 13–14 + chạy lại toàn bộ từ đầu trên máy sạch | Danh sách sửa; số liệu khớp 100% |
-| 16 | Sửa, nộp; preprint cùng ngày | Nộp |
+| 1 | Tải metadata + `code/`; E0; sửa `Design`/`fisher.py`; E1; viết và khoá `predictions_realdata.md` | **E0, E1**; `predictions.lock` trước log tải BDF |
+| 2 | Tải 6,1 GB; tiền xử lý + ICA 40 phiên | Báo cáo QC: kênh nội suy, tỉ lệ thiếu, phiên bị loại |
+| 3 | Đặc trưng; QC tự tương quan; 20 so với 50 surrogate | K2 không kích hoạt |
+| 4 | Fit gộp, theo nhóm, theo người; profile | Bảng θ̂ |
+| 5 | Bootstrap 200 lần; meta-analysis log k_inh | **E2** |
+| 6 | LOSO với N1–N3, phần dư, 5 phân tích nhạy | **E3** |
+| 7–8 | Viết mục mới, sửa abstract/discussion/limitations; chạy lại toàn bộ theo thứ tự cổng | Timestamp cổng tăng dần; số liệu khớp 100% |
 
 ---
 
-## 12. Khung bài báo và nơi nộp
+## 11. Đưa vào bài model
 
-**Tên (mẫu)**: *Where does meditation sit on the axis of conscious level? A spectrally controlled EEG comparison with sleep and anaesthesia*
+- Mục mới 4.7 *Application to an experience-sampling EEG dataset*, 2–3 trang.
+- Hình 9: một phiên ví dụ (y_A, y_Φ, trạng thái lọc ± 2 SD, rating quan sát và dự đoán). Hình 10: profile k_inh, k_d trên dữ liệu thật, đặt cạnh Hình 3.
+- Bảng 10: ba con số sai số cho từng tham số chính. Bảng 11: LOSO, M1 so với N1–N3.
+- Abstract thêm một câu về kết quả trên dữ liệu thật, dù theo nhánh nào.
+- Limitations: bỏ "No real data are fitted", thay bằng "một bộ dữ liệu, proxy chưa hiệu chuẩn, A0 không ước lượng được".
+- Data availability: thêm ds001787 (CC0), DOI 10.18112/openneuro.ds001787.v1.1.1.
 
-| Phần | Nội dung bắt buộc |
+**Tuyên bố nên dùng**: "Trên ds001787 (40 phiên, 983 probe), k_inh ước lượng với sai số tương đối X% (CRB dự đoán Y%); M1 dự đoán rating ngoài mẫu tốt hơn / không tốt hơn hồi quy tức thời."
+**Tránh**: "alpha đo DMN"; "LZc đo Φ"; giá trị A0 hay mức Φ\* trên dữ liệu thật; mọi câu dạng "thiền làm tăng ý thức".
+
+---
+
+## 12. Câu hỏi phản biện
+
+| Câu hỏi | Trả lời chuẩn bị sẵn |
 |---|---|
-| Abstract | Khẳng định "thiền = ý thức cao hơn" → trục hiệu chuẩn → khử phổ → vị trí của thiền có số → mã mở |
-| Introduction | Khẳng định trong tài liệu (BQI là một ví dụ, kèm entropic brain, Shinozuka 2025); vấn đề nhiễu phổ; 3 đóng góp |
-| Methods | Dữ liệu; tiền xử lý; chỉ số; khử phổ; trục; thống kê; đăng ký trước |
-| Results 1 | Kiểm định pipeline trên ngủ + gây mê (**Figure 1**) |
-| Results 2 | Trục mức-ý-thức (**Figure 2**) |
-| Results 3 | Thiền trên trục, thô vs khử phổ (**Figure 3** — hình chính) |
-| Results 4 | H3–H5: đồng bộ, phổ, mạng (**Figure 4**) |
-| Results 5 | Mô hình động lực: sửa toán + fit (**Figure 5**) |
-| Discussion | Dự đoán nào đứng, dự đoán nào đổ; ý nghĩa cho các lý thuyết "phức tạp = mức ý thức" |
-| Limitations | Không có TMS (không phải PCI thật); băng 1–40 Hz; khác bộ dữ liệu; thiền ≠ một trạng thái |
-| Supplementary | Mục 8; robustness; toàn bộ tham số |
-
-**Tuyên bố nên dùng**: "Sau khi khử phổ, thiền dịch chuyển c = X (CI) khoảng wake→N3 trên trục mức-ý-thức."
-**Tránh**: "thiền là ý thức cao hơn" nếu c chỉ dương ở phiên bản thô; "PCI" khi không có TMS (dùng "LZc tự phát").
-
-**Nơi nộp** (kiểm tra quartile Scimago năm hiện hành trước khi chọn):
-1. NeuroImage — đích cao nhất, phù hợp bài phương pháp + dữ liệu.
-2. Neuroscience of Consciousness — đúng chủ đề nhất.
-3. Dự phòng: Cortex, Brain Topography, Cognitive Neurodynamics, Computers in Biology and Medicine.
+| Alpha sau không phải DMN | Đồng ý; bài không tuyên bố vậy. Dấu β ước lượng hai phía (E-H4), có proxy thay thế; câu hỏi là mô hình quan sát có đứng được không |
+| Rating thứ bậc 0–3, sao dùng Gauss | Dùng Q1 − Q2 (7 mức), kèm kiểm tra dự đoán hậu nghiệm; mô hình thứ bậc là hướng tiếp |
+| Chọn đặc trưng theo kết quả | Một cặp chính + ba thay thế, khoá trước khi tải EEG (SHA-256) |
+| Mỗi người khác nhau | Fit theo người + meta-analysis cho τ; fit gộp là giả định của bài, được kiểm tra trực tiếp |
+| Fit được không có nghĩa là đúng | LOSO với mô hình rỗng tức thời N2, phần dư, cổng E3 chặn diễn giải khi sai đặc tả |
+| Vì sao chỉ một bộ dữ liệu | Ví dụ kiểm chứng cho bài phương pháp; không ước lượng tham số dân số |
+| LZc chỉ phản ánh phổ | Dùng LZc khử phổ bằng surrogate; exponent là phương án thay thế được khoá trước |
 
 ---
 
-## 13. Câu hỏi phản biện và câu trả lời chuẩn bị sẵn
+## 13. Những chỗ hay hỏng
 
-| Câu hỏi | Trả lời |
-|---|---|
-| So sánh giữa các bộ dữ liệu khác thiết bị? | Không so giá trị tuyệt đối; chỉ so Δ trong người, z-score trong bộ; trục xây từ hai bộ độc lập và kiểm tra cùng hướng |
-| LZc chỉ phản ánh phổ? | Đó là lý do có mục 5.2; báo cáo thô và khử phổ song song; mô phỏng 1/f trong Supplementary |
-| Mind-wandering có phải đối chứng tốt? | Là đối chứng trong người, cùng tư thế, cùng phiên; thêm nhóm đối chứng không thiền của ds003969 cho hiệu ứng trait |
-| Volume conduction làm giả đồng bộ? | CSD + wPLI; Kuramoto r báo cáo cả trên CSD |
-| ΦAR có phải Φ của IIT? | Không; gọi là chỉ số tích hợp lấy cảm hứng IIT, chỉ khám phá |
-| Vì sao dựa vào bài BQI chưa qua bình duyệt? | Bài chỉ là nguồn dự đoán định lượng đã nêu trước; mọi kết luận đứng bằng dữ liệu mở và đăng ký trước |
-| Đăng ký trước có thật không? | `predictions.lock` (SHA-256 + timestamp) sớm hơn log tải ds003969/ds001787; mã tải bị chặn nếu chưa khoá |
-
----
-
-## 14. Những chỗ hay hỏng
-
-1. **Chạy dữ liệu thiền trước khi qua cổng G1** → pipeline lỗi được "khớp" theo kết quả mong muốn.
-2. **Không cân bằng số epoch** → LZc khác do độ dài, không do trạng thái.
-3. **Quên surrogate** → mọi khác biệt LZc có thể chỉ là alpha/1-f.
-4. **Đồng bộ trên dữ liệu không CSD** → volume conduction thổi phồng r.
-5. **Chọn ngưỡng mạng sau khi xem kết quả** → báo cáo toàn dải 10–30%.
-6. **Tải nguyên bộ ANPHY** → hết ổ; chỉ trích đoạn theo giai đoạn ngủ.
-7. **Diễn giải tham số mô hình khi không identifiable** → chạy profile likelihood trước.
-8. **Trích bảng số liệu của bài BQI** → xem mục 15.
+1. **Fit trước khi qua E0** → rating sai câu (phím 0 không có trigger), mọi tham số α, β vô nghĩa.
+2. **Xoá epoch xấu thay vì đánh dấu thiếu** → bước thời gian Δ không còn 10 s, ma trận F sai.
+3. **Gán rating vào một epoch của lưới đều** → cửa sổ lệch tới 10 s so với lúc người tập đánh giá; phải đưa rating vào bộ lọc như quan sát tại đúng mốc 128 (v2.1 đã làm vậy).
+4. **Quên rằng A0 không xác định được ở dạng độ lệch** → báo A0 hay Φ\* trên dữ liệu thật.
+5. **Đổi đặc trưng sau khi xem kết quả** → chỉ được dùng một cặp chính + ba thay thế đã khoá.
+6. **Tải BDF trước khi khoá dự đoán** → `fetch.py` phải chặn; kiểm tra log tải.
+7. **Diễn giải k_inh khi E2 hoặc E3 FAIL** → báo như kết quả âm, không như tốc độ.
+8. **Z-score theo phiên làm phân tích chính** → xoá khác biệt SNR thật giữa phiên; chỉ dùng làm phân tích nhạy.
+9. **Trích bảng số liệu của bài BQI** → xem mục 14.
 
 ---
 
-## 15. Quy tắc liêm chính với bài BQI gốc
+## 14. Quy tắc liêm chính
 
-Các quy tắc dưới đây được **cưỡng chế trong mã**, không phụ thuộc quyết định bên ngoài:
-
-- **Không trích, không dùng** Table 4, 6, 7, 11, 14, các hồi quy eq. 50, 59 và con số "47 nghiên cứu, N = 12.847" của bài BQI làm bằng chứng. Các bảng này không truy vết được nguồn (bibliography trống, cột Source là `?`, có mục trỏ tới bài review không có dữ liệu, có PCI cho trải nghiệm cận tử).
-- Chỉ dùng bài BQI như **nguồn giả thuyết**: "mô hình dự đoán X", không phải "dữ liệu cho thấy X".
-- Nếu bài BQI chưa công khai: mô tả các dự đoán trực tiếp trong Introduction (công thức + ngưỡng), không trích số liệu của bài.
+- Giữ mọi quy tắc của mục 15 trong `Q1_pipeline_model.md`: không dùng Table 4, 5, 6, 7, 11, 14, eq. 50, 59 của bài BQI và con số "47 nghiên cứu, N = 12.847" làm dữ liệu hay bằng chứng. Bài BQI chỉ là nguồn giả thuyết ("mô hình dự đoán X").
+- Khai báo rằng metadata và file hành vi đã được xem trước khi khoá dự đoán; EEG thì không.
+- Báo cáo mọi phân tích đã khoá, kể cả khi không ủng hộ dự đoán hoặc rơi vào K1–K3.
+- Trích ds001787 theo `dataset_description.json` (Delorme & Brandmeyer, CC0, DOI 10.18112/openneuro.ds001787.v1.1.1) và bài gốc Brandmeyer & Delorme, Exp. Brain Res. 236, 2519–2528.
 
 ---
 
-## 16. Checklist trước khi nộp
+## 15. Checklist trước khi nộp
 
-- [ ] `predictions.lock` có trước log tải dữ liệu thiền; hash khớp `predictions.md`
-- [ ] Cổng G1, G2, G3 ghi rõ kết quả trong bài (kể cả cổng thất bại)
-- [ ] Mọi chỉ số báo cáo cả thô và khử phổ
-- [ ] Effect size + CI bootstrap cho mọi giả thuyết; TOST cho kết quả âm
-- [ ] Cân bằng epoch, tham số tiền xử lý công bố trong `config.yaml`
-- [ ] Mục 8 (kiểm định công cụ) trong Supplementary
-- [ ] Phân tích nhạy: montage, độ dài epoch, ngưỡng mạng, covariate phổ
-- [ ] Mã + dữ liệu dẫn xuất công bố (GitHub + Zenodo DOI); dữ liệu gốc trích theo DOI của từng bộ
-- [ ] Không còn số liệu nào từ các bảng BQI ở mục 15
-- [ ] Limitations: không TMS, băng 1–40 Hz, khác bộ dữ liệu, thiền không đồng nhất
-- [ ] Preprint cùng ngày nộp
+- [x] E0 PASS (17/10/2026; sub-013 ghi là ngoại lệ)
+- [ ] `predictions_realdata.lock` có trước log tải BDF; hash khớp `predictions_realdata.md`
+- [ ] E1 ✅, E2, E3 ghi rõ kết quả trong bài (kể cả FAIL), timestamp tăng dần
+- [ ] Ba con số sai số (CRB dự đoán, SE tại MLE, RMSE bootstrap) cho k_inh, k_d, α, β
+- [ ] LOSO M1 so với N1–N3, CI bootstrap theo phiên
+- [ ] 5 phân tích nhạy báo đủ
+- [ ] Không báo A0, Φ\* trên dữ liệu thật; không gọi alpha là DMN hay LZc là Φ
+- [ ] Tham số tiền xử lý và đặc trưng công bố trong `eeg/config.yaml` và `model/config.py`
+- [ ] Data availability có ds001787 và DOI
+- [ ] Không còn số liệu nào từ các bảng BQI
+
+---
+
+## Phụ lục A. Hướng trục mức-ý-thức (v1.0, hoãn)
+
+Kế hoạch v1.0 dựng trục mức-ý-thức từ tương phản ngủ (ANPHY-Sleep, 82,5 GB) và gây mê (Chennu), rồi chiếu Δ(thiền − MW) của ds003969 lên trục, với ds001787 làm bộ lặp lại. Năm giả thuyết H1–H5 (LZc khử phổ, chiếu trục, Kuramoto theta, exponent aperiodic, Fiedler λ₂) và cổng G0–G3 vẫn còn trong lịch sử git và trong khai báo của `eeg/gates.py`.
+
+Hoãn vì dung lượng ANPHY. Nếu nối lại, các bộ thay thế nhẹ hơn cho trục giấc ngủ: MASS-SS3 (20 kênh 10-20, cần phê duyệt đạo đức), DOD-H (12 đạo trình lưỡng cực, mở), nap 64 kênh của Mei et al. 2018 (ít N3/REM). Những gì v2.0 tái dùng từ v1.0: khử phổ bằng surrogate (mục 5), cơ chế đăng ký trước, cơ chế cổng, loader và tiền xử lý.

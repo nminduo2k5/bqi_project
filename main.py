@@ -47,6 +47,14 @@ VÍ DỤ SỬ DỤNG
   python main.py model all --seed 42       # 5 bước + xuất hình: tái tạo toàn bộ bài
   python main.py model hardware            # "neural design": mạch neural dấu chấm tĩnh của vòng kín + VHDL (hw/)
 
+  # Dữ liệu thật ds001787 (Q1_pipeline.md v2.0), theo thứ tự cổng E0 → E1 → khoá → tải → E2 → E3
+  python main.py realdata ratings          # E0: giải mã Q1–Q3 từ file hành vi + events.tsv (không cần EEG)
+  python main.py realdata design-crb       # E1: Rothenberg + CRB dự đoán trên lịch probe thật
+  python main.py realdata preregister --yes
+  python main.py realdata fetch [--dry-run] [--subjects sub-001 ...]   # 6,1 GB, cần lock
+  python main.py realdata preprocess       # tiền xử lý + đặc trưng → data/ds001787/derivatives/features
+  python main.py realdata fit | boot | check   # fit, E2, E3
+
   # Pipeline Q1 (Q1_pipeline.md): kiểm định công cụ, cổng, đăng ký trước
   python main.py validate-tools            # cổng G0 (dữ liệu tổng hợp)
   python main.py validate-tools --g3       # + cổng G3 (phục hồi tham số mô hình 7.2, chậm)
@@ -263,16 +271,19 @@ def cmd_gates(args):
         mark = "—" if st is None else ("PASS" if st["passed"] else "FAIL")
         when = "" if st is None else f"  ({st['time_utc']})"
         print(f"{g}  {mark:4s}  {desc}{when}")
-    if os.path.isfile(gates.LOCK):
-        info = gates.read_lock()
-        try:
-            gates.require_preregistration()
-            ok = "hợp lệ"
-        except gates.GateError as e:
-            ok = f"KHÔNG hợp lệ: {e}"
-        print(f"\nĐăng ký trước: khoá lúc {info['locked_utc']}, sha256 {info['sha256'][:12]}…, {ok}")
-    else:
-        print("\nĐăng ký trước: chưa khoá (python main.py preregister)")
+    for label, pred, lock, cmd in (("Đăng ký trước (EEG v1.0)", gates.PREDICTIONS, gates.LOCK, "python main.py preregister"),
+                                   ("Đăng ký trước (ds001787)", gates.PREDICTIONS_REALDATA, gates.LOCK_REALDATA,
+                                    "python main.py realdata preregister --yes")):
+        if os.path.isfile(lock):
+            info = gates.read_lock(lock)
+            try:
+                gates.require_preregistration(pred, lock)
+                ok = "hợp lệ"
+            except gates.GateError as e:
+                ok = f"KHÔNG hợp lệ: {e}"
+            print(f"\n{label}: khoá lúc {info['locked_utc']}, sha256 {info['sha256'][:12]}…, {ok}")
+        elif os.path.isfile(pred):
+            print(f"\n{label}: chưa khoá ({cmd})")
 
 
 def cmd_preregister(args):
@@ -319,6 +330,50 @@ def cmd_model(args):
             kw["fast"] = args.fast
         mod.run(**kw)
     print(f"\n✔ Kết quả trong {out_dir}; trạng thái cổng: python main.py gates")
+
+
+# =============================================================================
+# Subcommand: realdata  (Q1_pipeline.md v2.0 — ds001787, gates E0–E3)
+# =============================================================================
+def cmd_realdata(args):
+    from eeg import gates
+    step = args.step
+    out_dir = args.out_dir
+    if step == "ratings":                                   # E0
+        from eeg import fetch
+        from eeg.loaders import ds001787 as DS
+        fetch.fetch_code()
+        _, summary = DS.decode_all()
+        DS.gate_E0(summary)
+    elif step == "design-crb":                              # E1
+        from model import realdata
+        realdata.design_crb(output_dir=out_dir)
+    elif step == "preregister":
+        if not args.yes:
+            print("Khoá predictions_realdata.md là không đảo ngược. Chạy lại với --yes để khoá.")
+            sys.exit(1)
+        try:
+            gates.require("E1", force=args.force_gate)
+        except gates.GateError as e:
+            print(f"[DỪNG] {e}")
+            sys.exit(1)
+        info = gates.lock_predictions(gates.PREDICTIONS_REALDATA, gates.LOCK_REALDATA)
+        print(f"Đã khoá {info['file']}\n  sha256: {info['sha256']}\n  lúc:    {info['locked_utc']}")
+    elif step == "fetch":
+        from eeg import fetch
+        fetch.fetch(args.subjects, dry_run=args.dry_run, force_gate=args.force_gate)
+    elif step == "preprocess":
+        from eeg import realdata_features
+        realdata_features.run(args.subjects, seed=args.seed, n_jobs=args.n_jobs, do_ica=not args.no_ica)
+    elif step in ("fit", "boot", "check"):
+        from model import realdata
+        kw = {"seed": args.seed, "fast": args.fast, "output_dir": out_dir}
+        if step == "fit":
+            kw["n_starts"] = args.n_starts
+        if step == "boot":
+            kw["n_boot"] = args.n_boot
+        realdata.run(step, **kw)
+    print("\n✔ Trạng thái cổng: python main.py gates")
 
 
 # =============================================================================
@@ -455,6 +510,22 @@ def build_parser():
     p_model.add_argument("--fast", action="store_true", help="Ít lần lặp (thử nhanh, không dùng cho bài)")
     p_model.add_argument("--out-dir", type=str, default=None, help="Mặc định: outputs/results/model")
     p_model.set_defaults(func=cmd_model)
+
+    p_rd = sub.add_parser("realdata", help="Dữ liệu thật ds001787 (Q1_pipeline.md v2.0): ratings | design-crb | "
+                                           "preregister | fetch | preprocess | fit | boot | check.")
+    p_rd.add_argument("step", choices=["ratings", "design-crb", "preregister", "fetch", "preprocess", "fit", "boot", "check"])
+    p_rd.add_argument("--subjects", nargs="*", default=None, help="fetch/preprocess: ví dụ sub-001 sub-002 (mặc định tất cả)")
+    p_rd.add_argument("--dry-run", action="store_true", help="fetch: chỉ liệt kê file và dung lượng")
+    p_rd.add_argument("--yes", action="store_true", help="preregister: xác nhận khoá")
+    p_rd.add_argument("--force-gate", action="store_true")
+    p_rd.add_argument("--seed", type=int, default=42)
+    p_rd.add_argument("--fast", action="store_true")
+    p_rd.add_argument("--n-starts", type=int, default=None, help="fit: số điểm xuất phát (mặc định 6)")
+    p_rd.add_argument("--n-boot", type=int, default=None, help="boot: số lần bootstrap (mặc định 200)")
+    p_rd.add_argument("--n-jobs", type=int, default=None)
+    p_rd.add_argument("--no-ica", action="store_true", help="preprocess: bỏ ICA (thử nhanh)")
+    p_rd.add_argument("--out-dir", type=str, default=None, help="Mặc định: outputs/results/realdata")
+    p_rd.set_defaults(func=cmd_realdata)
 
     p_dash = sub.add_parser("dashboard", help="Mở dashboard Streamlit (cần: pip install streamlit plotly).")
     p_dash.add_argument("--port", type=int, default=8501, help="Cổng HTTP (mặc định: 8501)")

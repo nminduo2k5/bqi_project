@@ -1,0 +1,27 @@
+{
+  "gate": "E1",
+  "description": "Xác định cấu trúc M1-dev trên lịch probe thật (Rothenberg) + CRB dự đoán",
+  "passed": true,
+  "time_utc": "2026-10-17T06:00:57+00:00",
+  "details": {
+    "rank_10": 10,
+    "rank_11_with_rho": 11,
+    "min_rel_eigenvalue_10": 0.20092240008546636,
+    "min_rel_eigenvalue_11": 0.2007664712828825,
+    "crb_pooled": {
+      "k_inh": 0.09118318849874454,
+      "k_int": 0.1107479452197742,
+      "k_d": 0.14135760261489116,
+      "sigma_A": 0.0302065548802953,
+      "sigma_Phi": 0.035991755727921085,
+      "alpha": 0.01995494638580905,
+      "beta": 0.03958724428218737,
+      "r_A": 0.010552497124406899,
+      "r_Phi": 0.009002637550693363,
+      "r_Q": 0.026996768967870958
+    },
+    "n_sessions": 40,
+    "n_probes": 983,
+    "predictions_locked": false
+  }
+}

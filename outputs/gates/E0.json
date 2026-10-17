@@ -1,0 +1,20 @@
+{
+  "gate": "E0",
+  "description": "Giải mã rating ds001787: file hành vi khớp events.tsv, Q1/Q2 biết được",
+  "passed": true,
+  "time_utc": "2026-10-17T05:57:11+00:00",
+  "details": {
+    "n_sessions": 40,
+    "n_sessions_with_behaviour": 40,
+    "n_probe_eeg": 983,
+    "n_matched": 950,
+    "n_known_q1q2": 950,
+    "match_rate": 0.9664292980671414,
+    "known_rate": 0.9664292980671414,
+    "code_agreement": 0.9942992874109263,
+    "key0_trigger_rate": 0.0,
+    "key0_total": 741,
+    "nonzero_total": 2105,
+    "hypothesis_key0_no_trigger": true
+  }
+}

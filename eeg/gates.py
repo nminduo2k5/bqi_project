@@ -26,8 +26,16 @@ GATES = {
     "M0": "M\u1ec7nh \u0111\u1ec1 P1-P5: m\xf4 h\xecnh g\u1ed1c M0 c\xf3 l\u1ed7i to\u00e1n h\u1ecdc, M1 nh\u1ea5t qu\u00e1n",
     "M1": "Fisher/CRB kh\u1edbp sai s\u1ed1 ph\u1ee5c h\u1ed3i t\u1ea1i >= 80% \xf4 \u0111\u1ea1i di\u1ec7n",
     "M2": "LQG tr\xean tham s\u1ed1 th\u1eadt th\u1eafng bang-bang v\u00e0 kh\xf4ng \u0111i\u1ec1u khi\u1ec3n",
+    # Real-data gates (Q1_pipeline.md v2.0, ds001787)
+    "E0": "Gi\u1ea3i m\u00e3 rating ds001787: file h\u00e0nh vi kh\u1edbp events.tsv, Q1/Q2 bi\u1ebft \u0111\u01b0\u1ee3c",
+    "E1": "X\u00e1c \u0111\u1ecbnh c\u1ea5u tr\u00fac M1-dev tr\u00ean l\u1ecbch probe th\u1eadt (Rothenberg) + CRB d\u1ef1 \u0111o\u00e1n",
+    "E2": "X\u00e1c \u0111\u1ecbnh th\u1ef1c h\u00e0nh tr\u00ean d\u1eef li\u1ec7u th\u1eadt: RMSE bootstrap / SE trong [0.5, 2]",
+    "E3": "\u0110\u1ee7 t\u1ed1t \u0111\u1ec3 di\u1ec5n gi\u1ea3i: ph\u1ea7n d\u01b0 tr\u1eafng, LOSO, ph\u00e2n t\u00edch nh\u1ea1y \u0111\u00e3 ch\u1ea1y",
 }
-REQUIRES = {"G1": ["G0"], "G2": ["G1"], "G3": ["G0"], "M1": ["M0"], "M2": ["M1"]}
+REQUIRES = {"G1": ["G0"], "G2": ["G1"], "G3": ["G0"], "M1": ["M0"], "M2": ["M1"],
+            "E1": ["E0"], "E2": ["E1"], "E3": ["E2"]}
+PREDICTIONS_REALDATA = os.path.join(PREREG_DIR, "predictions_realdata.md")
+LOCK_REALDATA = os.path.join(PREREG_DIR, "predictions_realdata.lock")
 
 
 class GateError(RuntimeError):
@@ -75,31 +83,33 @@ def _sha256(path: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-def lock_predictions() -> dict:
-    if not os.path.isfile(PREDICTIONS):
-        raise GateError(f"Khong tim thay {PREDICTIONS}")
-    if os.path.isfile(LOCK):
-        cur = read_lock()
-        if cur["sha256"] == _sha256(PREDICTIONS):
+def lock_predictions(predictions: str = PREDICTIONS, lock: str = LOCK) -> dict:
+    if not os.path.isfile(predictions):
+        raise GateError(f"Khong tim thay {predictions}")
+    if os.path.isfile(lock):
+        cur = read_lock(lock)
+        if cur["sha256"] == _sha256(predictions):
             return cur
-        raise GateError("predictions.md da bi sua sau khi khoa. Khong duoc khoa lai; "
+        raise GateError(f"{os.path.basename(predictions)} da bi sua sau khi khoa. Khong duoc khoa lai; "
                         "ghi thay doi thanh muc 'Sua doi sau dang ky' trong bai.")
-    info = {"file": "preregistration/predictions.md", "sha256": _sha256(PREDICTIONS), "locked_utc": _now()}
-    with open(LOCK, "w", encoding="utf-8") as f:
+    info = {"file": os.path.relpath(predictions, ROOT).replace(os.sep, "/"), "sha256": _sha256(predictions),
+            "locked_utc": _now()}
+    with open(lock, "w", encoding="utf-8") as f:
         json.dump(info, f, indent=2)
     return info
 
 
-def read_lock() -> dict:
-    with open(LOCK, encoding="utf-8") as f:
+def read_lock(lock: str = LOCK) -> dict:
+    with open(lock, encoding="utf-8") as f:
         return json.load(f)
 
 
-def require_preregistration() -> dict:
-    """Used by the fetcher before any meditation dataset is downloaded."""
-    if not os.path.isfile(LOCK):
-        raise GateError("Chua khoa dang ky truoc. Chay: python main.py preregister")
-    info = read_lock()
-    if info["sha256"] != _sha256(PREDICTIONS):
-        raise GateError("predictions.md khac ban da khoa (hash khong khop).")
+def require_preregistration(predictions: str = PREDICTIONS, lock: str = LOCK) -> dict:
+    """Used by the fetchers before any meditation EEG is downloaded."""
+    if not os.path.isfile(lock):
+        raise GateError(f"Chua khoa dang ky truoc ({os.path.basename(predictions)}). "
+                        "Chay: python main.py realdata preregister --yes")
+    info = read_lock(lock)
+    if info["sha256"] != _sha256(predictions):
+        raise GateError(f"{os.path.basename(predictions)} khac ban da khoa (hash khong khop).")
     return info

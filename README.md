@@ -57,7 +57,7 @@ M0  PASS   Mệnh đề P1–P5: mô hình gốc M0 có lỗi toán học, M1 nh
 M1  PASS   CRB khớp sai số phục hồi MLE ở 24/24 ô (trung vị RMSE/CRB = 0.98)
 M2  PASS   LQG thắng bang-bang và không điều khiển; chi phí dừng khớp dạng đóng (3 %)
 ```
-89 test pass, 2 bỏ qua khi không có `mne` (`python -m pytest tests -q`).
+100 test pass (`python -m pytest tests -q`; `mne` đã cài nên 2 test EEG không còn bị bỏ qua).
 
 ### Kết quả nằm ở đâu
 
@@ -98,6 +98,20 @@ Từng bước: `python main.py model theory | identifiability | design | contro
 
 Bản thảo đầy đủ (tiếng Anh + tiếng Việt) ở [`template_latex/`](template_latex/): `paper_reference.tex`, `paper_reference_vi.tex`, hướng dẫn biên dịch `HUONG_DAN_BIEN_DICH.md`. Còn lại: email cơ quan, DOI preprint của bài BQI, đưa mã + `outputs/` lên GitHub/Zenodo khi nộp.
 
+### Dữ liệu thật: fit M1 trên ds001787 ([`Q1_pipeline.md`](Q1_pipeline.md) v2.1)
+
+Mục "Application to an experience-sampling EEG dataset" của bài: M1 dạng độ lệch (10 tham số) fit lên bộ EEG thiền ds001787 (24 người, 40 phiên, 983 probe tự chấm, 6,1 GB, CC0). Mã đã đủ cho mọi bước; chạy theo thứ tự cổng:
+
+```bash
+python main.py realdata ratings        # E0 ✅ PASS 17/10/2026: 950/983 probe giải mã từ file hành vi; "phím 0 không có trigger" xác nhận 0/741
+python main.py realdata design-crb     # E1 ✅ PASS: hạng 10/10; CRB(k_inh) dự đoán 9,1 % gộp, 12,4 % expert, 13,5 % novice
+python main.py realdata preregister --yes   # khoá preregistration/predictions_realdata.md (chưa làm)
+python main.py realdata fetch          # 6,1 GB từ S3 OpenNeuro, kiểm MD5; chỉ chạy được sau khi khoá
+python main.py realdata preprocess | fit | boot | check     # đặc trưng → fit → E2 → E3
+```
+
+Kết quả: `outputs/results/realdata/` (`e0_summary.json`, `e1_design_crb.json`, `probes.csv`), cổng `outputs/gates/E0.json`, `E1.json`. Metadata OpenNeuro clone vào `ds001787/` (không vào git), dữ liệu tải vào `data/ds001787/`.
+
 ### Hướng tiếp theo: "neural design" — mạch neural dấu chấm tĩnh + VHDL ([`hw/README.md`](hw/README.md))
 
 Vòng kín Kalman + LQG của Gói 4 được viết lại thành mạch neural 3 lớp, 6 nơ-ron tuyến tính (làm tròn + bão hoà), chạy một lần mỗi epoch 10 s, mô hình hoá bằng VHDL để chạy neurofeedback thời gian thực trên FPGA.
@@ -127,7 +141,8 @@ bqi_project/
 │   ├── design.py                  Gói 3: bản đồ thiết kế, phục hồi MLE, cổng M1
 │   ├── control.py                 Gói 4: LQG vs bang-bang, độ bền, cổng M2
 │   ├── sensitivity.py             Gói 5: Sobol (QMC, log, bootstrap)
-│   └── hardware.py                ★ Neural design: mạch neural dấu chấm tĩnh bit-exact, sinh VHDL
+│   ├── hardware.py                ★ Neural design: mạch neural dấu chấm tĩnh bit-exact, sinh VHDL
+│   └── realdata.py                ★ Dữ liệu thật ds001787: E1, fit/boot/check (E2, E3), LOSO, meta-analysis
 ├── hw/                            ★ Neural design — xem hw/README.md
 │   ├── vhdl/                      neuron_pkg, dmn_lqg_core, testbench; gen/ = hằng số + vectơ sinh tự động
 │   └── run_ghdl.ps1 / .sh         Mô phỏng GHDL (tuỳ chọn -Wave: xuất dạng sóng)
@@ -150,8 +165,11 @@ bqi_project/
 ├── experiments/
 │   ├── run_all.py                 Runs every algorithm, saves figures + JSON summary (phần BQI)
 │   └── run_model_paper.py         ★ Xuất 8 hình + 3 bảng của bài Q1 → outputs/paper/model
-├── eeg/, preregistration/         Hướng EEG thực nghiệm (Q1_pipeline.md) — HOÃN, không dùng trong bài
-├── tests/                         pytest (89 test + 2 bỏ qua khi thiếu mne; test_model.py bài Q1, test_hardware.py mạch)
+├── eeg/                           EEG: loaders/ds001787.py (E0, thiết kế thật), fetch.py, realdata_features.py,
+│                                  model_fit.py (Kalman bước thay đổi), gates.py (E0–E3); phần v1.0 (axis, metrics) giữ nguyên
+├── preregistration/               predictions_realdata.md (ds001787, chưa khoá); predictions.md (v1.0, hoãn)
+├── ds001787/, data/ds001787/      metadata OpenNeuro (clone) và dữ liệu tải về — cả hai ngoài git
+├── tests/                         pytest (100 test; test_model.py bài Q1, test_hardware.py mạch, test_realdata.py ds001787)
 ├── dashboard/                     Giao diện trực quan Streamlit (python main.py dashboard)
 │   ├── app.py                     Điểm vào: điều hướng giữa các trang
 │   ├── core.py                    Dùng chung: đăng ký module, màu, chạy CLI/pytest, scorecard

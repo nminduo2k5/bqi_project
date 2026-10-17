@@ -55,13 +55,97 @@ class Design:
 # Parameter transform (matches eeg.model_fit._pack/_unpack)
 # =============================================================================
 def to_theta(model: StateSpaceDMN, names) -> np.ndarray:
-    return np.array([np.log(getattr(model, k)) if k in StateSpaceDMN.POSITIVE else getattr(model, k)
-                     for k in names], dtype=float)
+    pos = type(model).POSITIVE
+    return np.array([np.log(getattr(model, k)) if k in pos else getattr(model, k) for k in names], dtype=float)
 
 
 def from_theta(theta: np.ndarray, names, base: StateSpaceDMN) -> StateSpaceDMN:
-    kw = {k: float(np.exp(v)) if k in StateSpaceDMN.POSITIVE else float(v) for k, v in zip(names, theta)}
+    pos = type(base).POSITIVE
+    kw = {k: float(np.exp(v)) if k in pos else float(v) for k, v in zip(names, theta)}
     return base.with_params(**kw)
+
+
+# =============================================================================
+# Irregular designs (real data): arbitrary observation times and missing epochs
+# =============================================================================
+@dataclass(frozen=True)
+class IrregularDesign:
+    """One real session: EEG epochs at times `t_eeg` (minutes, epoch *end*),
+    channel masks (True = observed), ratings at `t_probe` (minutes)."""
+    t_eeg: tuple
+    obs_A: tuple
+    obs_Phi: tuple
+    t_probe: tuple
+
+    @property
+    def n_obs(self) -> int:
+        return int(sum(self.obs_A) + sum(self.obs_Phi) + len(self.t_probe))
+
+    @property
+    def duration_min(self) -> float:
+        return float(max(list(self.t_eeg) + list(self.t_probe) + [0.0]))
+
+
+def _expm_lower(M: np.ndarray, tau: np.ndarray):
+    """Entries of exp(M tau) for lower-triangular 2x2 M = [[a,0],[c,b]], vectorised in tau."""
+    a, b, c = M[0, 0], M[1, 1], M[1, 0]
+    ea, eb = np.exp(a * tau), np.exp(b * tau)
+    if abs(a - b) > 1e-12:
+        e21 = c * (ea - eb) / (a - b)
+    else:
+        e21 = c * tau * ea
+    return ea, e21, eb
+
+
+def session_moments_irregular(model: StateSpaceDMN, design: IrregularDesign) -> tuple[np.ndarray, np.ndarray]:
+    """Mean and covariance of all observations of an irregular session.
+
+    Observation order: for each EEG epoch time, y_A (if observed) then y_Phi
+    (if observed); then all ratings in time order. Cov(x_t, x_s) = e^{M(t-s)} P
+    for t >= s, evaluated in closed form for the lower-triangular drift.
+    """
+    M, _ = model.drift()
+    mu = model.stationary_mean()
+    P = model.stationary_cov()
+    h = model.readout()
+    rho = float(getattr(model, "rho_obs", 0.0))
+    t_eeg = np.asarray(design.t_eeg, float)
+    oa, op = np.asarray(design.obs_A, bool), np.asarray(design.obs_Phi, bool)
+    times, H, noise, offs, kind, epoch_id = [], [], [], [], [], []
+    for i, t in enumerate(t_eeg):
+        if oa[i]:
+            times.append(t); H.append((1.0, 0.0)); noise.append(model.r_A ** 2); offs.append(0.0); kind.append(0); epoch_id.append(i)
+        if op[i]:
+            times.append(t); H.append((0.0, 1.0)); noise.append(model.r_Phi ** 2); offs.append(0.0); kind.append(1); epoch_id.append(i)
+    for t in design.t_probe:
+        times.append(float(t)); H.append((h[0], h[1])); noise.append(model.r_Q ** 2); offs.append(model.gamma0); kind.append(2); epoch_id.append(-1)
+    times, H, kind, epoch_id = np.array(times), np.array(H), np.array(kind), np.array(epoch_id)
+    n = len(times)
+    mean = H @ mu + np.array(offs)
+    tau = np.abs(times[:, None] - times[None, :])
+    late = times[:, None] >= times[None, :]            # row observation is the later one
+    ea, e21, eb = _expm_lower(M, tau)
+    eP00, eP01 = ea * P[0, 0], ea * P[0, 1]
+    eP10, eP11 = e21 * P[0, 0] + eb * P[1, 0], e21 * P[0, 1] + eb * P[1, 1]
+    HL0 = np.where(late, H[:, 0][:, None], H[:, 0][None, :])
+    HL1 = np.where(late, H[:, 1][:, None], H[:, 1][None, :])
+    HE0 = np.where(late, H[:, 0][None, :], H[:, 0][:, None])
+    HE1 = np.where(late, H[:, 1][None, :], H[:, 1][:, None])
+    cov = HL0 * HE0 * eP00 + HL0 * HE1 * eP01 + HL1 * HE0 * eP10 + HL1 * HE1 * eP11
+    cov = cov + np.diag(noise)
+    if rho != 0.0:
+        c = rho * model.r_A * model.r_Phi
+        same = (epoch_id[:, None] == epoch_id[None, :]) & (epoch_id[:, None] >= 0) & (kind[:, None] != kind[None, :]) \
+            & (kind[:, None] < 2) & (kind[None, :] < 2)
+        cov = cov + c * same
+    return mean, 0.5 * (cov + cov.T)
+
+
+def moments(model: StateSpaceDMN, design) -> tuple[np.ndarray, np.ndarray]:
+    """Dispatch on the design type."""
+    if isinstance(design, IrregularDesign):
+        return session_moments_irregular(model, design)
+    return session_moments(model, design)
 
 
 # =============================================================================
@@ -142,9 +226,9 @@ def fisher_exact(model: StateSpaceDMN, design: Design, names=None, n_subjects: i
                  rel_step: float = 1e-5) -> np.ndarray:
     """Exact expected Fisher information of `n_subjects` independent sessions,
     w.r.t. the transformed parameters (log for positive ones)."""
-    names = list(names or StateSpaceDMN.FREE)
+    names = list(names or type(model).FREE)
     theta0 = to_theta(model, names)
-    m0, S0 = session_moments(model, design)
+    m0, S0 = moments(model, design)
     L = np.linalg.cholesky(S0)
 
     def Sinv_times(M):
@@ -156,8 +240,8 @@ def fisher_exact(model: StateSpaceDMN, design: Design, names=None, n_subjects: i
         tp, tm = theta0.copy(), theta0.copy()
         tp[i] += step
         tm[i] -= step
-        mp, Sp = session_moments(from_theta(tp, names, model), design)
-        mm, Sm = session_moments(from_theta(tm, names, model), design)
+        mp, Sp = moments(from_theta(tp, names, model), design)
+        mm, Sm = moments(from_theta(tm, names, model), design)
         dmu.append((mp - mm) / (2 * step))
         A.append(Sinv_times((Sp - Sm) / (2 * step)))   # Sigma^-1 dSigma_i
     dmu = np.array(dmu)
@@ -188,13 +272,14 @@ def crb(I: np.ndarray, names, model: StateSpaceDMN) -> dict:
     except np.linalg.LinAlgError:
         se = np.full(len(names), np.inf)
     out = {}
+    pos = type(model).POSITIVE
     for k, s in zip(names, se):
         v = getattr(model, k)
-        if k in StateSpaceDMN.POSITIVE:
+        if k in pos:
             rel = s
         else:
             rel = s / abs(v) if abs(v) > 1e-12 else float("nan")
-        out[k] = {"se": float(s), "rel_se": float(rel), "log_scale": k in StateSpaceDMN.POSITIVE}
+        out[k] = {"se": float(s), "rel_se": float(rel), "log_scale": k in pos}
     return out
 
 

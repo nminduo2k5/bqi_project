@@ -255,4 +255,53 @@ class StateSpaceDMN:
     def with_params(self, **kw) -> "StateSpaceDMN":
         d = {k: getattr(self, k) for k in self.FREE + ("A_max",)}
         d.update(kw)
-        return StateSpaceDMN(**d)
+        return type(self)(**d)
+
+
+@dataclass
+class DeviationDMN(StateSpaceDMN):
+    """M1 in *deviation form* for real, mean-subtracted features (Q1_pipeline.md v2.0 Sec 6).
+
+        dx = M x dt + G dW,  M = [[-k_inh, 0], [-kappa, -k_d]],  kappa = k_int / A_max
+        y_A = A + eta_A,  y_Phi = Phi + eta_Phi,  rating = alpha Phi - beta A + eps
+
+    No baseline (A0), no read-out offset (gamma0): both are removed by the
+    per-session mean subtraction and would not be identifiable (affine symmetry,
+    paper App. B). `k_int` plays the role of kappa and is estimated on the
+    *linear* scale with free sign. `rho_obs` is the optional correlation between
+    the two EEG observation noises (same epoch), 0 by default.
+    """
+    rho_obs: float = 0.0
+
+    FREE = ("k_inh", "k_int", "k_d", "sigma_A", "sigma_Phi", "alpha", "beta", "r_A", "r_Phi", "r_Q")
+    FREE_RHO = FREE + ("rho_obs",)
+    POSITIVE = ("k_inh", "k_d", "sigma_A", "sigma_Phi", "r_A", "r_Phi", "r_Q")
+
+    def __post_init__(self):
+        self.A0 = 0.0
+        self.gamma0 = 0.0
+
+    def drift(self):
+        M = np.array([[-self.k_inh, 0.0],
+                      [-self.k_int / self.A_max, -self.k_d]])
+        return M, np.zeros(2)
+
+    def obs_cov(self) -> np.ndarray:
+        """Covariance of the EEG observation noise (y_A, y_Phi) in one epoch."""
+        c = self.rho_obs * self.r_A * self.r_Phi
+        return np.array([[self.r_A ** 2, c], [c, self.r_Phi ** 2]])
+
+    def with_params(self, **kw) -> "DeviationDMN":
+        d = {k: getattr(self, k) for k in self.FREE_RHO + ("A_max",)}
+        d.update(kw)
+        return DeviationDMN(**d)
+
+    def simulate(self, n_epochs: int, dt: float, probe_every: int | None = 12,
+                 x0: np.ndarray | None = None, seed: int = 0, probe_idx=None) -> dict:
+        """As StateSpaceDMN.simulate, with (possibly correlated) EEG noise."""
+        out = super().simulate(n_epochs, dt, probe_every, x0, seed, probe_idx)
+        if self.rho_obs != 0.0:
+            rng = np.random.default_rng(seed + 1_000_003)
+            Lr = np.linalg.cholesky(self.obs_cov())
+            out["y"] = out["x"] + rng.normal(size=out["x"].shape) @ Lr.T
+        return out

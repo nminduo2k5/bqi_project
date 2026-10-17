@@ -21,3 +21,7 @@ hw/report/*.aux
 hw/report/*.out
 hw/report/*.toc
 hw/vhdl/work_ps/
+
+# OpenNeuro metadata clone (nested git repo; re-create with: git clone https://github.com/OpenNeuroDatasets/ds001787.git)
+ds001787/
+VSTEP_so_tay_kien_thuc.html
