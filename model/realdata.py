@@ -548,26 +548,63 @@ def reml_meta(y: np.ndarray, se: np.ndarray) -> dict:
             "I2": float(max(0.0, 1 - np.sum(1 / v) ** -1 * len(y) / max(tau2 + np.mean(v), 1e-12)))}
 
 
+def lag1_autocorr(v: np.ndarray) -> float:
+    """Lag-1 autocorrelation of a feature over consecutive observed epochs."""
+    v = np.asarray(v, float)
+    ok = np.isfinite(v[1:]) & np.isfinite(v[:-1])
+    if ok.sum() < 10:
+        return float("nan")
+    a, b = v[:-1][ok], v[1:][ok]
+    return float(np.corrcoef(a, b)[0, 1])
+
+
+def stop_checks(sessions: list[dict], n_total: int, verbose: bool = True) -> dict:
+    """Locked stop criteria evaluated on the features before fitting:
+    K2 = median lag-1 autocorrelation of y_A < 0.3 (features near white noise);
+    K3 = more than 50 % of the sessions dropped by the keep criteria."""
+    ac_A = [lag1_autocorr(np.asarray(s["y"])[:, 0]) for s in sessions]
+    ac_P = [lag1_autocorr(np.asarray(s["y"])[:, 1]) for s in sessions]
+    med_A, med_P = float(np.nanmedian(ac_A)), float(np.nanmedian(ac_P))
+    dropped_frac = 1 - len(sessions) / max(n_total, 1)
+    out = {"lag1_autocorr_yA_median": med_A, "lag1_autocorr_yPhi_median": med_P,
+           "K2_triggered": bool(med_A < 0.3), "dropped_frac": dropped_frac, "K3_triggered": bool(dropped_frac > 0.5),
+           "per_session_lag1": {"y_A": ac_A, "y_Phi": ac_P}}
+    if verbose:
+        print(f"  K2: median lag-1 autocorrelation y_A {med_A:.2f}, y_Phi {med_P:.2f} "
+              f"({'TRIGGERED: features near white noise' if out['K2_triggered'] else 'ok'})")
+        print(f"  K3: {len(sessions)}/{n_total} sessions kept, dropped {100 * dropped_frac:.0f}% "
+              f"({'TRIGGERED' if out['K3_triggered'] else 'ok'})")
+    return out
+
+
 # =============================================================================
 # Entry points
 # =============================================================================
 def run_fit(seed: int = CFG.SEED, fast: bool = False, n_starts: int | None = None, output_dir: str | None = None,
-            feature_dir: str = FEATURES, sessions: list[dict] | None = None, verbose: bool = True) -> dict:
+            feature_dir: str = FEATURES, sessions: list[dict] | None = None, verbose: bool = True,
+            force: bool = False) -> dict:
     gates.require("E1")
     n_starts = n_starts or (2 if fast else RD.n_starts)
     if sessions is None:
         sessions, load_info = load_feature_sessions(feature_dir)
+        n_total = load_info["n_loaded"] + len(load_info["dropped"])
     else:
         load_info = {"n_loaded": len(sessions), "synthetic": True}
+        n_total = len(sessions)
     if not sessions:
         raise RuntimeError("Khong co phien dac trung nao (chay realdata preprocess truoc)")
+    stops = stop_checks(sessions, n_total, verbose)
+    if (stops["K2_triggered"] or stops["K3_triggered"]) and not force:
+        _save("fit_results.json", {"load": load_info, "stop_checks": stops, "stopped": True}, output_dir)
+        raise RuntimeError("Tieu chi dung K2/K3 kich hoat (xem fit_results.json). Day la ket qua can bao cao; "
+                           "chi fit tiep voi --force-gate cho muc dich kham pha.")
     base = nominal_model()
     if verbose:
         print(f"Fitting M1-dev on {len(sessions)} sessions, {n_starts} starts...", flush=True)
     r = fit_sessions(sessions, base=base, n_starts=n_starts, seed=seed)
     m = r["model"]
     se = se_at_mle(m, sessions)["crb"]
-    out = {"load": load_info, "pooled": {"params": r["params"], "loglik": r["loglik"], "success": r["success"],
+    out = {"load": load_info, "stop_checks": stops, "pooled": {"params": r["params"], "loglik": r["loglik"], "success": r["success"],
                                         "se": {k: v["se"] for k, v in se.items()}, "rel_se": {k: v["rel_se"] for k, v in se.items()}},
            "time_constants_min": {"1/k_inh": 1 / m.k_inh, "1/k_d": 1 / m.k_d}}
     # profiles
