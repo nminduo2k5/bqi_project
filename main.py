@@ -73,6 +73,14 @@ import sys
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 
+if sys.platform == "win32":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
 DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "datasets", "generated")
 DEFAULT_FIG_DIR = os.path.join(PROJECT_ROOT, "outputs", "figures")
 DEFAULT_RES_DIR = os.path.join(PROJECT_ROOT, "outputs", "results")
@@ -370,6 +378,7 @@ def cmd_realdata(args):
         kw = {"seed": args.seed, "fast": args.fast, "output_dir": out_dir}
         if step == "fit":
             kw["n_starts"] = args.n_starts
+            kw["force"] = args.force_gate          # fit past K2/K3 only for exploration (logged in fit_results.json)
         if step == "boot":
             kw["n_boot"] = args.n_boot
         realdata.run(step, **kw)
