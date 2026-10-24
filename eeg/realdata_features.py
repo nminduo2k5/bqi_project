@@ -48,13 +48,27 @@ EEG_CHANNELS = 64
 # =============================================================================
 # Raw -> clean continuous data
 # =============================================================================
+def channel_labels() -> list[str]:
+    """10-20 labels of the 64 EEG channels, in BDF order (A1..B32), from the
+    dataset's task-meditation_channels.tsv. The BDF files themselves carry the
+    raw Biosemi labels A1..B32."""
+    tsv = os.path.join(DS.bids_dir(), "task-meditation_channels.tsv")
+    ch = pd.read_csv(tsv, sep="\t")
+    labels = ch.loc[ch["type"].str.upper() == "EEG", "name"].tolist()
+    if len(labels) != EEG_CHANNELS:
+        raise ValueError(f"expected {EEG_CHANNELS} EEG labels in {tsv}, got {len(labels)}")
+    return labels
+
+
 def load_raw(bdf_path: str):
     import mne
     raw = mne.io.read_raw_bdf(bdf_path, preload=True, verbose="error")
-    eeg_names = raw.ch_names[:EEG_CHANNELS]
-    raw.pick(eeg_names)
-    raw.set_channel_types({ch: "eeg" for ch in eeg_names})
-    raw.set_montage("biosemi64", on_missing="warn", verbose="error")
+    raw_names = raw.ch_names[:EEG_CHANNELS]
+    raw.pick(raw_names)
+    labels = channel_labels() if raw_names[0] == "A1" else raw_names
+    raw.rename_channels(dict(zip(raw_names, labels)))
+    raw.set_channel_types({ch: "eeg" for ch in labels})
+    raw.set_montage("biosemi64", on_missing="raise", verbose="error")
     return raw
 
 
