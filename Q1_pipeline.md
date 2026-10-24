@@ -1,6 +1,6 @@
 # Fit mô hình M1 trên EEG thật: ví dụ ds001787 cho bài model
 
-> **Phiên bản 2.2 — 24/10/2026** (v2.1: 17/10).**  Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+> **Phiên bản 2.2 — 24/10/2026** (v2.1: 17/10). Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
 > **Vai trò:** mục "Application to an experience-sampling EEG dataset" của bài trong `Q1_pipeline_model.md`. Không phải bài riêng.
 > **Dữ liệu:** chỉ ds001787, 6,1 GB, tải được trong một buổi.
 >
