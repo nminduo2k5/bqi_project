@@ -206,8 +206,13 @@ def normalise_sessions(raw: list[dict], zscore_per_session: bool = False) -> tup
 
 def load_feature_sessions(feature_dir: str = FEATURES, y_A: str | None = None, y_Phi: str | None = None,
                           zscore_per_session: bool = False, min_probes: int | None = None,
-                          max_missing: float | None = None) -> tuple[list[dict], dict]:
-    """Load the npz feature files into sessions; apply the keep criteria of Sec 4."""
+                          max_missing: float | None = None, artifact_rule: str = "locked") -> tuple[list[dict], dict]:
+    """Load the npz feature files into sessions; apply the keep criteria of Sec 4.
+
+    artifact_rule="locked": preregistered mask (probe windows + 150 uV on any of
+    the 64 channels). "adaptive": post-registration sensitivity rule (probe
+    windows + session-adaptive threshold on the feature channels), available in
+    feature files of format_version >= 2."""
     y_A = y_A or RD.feature_y_A
     y_Phi = y_Phi or RD.feature_y_Phi
     min_probes = RD.min_probes_per_session if min_probes is None else min_probes
@@ -217,7 +222,12 @@ def load_feature_sessions(feature_dir: str = FEATURES, y_A: str | None = None, y
         if not name.endswith(".npz"):
             continue
         z = np.load(os.path.join(feature_dir, name), allow_pickle=False)
-        mask = z["mask"].astype(bool)
+        if artifact_rule == "adaptive":
+            if "mask_adaptive" not in z.files:
+                raise RuntimeError(f"{name}: thieu mask_adaptive (file dac trung dinh dang cu; chay lai realdata preprocess)")
+            mask = z["mask_adaptive"].astype(bool)
+        else:
+            mask = z["mask"].astype(bool)
         y = np.column_stack([z[y_A], z[y_Phi]]).astype(float)
         y[~mask] = np.nan
         rating = z["rating"].astype(float)
@@ -230,7 +240,8 @@ def load_feature_sessions(feature_dir: str = FEATURES, y_A: str | None = None, y
         raw.append({"t": z["t"].astype(float), "y": y, "t_probe": z["t_probe"].astype(float)[keep_p],
                     "rating": rating[keep_p], **info})
     sessions, norm = normalise_sessions(raw, zscore_per_session)
-    return sessions, {"n_loaded": len(sessions), "dropped": dropped, "features": (y_A, y_Phi), **norm}
+    return sessions, {"n_loaded": len(sessions), "dropped": dropped, "features": (y_A, y_Phi),
+                      "artifact_rule": artifact_rule, **norm}
 
 
 # =============================================================================
@@ -357,12 +368,21 @@ def profile_unimodal(prof: np.ndarray) -> bool:
 # Residuals, LOSO, null models (E3)
 # =============================================================================
 def ljung_box_p(x: np.ndarray, lags: int = 30) -> float:
-    from statsmodels.stats.diagnostic import acorr_ljungbox
     x = np.asarray(x, float)
     x = x[np.isfinite(x)]
-    if len(x) < lags + 5:
+    n = len(x)
+    m = min(lags, n // 4)
+    if m < 1 or n < lags + 5:
         return float("nan")
-    return float(acorr_ljungbox(x, lags=[min(lags, len(x) // 4)], return_df=True)["lb_pvalue"].iloc[0])
+    import scipy.stats as st
+    xd = x - np.mean(x)
+    c0 = float(np.dot(xd, xd) / n)
+    if c0 <= 1e-15:
+        return 1.0
+    ks = np.arange(1, m + 1)
+    rk = np.array([np.dot(xd[:-k], xd[k:]) / (n * c0) for k in ks])
+    q = float(n * (n + 2) * np.sum((rk ** 2) / (n - ks)))
+    return float(1.0 - st.chi2.cdf(q, df=m))
 
 
 def residual_checks(model: DeviationDMN, sessions: list[dict]) -> dict:
@@ -621,7 +641,7 @@ def run_check(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None =
         except Exception as e:  # a variant must never abort the check
             sens[name] = {"error": repr(e)}
     out["sensitivity"] = sens
-    n_ok = sum(1 for v in sens.values() if "params" in v)
+    n_ok = sum(1 for k, v in sens.items() if "params" in v and not k.startswith("postreg_"))
     out["gate_E3"] = gate_E3(resid, True, n_ok, verbose)
     _save("check_results.json", out, output_dir)
     return out
@@ -636,6 +656,8 @@ def default_sensitivity_loaders(feature_dir: str) -> dict:
         "zscore_per_session": lambda: load_feature_sessions(feature_dir, zscore_per_session=True)[0],
         "missing_le_20pct": lambda: load_feature_sessions(feature_dir, max_missing=0.20)[0],
         "first_20_probes": lambda: [_first_probes(s, 20) for s in load_feature_sessions(feature_dir)[0]],
+        # post-registration (Q1_pipeline.md v2.2): reported separately, not part of the 4/5 rule
+        "postreg_adaptive_artifact_rule": lambda: load_feature_sessions(feature_dir, artifact_rule="adaptive")[0],
     }
 
 

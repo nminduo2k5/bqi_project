@@ -1,6 +1,6 @@
 # Fit mô hình M1 trên EEG thật: ví dụ ds001787 cho bài model
 
-> **Phiên bản 2.1 — 17/10/2026.** Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+> **Phiên bản 2.2 — 24/10/2026** (v2.1: 17/10).**  Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
 > **Vai trò:** mục "Application to an experience-sampling EEG dataset" của bài trong `Q1_pipeline_model.md`. Không phải bài riêng.
 > **Dữ liệu:** chỉ ds001787, 6,1 GB, tải được trong một buổi.
 >
@@ -134,6 +134,8 @@ Tham số trong `eeg/config.yaml`:
 8. Mỗi bước ghi log vào `derivatives/ds001787/<sub>/<ses>/prep_log.json`.
 
 **Tiêu chí giữ phiên** (khoá cùng dự đoán): bỏ phiên có > 40% epoch thiếu hoặc < 8 probe có rating giải mã được. Báo số phiên bị bỏ theo nhóm.
+
+**Sửa đổi sau đăng ký v2.2 (24/10/2026), quyết định trước khi xem bất kỳ đặc trưng nào cùng rating.** Khảo sát biên độ trên cả 40 phiên (chỉ lọc + tham chiếu, không ICA, không đặc trưng; `outputs/results/realdata/artifact_survey.csv`) cho thấy quy tắc đã khoá (đỉnh-đỉnh > 150 µV ở *bất kỳ* kênh nào trong 64 kênh) làm thiếu trung vị 38 % epoch và **chỉ giữ 22/40 phiên** (12 expert, 10 novice). 18 phiên bị bỏ (45 %) vẫn dưới ngưỡng dừng K3 (50 %), nên **phân tích chính giữ nguyên quy tắc đã khoá**. Nguyên nhân: nhiễu cơ ở kênh thái dương (T7, TP8, FT7, FT8, P10; trung vị đỉnh-đỉnh 100–150 µV ở sub-001 ses-02) và một số phiên có biên độ nền cao toàn bộ (sub-003, sub-018, sub-022: trung vị 85–140 µV so với 35–55 µV ở phiên khác), nghĩa là việc loại phiên không ngẫu nhiên. ICLabel không giảm tỉ lệ này (thử trên 2 phiên: 63 % và 66 % trước và sau). Vì vậy thêm **một phân tích nhạy ngoài đăng ký**, báo riêng và không tính vào quy tắc 4/5: epoch bị loại khi đỉnh-đỉnh lớn nhất trên các kênh dùng cho đặc trưng vượt max(150 µV, trung vị phiên + 5 MAD); với quy tắc này trung vị thiếu 22 % và giữ đủ 40/40 phiên. Đặc trưng nay được tính cho mọi epoch ngoài cửa sổ probe (file đặc trưng định dạng 2 lưu `mask` đã khoá, `mask_probe`, `mask_adaptive`), nên cả hai quy tắc dùng chung một lần chạy `preprocess`. Đồng thời ghi nhận nhiễu do giới và tuổi giữa hai nhóm (expert 10/12 nam, tuổi TB 39; novice 2/12 nam, tuổi TB 48): E-H5 sẽ được báo kèm phân tích khám phá có hiệp biến tuổi và giới.
 
 **Đầu ra.** Mỗi phiên một `epochs.parquet`: chỉ số epoch, thời điểm, cờ thiếu, và dữ liệu sạch 64 × 2560 mẫu mỗi epoch.
 

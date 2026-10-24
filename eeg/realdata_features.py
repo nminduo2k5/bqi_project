@@ -130,8 +130,33 @@ def preprocess_raw(raw, log: dict, do_ica: bool = True):
 # =============================================================================
 # Epoch grid and features
 # =============================================================================
-def epoch_grid(raw, duration_s: float, probes: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
-    """Regular 10-s epochs (end times), data (n_ep, n_ch, n_times), mask."""
+def feature_channel_idx(ch_names: list, common_idx: list) -> list[int]:
+    names = {c.upper(): i for i, c in enumerate(ch_names)}
+    post = [names[c.upper()] for c in RD.posterior_channels if c.upper() in names]
+    front = [names[c.upper()] for c in RD.frontal_channels if c.upper() in names]
+    return sorted(set(post + front + list(common_idx)))
+
+
+def adaptive_amplitude_flags(ptp_uv: np.ndarray, feat_idx: list[int], n_mad: float = 5.0) -> np.ndarray:
+    """Post-registration sensitivity rule (Q1_pipeline.md v2.2): reject an epoch
+    when its largest peak-to-peak over the feature channels exceeds
+    max(150 uV, session median + n_mad * MAD). Adapts to sessions whose whole
+    recording has a higher amplitude (impedance / gain), which the fixed rule
+    rejects almost entirely."""
+    if len(ptp_uv) == 0:
+        return np.zeros(0, bool)
+    mx = ptp_uv[:, feat_idx].max(axis=1)
+    med = np.median(mx)
+    mad = np.median(np.abs(mx - med)) * 1.4826
+    return mx > max(RD.reject_uv, med + n_mad * mad)
+
+
+def epoch_grid(raw, duration_s: float, probes: pd.DataFrame, common_idx: list | None = None
+               ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
+    """Regular 10-s epochs (end times), data (n_ep, n_ch, n_times) and the
+    preregistered mask (probe windows + 150 uV on any of the 64 channels).
+    `reasons` also carries the separate flags: `probe_mask` (True = outside
+    probe windows), `amp_locked` and `amp_adaptive` (True = rejected)."""
     sf = raw.info["sfreq"]
     ep = RD.epoch_s
     n_ep = int(np.floor(min(duration_s, raw.times[-1]) / ep))
@@ -139,18 +164,19 @@ def epoch_grid(raw, duration_s: float, probes: pd.DataFrame) -> tuple[np.ndarray
     X = raw.get_data()
     data = np.stack([X[:, k * n_t:(k + 1) * n_t] for k in range(n_ep)]) if n_ep else np.zeros((0, X.shape[0], n_t))
     t_end = np.arange(1, n_ep + 1) * ep
-    mask = np.ones(n_ep, bool)
-    reasons = {"probe_window": 0, "amplitude": 0}
+    probe_mask = np.ones(n_ep, bool)
     for _, p in probes.iterrows():
         end = p["resp_end_s"] + RD.probe_pad_after_s if pd.notna(p["resp_end_s"]) else p["onset_s"] + RD.probe_no_response_s
-        hit = (t_end > p["onset_s"]) & (t_end - ep < end)
-        reasons["probe_window"] += int((mask & hit).sum())
-        mask &= ~hit
-    if n_ep:
-        ptp = data.max(axis=2) - data.min(axis=2)
-        amp_bad = np.any(ptp > RD.reject_uv * 1e-6, axis=1)
-        reasons["amplitude"] = int((mask & amp_bad).sum())
-        mask &= ~amp_bad
+        probe_mask &= ~((t_end > p["onset_s"]) & (t_end - ep < end))
+    ptp_uv = (data.max(axis=2) - data.min(axis=2)) * 1e6 if n_ep else np.zeros((0, X.shape[0]))
+    amp_locked = np.any(ptp_uv > RD.reject_uv, axis=1) if n_ep else np.zeros(0, bool)
+    if common_idx is None:
+        common_idx = list(range(X.shape[0]))
+    amp_adaptive = adaptive_amplitude_flags(ptp_uv, feature_channel_idx(raw.ch_names, common_idx))
+    mask = probe_mask & ~amp_locked
+    reasons = {"probe_window": int((~probe_mask).sum()), "amplitude": int((probe_mask & amp_locked).sum()),
+               "amplitude_adaptive": int((probe_mask & amp_adaptive).sum()),
+               "probe_mask": probe_mask, "amp_locked": amp_locked, "amp_adaptive": amp_adaptive}
     return t_end, data, mask, reasons
 
 
@@ -184,11 +210,15 @@ def _feat_job(args):
 
 
 def session_features(raw, duration_s: float, probes: pd.DataFrame, seed: int, n_jobs: int | None = None) -> dict:
-    t_end, data, mask, reasons = epoch_grid(raw, duration_s, probes)
+    """Features for every epoch outside the probe windows (whatever the
+    amplitude rule), so that both the preregistered and the adaptive artifact
+    rules can be applied later without recomputation."""
     cfg = load_config()
     mapping = map_common_channels(raw, cfg["channels_common"])
     common_idx = [raw.ch_names.index(mapping[c]) for c in cfg["channels_common"]]
-    jobs = [(data[k], raw.ch_names, raw.info["sfreq"], common_idx, seed + 7919 * k) for k in range(len(t_end)) if mask[k]]
+    t_end, data, mask, reasons = epoch_grid(raw, duration_s, probes, common_idx)
+    compute = reasons["probe_mask"]
+    jobs = [(data[k], raw.ch_names, raw.info["sfreq"], common_idx, seed + 7919 * k) for k in range(len(t_end)) if compute[k]]
     n_jobs = n_jobs or max(1, (os.cpu_count() or 2) - 1)
     if n_jobs == 1 or len(jobs) < 4:
         rows = [_feat_job(j) for j in jobs]
@@ -196,10 +226,13 @@ def session_features(raw, duration_s: float, probes: pd.DataFrame, seed: int, n_
         with ProcessPoolExecutor(max_workers=n_jobs) as ex:
             rows = list(ex.map(_feat_job, jobs, chunksize=4))
     feats = {k: np.full(len(t_end), np.nan) for k in (rows[0].keys() if rows else ["alpha_post", "lzc_si"])}
-    for (k_ep, r) in zip(np.flatnonzero(mask), rows):
+    for (k_ep, r) in zip(np.flatnonzero(compute), rows):
         for name, v in r.items():
             feats[name][k_ep] = v
     return {"t_end_s": t_end, "mask": mask, "reasons": reasons, "features": feats}
+
+
+FORMAT_VERSION = 2   # v2: features on all non-probe epochs + separate artifact flags
 
 
 def process_session(sess: dict, probes: pd.DataFrame, out_dir: str = FEATURES_DIR, seed: int = CFG.SEED,
@@ -215,12 +248,17 @@ def process_session(sess: dict, probes: pd.DataFrame, out_dir: str = FEATURES_DI
     t_min = np.round(sf["t_end_s"] / res) * res / 60.0
     t_probe = np.round(pr["onset_s"].to_numpy(float) / res) * res / 60.0
     path = os.path.join(out_dir, f"{sess['sub']}_{sess['ses']}.npz")
-    np.savez_compressed(path, t=t_min, mask=sf["mask"], t_probe=t_probe,
+    rs = sf["reasons"]
+    mask_adaptive = rs["probe_mask"] & ~rs["amp_adaptive"]
+    np.savez_compressed(path, t=t_min, mask=sf["mask"], mask_probe=rs["probe_mask"], mask_adaptive=mask_adaptive,
+                        format_version=FORMAT_VERSION, t_probe=t_probe,
                         rating=pr["rating"].to_numpy(float), q1=pr["q1"].to_numpy(float), q2=pr["q2"].to_numpy(float),
                         q3=pr["q3"].to_numpy(float), sub=sess["sub"], ses=sess["ses"], group=sess["group"],
                         **{k: v for k, v in sf["features"].items()})
     log.update({"n_epochs": int(len(sf["mask"])), "n_missing": int((~sf["mask"]).sum()),
-                "missing_frac": float((~sf["mask"]).mean()), **sf["reasons"], "n_probes": int(len(pr)),
+                "missing_frac": float((~sf["mask"]).mean()),
+                "missing_frac_adaptive": float((~mask_adaptive).mean()),
+                **{k: v for k, v in rs.items() if not isinstance(v, np.ndarray)}, "n_probes": int(len(pr)),
                 "n_rated": int(pr["rating"].notna().sum())})
     with open(path.replace(".npz", "_prep_log.json"), "w", encoding="utf-8") as f:
         json.dump(log, f, indent=2, default=str)
@@ -241,8 +279,13 @@ def run(subjects=None, seed: int = CFG.SEED, n_jobs: int | None = None, do_ica: 
             continue
         out = os.path.join(FEATURES_DIR, f"{s['sub']}_{s['ses']}.npz")
         if os.path.isfile(out):
-            done.append(out)
-            continue
+            with np.load(out, allow_pickle=False) as z:
+                current = "format_version" in z.files and int(z["format_version"]) >= FORMAT_VERSION
+            if current:
+                done.append(out)
+                continue
+            if verbose:
+                print(f"  {s['sub']} {s['ses']}: file dac trung dinh dang cu, tinh lai", flush=True)
         if verbose:
             print(f"  {s['sub']} {s['ses']} ...", flush=True)
         done.append(process_session(s, probes, seed=seed, n_jobs=n_jobs, do_ica=do_ica))

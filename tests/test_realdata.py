@@ -142,6 +142,26 @@ def test_real_metadata_sessions_and_decoding():
         assert st["n_matched"] >= 0.9 * st["n_probe_eeg"]
 
 
+def test_epoch_grid_flags_and_adaptive_rule():
+    """Locked mask = probe windows + 150 uV on any channel; adaptive rule only
+    rejects epochs that are outliers within the session (feature channels)."""
+    import mne
+    from eeg import realdata_features as RF
+    sf, n_ep = 256.0, 30
+    names = mne.channels.make_standard_montage("biosemi64").ch_names
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(64, int(n_ep * 10 * sf))) * 40e-6        # high baseline: ptp ~ 250-300 uV everywhere
+    X[names.index("Pz"), int(125 * sf):int(125.2 * sf)] += 2e-3         # one short huge artifact in epoch 12 (120-130 s)
+    raw = mne.io.RawArray(X, mne.create_info(names, sf, "eeg"), verbose="error")
+    probes = pd.DataFrame({"onset_s": [101.0], "resp_end_s": [105.0]})
+    common = [names.index(c) for c in ("Fz", "Cz", "Pz", "O1", "O2")]
+    t_end, data, mask, rs = RF.epoch_grid(raw, n_ep * 10.0, probes, common)
+    assert rs["amp_locked"].all()                           # fixed 150 uV rejects every epoch of this session
+    assert rs["amp_adaptive"][12] and rs["amp_adaptive"].sum() == 1
+    assert not rs["probe_mask"][10] and rs["probe_mask"].sum() == len(t_end) - 1
+    assert not mask.any()
+
+
 def test_recovery_on_real_like_designs():
     """Parameter recovery of M1-dev on irregular designs with gaps (fixed-step
     inference would be wrong here); loose tolerance, 3 short sessions."""
