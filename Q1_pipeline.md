@@ -1,6 +1,8 @@
 # Fit mô hình M1 trên EEG thật: ví dụ ds001787 cho bài model
 
-> **Phiên bản 2.2 — 24/10/2026** (v2.1: 17/10). Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+> **Phiên bản 2.3 — 25/10/2026** (v2.2: 24/10, v2.1: 17/10). Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+>
+> **Trạng thái 25/10/2026: XONG, E0–E3 đều PASS.** Đăng ký trước khoá 19/10/2026 13:48 UTC, file EEG đầu tiên tải 13:49 UTC. 22/40 phiên giữ lại theo quy tắc đã khoá. Kết quả: 1/k_inh = 0,76 phút (CI profile 0,49–1,17); SE Fisher của k_inh 9,9 % (dự đoán 9,1–13,3 %) nhưng SE profile/Hessian 22 % → kênh alpha sai đặc tả; E-H1 đạt (Fisher), E-H2 không đạt, E-H3 đạt về dấu, E-H4 không xác định, E-H5 không đạt; quy tắc 4/5 chỉ đạt với α. Đã viết vào bài: mục 4.7, Hình 9–10, Bảng 9–10, Phụ lục H (`template_latex/`, bản Anh và Việt). Số liệu: `outputs/paper/realdata/summary.json`; tóm tắt cho thầy: `outputs/paper/realdata/TOM_TAT_GUI_THAY.md`.
 > **Vai trò:** mục "Application to an experience-sampling EEG dataset" của bài trong `Q1_pipeline_model.md`. Không phải bài riêng.
 > **Dữ liệu:** chỉ ds001787, 6,1 GB, tải được trong một buổi.
 >
@@ -127,7 +129,7 @@ Tham số trong `eeg/config.yaml`:
 1. Đọc BDF bằng `mne.io.read_raw_bdf`, montage `biosemi64`, bỏ EXG/GSR/Resp/Plet/Temp.
 2. Lọc 1–40 Hz (FIR zero-phase), notch 50 Hz. Giữ 256 Hz.
 3. Tham chiếu trung bình. Kênh xấu bằng RANSAC (`pyprep`) hoặc z-score; nội suy spline. Ghi số kênh nội suy mỗi phiên (bài gốc: 0–20, trung bình 6).
-4. ICA: Picard trên bản lọc 1 Hz, nhãn ICLabel, loại mắt/cơ có xác suất ≥ 0,8.
+4. ICA: Picard (extended infomax) khớp trên bản sao lọc 1–100 Hz của cùng dữ liệu đã làm sạch (dải huấn luyện của ICLabel; header Biosemi đã giới hạn ở 52 Hz), rồi áp ma trận tách lên dữ liệu 1–40 Hz; nhãn ICLabel, loại mắt/cơ có xác suất ≥ 0,8.
 5. Che khoảng probe: từ mốc 128 đến phản hồi cuối của probe + 3 s; probe không có phản hồi che 15 s.
 6. **Lưới epoch đều từ đầu bản ghi, rating tại đúng mốc 128** (sửa đổi v2.1, thay cho lưới neo theo probe của v2.0): epoch kết thúc tại t_k = 10k s. Rating là một quan sát của QoC tại **đúng thời điểm** mốc 128; bộ lọc Kalman và Fisher chính xác hỗ trợ bước thời gian thay đổi (`eeg/model_fit.kalman_filter_irregular`, `model/fisher.IrregularDesign`), nên không cần dịch hay xoá epoch để gán rating. Lý do đổi: lưới neo theo probe tạo khoảng cách không đều giữa đoạn này và đoạn sau (vi phạm Δ = 10 s mà v2.0 muốn giữ), còn cách này giữ Δ = 10 s cho EEG và đặt rating đúng chỗ người tập đánh giá.
 7. Epoch biên độ > 150 µV hoặc có điểm bị che ở bước 5 → thiếu. Ghi tỉ lệ thiếu mỗi phiên.
@@ -297,7 +299,7 @@ bqi_project/
     gates.py                # ĐÃ SỬA: E0–E3, lock riêng cho predictions_realdata.md
   tests/test_realdata.py    # MỚI
   preregistration/predictions_realdata.md   # ĐÃ SOẠN, chưa khoá
-  experiments/run_realdata.py   # CHƯA: Hình 9–10, Bảng 10–11 → outputs/paper/realdata (viết khi có fit)
+  experiments/run_realdata.py   # ĐÃ VIẾT: Hình 9–10, bảng, summary.json → outputs/paper/realdata (`realdata paper`)
 ```
 
 **Test bắt buộc trước khi chạy dữ liệu thật** (đã có trong `tests/test_realdata.py`):
@@ -321,7 +323,9 @@ python main.py realdata preprocess              # tiền xử lý + đặc trưn
 python main.py realdata fit   --seed 42         # fit gộp/nhóm/người, SE, profile
 python main.py realdata boot  --seed 42         # E2 (200 lần)
 python main.py realdata check --seed 42         # phần dư, LOSO, 5 phân tích nhạy → E3
+python main.py realdata paper --seed 42         # Hình 9–10, bảng, summary.json (CRB tại SNR đo, Hessian, PPC)
 python main.py gates
+# (realdata groups: làm lại riêng phần E-H5 trên fit_results.json đã có, không fit lại)
 ```
 
 Phụ thuộc: `mne` (đã cài, 1.13); tuỳ chọn `python-picard` (ICA nhanh hơn fastica), `mne-icalabel` (nhãn thành phần; nếu không có thì heuristic, ghi vào log). Không cần datalad/openneuro-py (tải thẳng S3). Thời gian ước tính: đặc trưng ~8 s/epoch với 20 surrogate LZc (đo trên epoch mô phỏng), ~11.000 epoch → 8–10 giờ với 3 tiến trình; bootstrap 200 lần × fit 40 phiên là bước nặng thứ hai.
@@ -398,15 +402,15 @@ K4 cắt ở cuối tuần 6 nếu chưa qua E2.
 ## 15. Checklist trước khi nộp
 
 - [x] E0 PASS (17/10/2026; sub-013 ghi là ngoại lệ)
-- [ ] `predictions_realdata.lock` có trước log tải BDF; hash khớp `predictions_realdata.md`
-- [ ] E1 ✅, E2, E3 ghi rõ kết quả trong bài (kể cả FAIL), timestamp tăng dần
-- [ ] Ba con số sai số (CRB dự đoán, SE tại MLE, RMSE bootstrap) cho k_inh, k_d, α, β
-- [ ] LOSO M1 so với N1–N3, CI bootstrap theo phiên
-- [ ] 5 phân tích nhạy báo đủ
-- [ ] Không báo A0, Φ\* trên dữ liệu thật; không gọi alpha là DMN hay LZc là Φ
-- [ ] Tham số tiền xử lý và đặc trưng công bố trong `eeg/config.yaml` và `model/config.py`
-- [ ] Data availability có ds001787 và DOI
-- [ ] Không còn số liệu nào từ các bảng BQI
+- [x] `predictions_realdata.lock` có trước log tải BDF (khoá 13:48:07 UTC, BDF đầu tiên 13:49:46 UTC ngày 19/10/2026); hash khớp `predictions_realdata.md`
+- [x] E1 ✅, E2 ✅, E3 ✅ ghi rõ kết quả trong bài (mục 4.7), timestamp tăng dần
+- [x] Ba con số sai số (CRB dự đoán, SE tại MLE, RMSE bootstrap) cho k_inh, k_d, α, β (Bảng 9, kèm CRB tại SNR đo và SE theo thông tin quan sát)
+- [x] LOSO M1 so với N1–N3, CI bootstrap theo phiên (Bảng 10)
+- [x] Phân tích nhạy báo đủ (6 biến thể đã khoá + 1 biến thể sau đăng ký, Bảng 12)
+- [x] Không báo A0, Φ\* trên dữ liệu thật; không gọi alpha là DMN hay LZc là Φ
+- [x] Tham số tiền xử lý và đặc trưng công bố trong `model/config.py` (khối REALDATA) và Phụ lục H
+- [x] Data availability có ds001787 và DOI
+- [x] Không còn số liệu nào từ các bảng BQI
 
 ---
 

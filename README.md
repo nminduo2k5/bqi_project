@@ -98,19 +98,24 @@ Từng bước: `python main.py model theory | identifiability | design | contro
 
 Bản thảo đầy đủ (tiếng Anh + tiếng Việt) ở [`template_latex/`](template_latex/): `paper_reference.tex`, `paper_reference_vi.tex`, hướng dẫn biên dịch `HUONG_DAN_BIEN_DICH.md`. Còn lại: email cơ quan, DOI preprint của bài BQI, đưa mã + `outputs/` lên GitHub/Zenodo khi nộp.
 
-### Dữ liệu thật: fit M1 trên ds001787 ([`Q1_pipeline.md`](Q1_pipeline.md) v2.1)
+### Dữ liệu thật: fit M1 trên ds001787 ([`Q1_pipeline.md`](Q1_pipeline.md) v2.3) — xong 25/10/2026, E0–E3 PASS
 
-Mục "Application to an experience-sampling EEG dataset" của bài: M1 dạng độ lệch (10 tham số) fit lên bộ EEG thiền ds001787 (24 người, 40 phiên, 983 probe tự chấm, 6,1 GB, CC0). Mã đã đủ cho mọi bước; chạy theo thứ tự cổng:
+Mục 4.7 "Application to an experience-sampling EEG dataset" và Phụ lục H của bài: M1 dạng độ lệch (10 tham số) fit lên bộ EEG thiền ds001787 (24 người, 40 phiên, 983 probe tự chấm, 6,1 GB, CC0), theo bản đăng ký trước đã khoá SHA-256 lúc 19/10/2026 13:48 UTC, trước khi tải file EEG đầu tiên. Chạy theo thứ tự cổng:
 
 ```bash
-python main.py realdata ratings        # E0 ✅ PASS 17/10/2026: 950/983 probe giải mã từ file hành vi; "phím 0 không có trigger" xác nhận 0/741
-python main.py realdata design-crb     # E1 ✅ PASS: hạng 10/10; CRB(k_inh) dự đoán 9,1 % gộp, 12,4 % expert, 13,5 % novice
-python main.py realdata preregister --yes   # khoá preregistration/predictions_realdata.md (chưa làm)
-python main.py realdata fetch          # 6,1 GB từ S3 OpenNeuro, kiểm MD5; chỉ chạy được sau khi khoá
-python main.py realdata preprocess | fit | boot | check     # đặc trưng → fit → E2 → E3
+python main.py realdata ratings        # E0 ✅ PASS: 950/983 probe giải mã từ file hành vi; "phím 0 không có trigger" xác nhận 0/741
+python main.py realdata design-crb     # E1 ✅ PASS: hạng 10/10; CRB(k_inh) dự đoán 9,1 % gộp
+python main.py realdata preregister --yes   # đã khoá 19/10/2026
+python main.py realdata fetch          # 6,1 GB từ S3 OpenNeuro, kiểm MD5; từ chối khi chưa khoá
+set OMP_NUM_THREADS=1 && set MKL_NUM_THREADS=1
+python main.py realdata preprocess     # ICA (Picard + ICLabel), lưới epoch 10 s, 5 đặc trưng (~9 giờ máy 2 nhân)
+python main.py realdata fit            # fit gộp, theo nhóm (E-H5), theo người; profile
+python main.py realdata boot           # E2 ✅ PASS: RMSE/SE k_inh 0,98, k_d 1,01, α 1,69, β 1,00
+python main.py realdata check          # E3 ✅ PASS: Ljung–Box trung vị p 0,27/0,40; LOSO; 6 phân tích nhạy
+python main.py realdata paper          # Hình 9–10, bảng, summary.json → outputs/paper/realdata/
 ```
 
-Kết quả: `outputs/results/realdata/` (`e0_summary.json`, `e1_design_crb.json`, `probes.csv`), cổng `outputs/gates/E0.json`, `E1.json`. Metadata OpenNeuro clone vào `ds001787/` (không vào git), dữ liệu tải vào `data/ds001787/`.
+Các bước dài in tiến độ và lưu checkpoint trong `outputs/results/realdata/checkpoints/`, ngắt giữa chừng thì chạy lại cùng lệnh. Kết quả chính (22/40 phiên giữ lại): 1/k_inh = 0,76 phút (CI profile 0,49–1,17); SE Fisher của k_inh 9,9 % nhưng SE theo profile 22 %, dấu hiệu kênh alpha bị sai đặc tả; EEG không cải thiện dự đoán điểm tự chấm ngoài mẫu (E-H2 không đạt); E-H5 không đạt. Tóm tắt cho thầy: [`outputs/paper/realdata/TOM_TAT_GUI_THAY.md`](outputs/paper/realdata/TOM_TAT_GUI_THAY.md). Số liệu thô: `outputs/results/realdata/` (`fit_results.json`, `boot_results.json`, `check_results.json`); mọi con số trích trong bài: `outputs/paper/realdata/summary.json`. Metadata OpenNeuro clone vào `ds001787/` (không vào git), dữ liệu tải vào `data/ds001787/`.
 
 ### Hướng tiếp theo: "neural design" — mạch neural dấu chấm tĩnh + VHDL ([`hw/README.md`](hw/README.md))
 
@@ -164,12 +169,13 @@ bqi_project/
 │   └── generated/                 Output CSVs (created on first run)
 ├── experiments/
 │   ├── run_all.py                 Runs every algorithm, saves figures + JSON summary (phần BQI)
-│   └── run_model_paper.py         ★ Xuất 8 hình + 3 bảng của bài Q1 → outputs/paper/model
+│   ├── run_model_paper.py         ★ Xuất 8 hình + 3 bảng của bài Q1 → outputs/paper/model
+│   └── run_realdata.py            ★ Hình 9–10, bảng, summary.json của phần dữ liệu thật → outputs/paper/realdata
 ├── eeg/                           EEG: loaders/ds001787.py (E0, thiết kế thật), fetch.py, realdata_features.py,
 │                                  model_fit.py (Kalman bước thay đổi), gates.py (E0–E3); phần v1.0 (axis, metrics) giữ nguyên
-├── preregistration/               predictions_realdata.md (ds001787, chưa khoá); predictions.md (v1.0, hoãn)
+├── preregistration/               predictions_realdata.md (ds001787, đã khoá 19/10/2026); predictions.md (v1.0, hoãn)
 ├── ds001787/, data/ds001787/      metadata OpenNeuro (clone) và dữ liệu tải về — cả hai ngoài git
-├── tests/                         pytest (100 test; test_model.py bài Q1, test_hardware.py mạch, test_realdata.py ds001787)
+├── tests/                         pytest (104 test; test_model.py bài Q1, test_hardware.py mạch, test_realdata.py ds001787)
 ├── dashboard/                     Giao diện trực quan Streamlit (python main.py dashboard)
 │   ├── app.py                     Điểm vào: điều hướng giữa các trang
 │   ├── core.py                    Dùng chung: đăng ký module, màu, chạy CLI/pytest, scorecard
