@@ -28,11 +28,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from bqi.dmn_ode import DeviationDMN
 from eeg import gates
 from eeg.loaders import ds001787 as DS
-from eeg.model_fit import fit, kalman_filter_irregular, kalman_loglik_irregular, profile_likelihood
+from eeg.model_fit import fit, kalman_filter_irregular, kalman_loglik_irregular, profile_likelihood, run_starts
 from model import config as CFG
+from model.checkpoint import Checkpoint, fingerprint, sessions_key
 from model.fisher import IrregularDesign, crb, fisher_exact, identifiability_spectrum
 
 RD = CFG.REALDATA
+CKPT_VERSION = 1   # bump when a change to the fitting code should invalidate saved checkpoints
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(ROOT, "outputs", "results", "realdata")
 FEATURES = os.path.join(ROOT, RD.data_dir, "derivatives", "features")
@@ -191,8 +193,9 @@ def normalise_sessions(raw: list[dict], zscore_per_session: bool = False) -> tup
         y = y - mu
         dev.append(y)
         r = np.asarray(s["rating"], float).copy()
-        r = r - np.nanmean(r) if np.isfinite(r).any() else r
-        out.append({**s, "y": y, "rating": r})
+        offset = float(np.nanmean(r)) if np.isfinite(r).any() else 0.0
+        r = r - offset
+        out.append({**s, "y": y, "rating": r, "rating_offset": offset})
     allv = np.vstack(dev)
     pooled_sd = np.sqrt(np.nanmean(allv ** 2, axis=0))
     for s in out:
@@ -272,8 +275,9 @@ def moment_starts(sessions: list[dict], base: DeviationDMN) -> dict:
             if np.all(np.isfinite(y[i])):
                 X.append(y[i]); r.append(rv)
     coef = np.linalg.lstsq(np.array(X), np.array(r), rcond=None)[0] if len(X) > 5 else np.array([-base.beta, base.alpha])
-    var_A = float(np.nanmean(np.vstack([np.asarray(s["y"])[:, 0] for s in sessions]) ** 2))
-    var_P = float(np.nanmean(np.vstack([np.asarray(s["y"])[:, 1] for s in sessions]) ** 2))
+    # pooled over all epochs; sessions differ in length, so concatenate (not vstack)
+    var_A = float(np.nanmean(np.concatenate([np.asarray(s["y"])[:, 0] for s in sessions]) ** 2))
+    var_P = float(np.nanmean(np.concatenate([np.asarray(s["y"])[:, 1] for s in sessions]) ** 2))
     return {"k_inh": float(k_A), "k_d": float(k_P), "alpha": float(coef[1]), "beta": float(-coef[0]),
             "sigma_A": float(np.sqrt(max(2 * k_A * var_A * 0.7, 1e-4))),
             "sigma_Phi": float(np.sqrt(max(2 * k_P * var_P * 0.7, 1e-4)))}
@@ -293,19 +297,129 @@ def starting_points(sessions: list[dict], base: DeviationDMN, n_starts: int, see
 
 
 def fit_sessions(sessions: list[dict], base: DeviationDMN | None = None, names=None, n_starts: int = RD.n_starts,
-                 seed: int = CFG.SEED, starts: list[dict] | None = None) -> dict:
+                 seed: int = CFG.SEED, starts: list[dict] | None = None, label: str | None = None, ckpt=None) -> dict:
     base = base or nominal_model()
     names = list(names or base.FREE)
     starts = starts if starts is not None else starting_points(sessions, base, n_starts, seed)
     res = fit(sessions, RD.epoch_s / 60.0, init=base, names=names, n_starts=n_starts, rng=seed,
-              loglik=kalman_loglik_irregular, starts=starts)
+              loglik=kalman_loglik_irregular, starts=starts, label=label, ckpt=ckpt)
     return res
+
+
+def _checkpoint(step: str, output_dir: str | None, *parts, verbose: bool = True) -> Checkpoint:
+    """Checkpoint of one step; the fingerprint covers the data and settings."""
+    path = os.path.join(output_dir or RESULTS, "checkpoints", f"{step}.json")
+    return Checkpoint(path, fingerprint(step, CKPT_VERSION, repr(RD), *parts), verbose=verbose)
 
 
 def se_at_mle(model: DeviationDMN, sessions: list[dict], names=None) -> dict:
     names = list(names or model.FREE)
     I = fisher_sum(model, [design_of(s) for s in sessions], names)
     return {"crb": crb(I, names, model), "fisher": I}
+
+
+def observed_information_se(model: DeviationDMN, sessions: list[dict], names=None, h: float = 1e-3) -> dict:
+    """SE from the observed information: central-difference Hessian of the
+    log-likelihood at `model` on the fitting scale (log for positive
+    parameters, linear for kappa, alpha, beta). Set beside the expected-Fisher
+    SE; under a correct model both agree, a large gap signals misspecification
+    (Q1_pipeline.md Sec 6, "SE at MLE ... cross-checked with a numerical Hessian")."""
+    from eeg.model_fit import _pack, _unpack
+    names = list(names or model.FREE)
+    th0 = _pack(model, names)
+    step = h * np.maximum(1.0, np.abs(th0))
+    n = len(names)
+
+    def ll(th):
+        return kalman_loglik_irregular(_unpack(th, names, model), sessions)
+
+    f0 = ll(th0)
+    H = np.zeros((n, n))
+    for i in range(n):
+        ei = np.zeros(n)
+        ei[i] = step[i]
+        H[i, i] = (ll(th0 + ei) - 2 * f0 + ll(th0 - ei)) / step[i] ** 2
+        for j in range(i):
+            ej = np.zeros(n)
+            ej[j] = step[j]
+            H[i, j] = H[j, i] = (ll(th0 + ei + ej) - ll(th0 + ei - ej) - ll(th0 - ei + ej)
+                                 + ll(th0 - ei - ej)) / (4 * step[i] * step[j])
+    J = -H
+    eig = np.linalg.eigvalsh(J)
+    try:
+        se = np.sqrt(np.clip(np.diag(np.linalg.inv(J)), 0, None))
+    except np.linalg.LinAlgError:
+        se = np.full(n, np.inf)
+    out = {}
+    for k, s in zip(names, se):
+        v = getattr(model, k)
+        out[k] = {"se": float(s), "rel_se": float(s if k in model.POSITIVE else s / abs(v))}
+    return {"params": out, "positive_definite": bool(eig.min() > 0), "min_eigenvalue": float(eig.min())}
+
+
+def snr(model: DeviationDMN) -> dict:
+    """Stationary SD of each latent channel over its observation-noise SD."""
+    P = model.stationary_cov()
+    return {"A": float(np.sqrt(P[0, 0]) / model.r_A), "Phi": float(np.sqrt(P[1, 1]) / model.r_Phi)}
+
+
+def nominal_at_snr(snr_A: float) -> DeviationDMN:
+    """Nominal parameters with r_A set so that sd_inf(A) / r_A = snr_A: the CRB
+    'recomputed at the fitted SNR' required by E-H1 when the SNR is below nominal."""
+    m = nominal_model()
+    return m.with_params(r_A=float(np.sqrt(m.stationary_cov()[0, 0])) / snr_A)
+
+
+def crb_on_sessions(model: DeviationDMN, sessions: list[dict], names=None) -> dict:
+    """Relative CRB at `model` on the observation designs of `sessions`."""
+    names = list(names or model.FREE)
+    I = fisher_sum(model, [design_of(s) for s in sessions], names)
+    return {k: v["rel_se"] for k, v in crb(I, names, model).items()}
+
+
+def posterior_predictive_ratings(model: DeviationDMN, sessions: list[dict], n_rep: int = 200,
+                                 seed: int = CFG.SEED) -> dict:
+    """Posterior predictive check of the ordinal ratings (predictions_realdata.md
+    Sec 3 item 8; Q1_pipeline.md Sec 7): ratings simulated from theta_hat on the
+    real designs, the session mean of the observed ratings added back, rounded
+    and clipped to -3..3, compared with the data on (i) the distribution of the
+    seven levels, (ii) the median lag-1 autocorrelation between consecutive
+    probes, (iii) the expert - novice difference in within-session SD."""
+    levels = np.arange(-3, 4)
+    designs = [design_of(s) for s in sessions]
+    groups = [s.get("group") for s in sessions]
+    offsets = [float(s.get("rating_offset", 0.0)) for s in sessions]
+
+    def stats(rs):
+        allr = np.concatenate(rs)
+        prop = np.array([np.mean(allr == lv) for lv in levels])
+        ac = []
+        for r in rs:
+            if len(r) > 3 and np.std(r[:-1]) > 0 and np.std(r[1:]) > 0:
+                ac.append(np.corrcoef(r[:-1], r[1:])[0, 1])
+        sd = {g: [np.std(r) for r, gg in zip(rs, groups) if gg == g] for g in ("expert", "novice")}
+        d_sd = float(np.mean(sd["expert"]) - np.mean(sd["novice"])) if sd["expert"] and sd["novice"] else float("nan")
+        return prop, float(np.median(ac)) if ac else float("nan"), d_sd
+
+    obs = [np.rint(np.asarray(s["rating"], float) + o).astype(int) for s, o in zip(sessions, offsets)]
+    p_obs, ac_obs, dsd_obs = stats(obs)
+    P, AC, DSD = [], [], []
+    for b in range(n_rep):
+        sims = simulate_sessions(model, designs, seed + 7919 * b)
+        rs = [np.clip(np.rint(np.asarray(x["rating"]) + o), -3, 3).astype(int) for x, o in zip(sims, offsets)]
+        p, a, d = stats(rs)
+        P.append(p); AC.append(a); DSD.append(d)
+    P, AC, DSD = np.array(P), np.array(AC), np.array(DSD)
+
+    def band(v):
+        return [float(np.nanpercentile(v, 2.5)), float(np.nanpercentile(v, 97.5))]
+
+    return {"n_rep": n_rep, "levels": levels.tolist(),
+            "level_prop": {"observed": p_obs.tolist(), "sim_mean": P.mean(axis=0).tolist(),
+                           "sim_lo": np.percentile(P, 2.5, axis=0).tolist(),
+                           "sim_hi": np.percentile(P, 97.5, axis=0).tolist()},
+            "lag1_autocorr_median": {"observed": ac_obs, "sim_mean": float(np.nanmean(AC)), "sim_95": band(AC)},
+            "sd_expert_minus_novice": {"observed": dsd_obs, "sim_mean": float(np.nanmean(DSD)), "sim_95": band(DSD)}}
 
 
 def _boot_job(args):
@@ -318,20 +432,43 @@ def _boot_job(args):
 
 
 def bootstrap(model: DeviationDMN, sessions: list[dict], n_boot: int, seed: int = CFG.SEED, n_starts: int = 2,
-              n_jobs: int | None = None, verbose: bool = True) -> list[dict]:
+              n_jobs: int | None = None, verbose: bool = True, ckpt=None) -> list[dict]:
+    """Parametric bootstrap; with `ckpt`, every finished replicate is stored
+    under "boot/<b>" and skipped on a rerun."""
+    import time
     designs = [design_of(s) for s in sessions]
     names = list(model.FREE)
     theta = {k: getattr(model, k) for k in names + ["rho_obs"]}
-    jobs = [(theta, designs, names, seed + 7919 * b, n_starts) for b in range(n_boot)]
+    jobs = {b: (theta, designs, names, seed + 7919 * b, n_starts) for b in range(n_boot)}
+    out = {b: ckpt.get(f"boot/{b}") for b in jobs} if ckpt is not None else {}
+    out = {b: v for b, v in out.items() if v is not None}
+    todo = [b for b in jobs if b not in out]
+    if verbose:
+        print(f"  bootstrap: {n_boot} lan, da co {len(out)}, con {len(todo)}", flush=True)
+    t0, n_new = time.time(), 0
+
+    def done(b, r):
+        nonlocal n_new
+        out[b] = r
+        n_new += 1
+        if ckpt is not None:
+            ckpt.put(f"boot/{b}", r)
+        if verbose:
+            el = time.time() - t0
+            eta = el / n_new * (len(todo) - n_new)
+            print(f"  bootstrap {len(out)}/{n_boot} xong, {el / 60:.0f} phut, con khoang {eta / 60:.0f} phut", flush=True)
+
     n_jobs = n_jobs or max(1, (os.cpu_count() or 2) - 1)
     if n_jobs == 1:
-        out = [_boot_job(j) for j in jobs]
-    else:
+        for b in todo:
+            done(b, _boot_job(jobs[b]))
+    elif todo:
+        from concurrent.futures import as_completed
         with ProcessPoolExecutor(max_workers=n_jobs) as ex:
-            out = list(ex.map(_boot_job, jobs))
-    if verbose:
-        print(f"  bootstrap: {len(out)} refits")
-    return out
+            futs = {ex.submit(_boot_job, jobs[b]): b for b in todo}
+            for fu in as_completed(futs):
+                done(futs[fu], fu.result())
+    return [out[b] for b in range(n_boot)]
 
 
 def rmse_same_scale(boots: list[dict], model: DeviationDMN, names) -> dict:
@@ -403,7 +540,8 @@ def _gauss_lpd(y, m, v):
     return -0.5 * (np.log(2 * np.pi * v) + (y - m) ** 2 / v)
 
 
-def loso(sessions: list[dict], base: DeviationDMN, n_starts: int = 2, seed: int = CFG.SEED, verbose: bool = True) -> dict:
+def loso(sessions: list[dict], base: DeviationDMN, n_starts: int = 2, seed: int = CFG.SEED, verbose: bool = True,
+         ckpt=None) -> dict:
     """Leave-one-session-out prediction of the ratings (Sec 7).
 
     Mode (a) EEG only: M1 state filtered from EEG (ratings never used) vs N2
@@ -413,12 +551,25 @@ def loso(sessions: list[dict], base: DeviationDMN, n_starts: int = 2, seed: int 
     Returns per-probe log predictive densities and MAE per model."""
     recs = []
     for k, test in enumerate(sessions):
+        fold = f"loso {k + 1}/{len(sessions)}"
+        saved = ckpt.get(f"loso/{k}") if ckpt is not None else None
+        if saved is not None:
+            recs.extend(saved)
+            if verbose:
+                print(f"  {fold} lay tu checkpoint", flush=True)
+            continue
+        if verbose:
+            print(f"  {fold} ({test.get('sub')} {test.get('ses', '')}) ...", flush=True)
+        n_before = len(recs)
+        lab = fold if verbose else None
         train = sessions[:k] + sessions[k + 1:]
-        fm = fit_sessions(train, base=base, n_starts=n_starts, seed=seed)["model"]
+        fm = fit_sessions(train, base=base, n_starts=n_starts, seed=seed,
+                          label=f"{lab} M1" if lab else None, ckpt=ckpt)["model"]
         # N1: rating-only M1 (A, Phi unobserved): same model family, EEG dropped
         fn1 = fit(train, RD.epoch_s / 60.0, init=base, names=list(base.FREE), n_starts=1, rng=seed,
-                  loglik=lambda m, ss, dt: sum(kalman_filter_irregular(m, s, use_eeg=False) for s in ss),
-                  starts=[{kk: getattr(fm, kk) for kk in base.FREE}])["model"]
+                  loglik=lambda m, ss, dt: kalman_loglik_irregular(m, ss, use_eeg=False),
+                  starts=[{kk: getattr(fm, kk) for kk in base.FREE}],
+                  label=f"{lab} N1" if lab else None, ckpt=ckpt)["model"]
         # N2: instantaneous regression on train
         X, r = [], []
         for s in train:
@@ -453,8 +604,8 @@ def loso(sessions: list[dict], base: DeviationDMN, n_starts: int = 2, seed: int 
                          "ae_M1_a": abs(rv - m_a), "ae_N2": abs(rv - mN2), "ae_M1_b": abs(rv - m_b),
                          "ae_N1": abs(rv - m_n1), "ae_N3": abs(rv - mN3)})
             past.append(rv)
-        if verbose:
-            print(f"  LOSO {k + 1}/{len(sessions)} ({test.get('sub')} {test.get('ses', '')})", flush=True)
+        if ckpt is not None:
+            ckpt.put(f"loso/{k}", recs[n_before:])
     return summarise_loso(recs, seed)
 
 
@@ -491,41 +642,137 @@ def gate_E3(resid: dict, loso_done: bool, n_sensitivity: int, verbose: bool = Tr
 # =============================================================================
 # Group and subject fits
 # =============================================================================
-def group_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: int) -> dict:
-    """E-H5: likelihood-ratio test of a group-specific k_inh (1 df) and the full
-    per-group fits."""
+EH5_MDE_LOG = 0.51   # preregistered MDE of the expert - novice log k_inh difference (predictions_realdata.md)
+
+
+def _se_log_k_inh(model: DeviationDMN, sessions: list[dict]) -> tuple[float, str | None]:
+    """Fisher SE of log k_inh at `model`; NaN plus the reason when the Fisher
+    matrix is undefined (a positive parameter at the boundary)."""
+    try:
+        return float(se_at_mle(model, sessions)["crb"]["k_inh"]["se"]), None
+    except (ValueError, FloatingPointError, np.linalg.LinAlgError) as e:
+        return float("nan"), f"{type(e).__name__}: {e}"
+
+
+def fit_group_k_inh(sessions: list[dict], pooled: DeviationDMN, group_k: dict, label: str | None = None,
+                    ckpt=None) -> dict:
+    """M1 with k_inh specific to each group and every other free parameter
+    shared: the alternative of the 1-df likelihood-ratio test of E-H5. Starts:
+    the pooled MLE with a common k_inh, and the pooled MLE with the k_inh of
+    the separate group fits."""
+    groups = sorted(group_k)
+    by_g = {g: [s for s in sessions if s["group"] == g] for g in groups}
+    pos = type(pooled).POSITIVE
+    shared = [k for k in pooled.FREE if k != "k_inh"]
+    ns = len(shared)
+
+    def unpack(theta):
+        sh = {k: float(np.exp(v)) if k in pos else float(v) for k, v in zip(shared, theta[:ns])}
+        return sh, {g: float(np.exp(v)) for g, v in zip(groups, theta[ns:])}
+
+    def nll(theta):
+        sh, ks = unpack(theta)
+        try:
+            ll = sum(kalman_loglik_irregular(pooled.with_params(**sh, k_inh=ks[g]), by_g[g]) for g in groups)
+        except (np.linalg.LinAlgError, ValueError, FloatingPointError):
+            return 1e12
+        return -ll if np.isfinite(ll) else 1e12
+
+    sh0 = [np.log(getattr(pooled, k)) if k in pos else getattr(pooled, k) for k in shared]
+    starts = [np.r_[sh0, [np.log(pooled.k_inh)] * len(groups)], np.r_[sh0, [np.log(group_k[g]) for g in groups]]]
+    best = run_starts(nll, starts, label=label, ckpt=ckpt)
+    sh, ks = unpack(best.x)
+    return {"shared": sh, "k_inh": ks, "loglik": -float(best.fun), "success": bool(best.success)}
+
+
+def group_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: int,
+               verbose: bool = False, ckpt=None, prev: dict | None = None) -> dict:
+    """E-H5 (Q1_pipeline.md Sec 7.3 (b)): a separate fit per group; the Wald
+    CI of the difference in log k_inh between the two group fits (Fisher SE of
+    each, as in the preregistered MDE); the likelihood-ratio test of a
+    group-specific k_inh against a common one (1 df, everything else shared);
+    and the omnibus test with every parameter group-specific.
+    `prev`: per-group results of an earlier run ("groups" of fit_results.json),
+    reused instead of refitting."""
+    from scipy.stats import chi2
     out = {"pooled_loglik": kalman_loglik_irregular(pooled, sessions)}
     groups = sorted({s["group"] for s in sessions})
     ll_sep, fits = 0.0, {}
     for g in groups:
         sg = [s for s in sessions if s["group"] == g]
-        r = fit_sessions(sg, base=pooled, n_starts=n_starts, seed=seed,
-                         starts=[{k: getattr(pooled, k) for k in pooled.FREE}])
-        fits[g] = {"params": r["params"], "loglik": r["loglik"], "n_sessions": len(sg)}
-        ll_sep += r["loglik"]
-    # k_inh group-specific, everything else shared: profile over the common parameters
+        if prev and g in prev:
+            m_g = pooled.with_params(**prev[g]["params"])
+            params, ll = dict(prev[g]["params"]), float(kalman_loglik_irregular(m_g, sg))
+            if verbose:
+                print(f"    [nhom {g}] dung fit da luu: -loglik {-ll:.2f}", flush=True)
+        else:
+            r = fit_sessions(sg, base=pooled, n_starts=n_starts, seed=seed,
+                             starts=[{k: getattr(pooled, k) for k in pooled.FREE}],
+                             label=f"nhom {g}" if verbose else None, ckpt=ckpt)
+            m_g, params, ll = r["model"], r["params"], r["loglik"]
+        se_k, se_err = _se_log_k_inh(m_g, sg)
+        fits[g] = {"params": params, "loglik": ll, "n_sessions": len(sg), "se_log_k_inh": se_k, "se_error": se_err}
+        ll_sep += ll
     out["groups"] = fits
-    out["lr_all_params"] = {"stat": 2 * (ll_sep - out["pooled_loglik"]), "df": len(pooled.FREE) * (len(groups) - 1)}
+    stat, df = 2 * (ll_sep - out["pooled_loglik"]), len(pooled.FREE) * (len(groups) - 1)
+    out["lr_all_params"] = {"stat": float(stat), "df": df, "p": float(chi2.sf(stat, df))}
     if len(groups) == 2:
-        a, b = groups
-        la, lb = np.log(fits[a]["params"]["k_inh"]), np.log(fits[b]["params"]["k_inh"])
-        out["log_k_inh_difference"] = {"groups": [a, b], "diff": float(la - lb)}
+        a, b = groups   # sorted: expert, novice -> diff > 0 means k_inh expert > novice
+        d = float(np.log(fits[a]["params"]["k_inh"]) - np.log(fits[b]["params"]["k_inh"]))
+        se_d = float(np.hypot(fits[a]["se_log_k_inh"], fits[b]["se_log_k_inh"]))
+        ci = [d - 1.96 * se_d, d + 1.96 * se_d]
+        out["log_k_inh_difference"] = {"groups": [a, b], "diff": d, "se": se_d, "ci95": ci}
+        jk = fit_group_k_inh(sessions, pooled, {g: fits[g]["params"]["k_inh"] for g in groups},
+                             label="nhom k_inh rieng" if verbose else None, ckpt=ckpt)
+        lr1 = 2 * (jk["loglik"] - out["pooled_loglik"])
+        out["lr_k_inh_1df"] = {"stat": float(lr1), "df": 1, "p": float(chi2.sf(lr1, 1)),
+                               "log_k_inh_difference": float(np.log(jk["k_inh"][a]) - np.log(jk["k_inh"][b])),
+                               "joint_fit": jk}
+        finite = bool(np.isfinite(se_d))
+        out["E_H5"] = {"prediction": f"k_inh {a} > {b}", "diff": d, "ci95": ci,
+                       "supported": bool(finite and ci[0] > 0),
+                       "opposite_direction": bool(finite and ci[1] < 0),
+                       "ci_contains_0": bool(finite and ci[0] <= 0 <= ci[1]), "mde_log": EH5_MDE_LOG}
     return out
 
 
-def subject_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: int) -> dict:
+def print_groups(g: dict) -> None:
+    lr = g["lr_all_params"]
+    print(f"  nhom: LR moi tham so rieng {lr['stat']:.1f} (df {lr['df']}, p {lr['p']:.2g})", flush=True)
+    if "E_H5" in g:
+        l1, e = g["lr_k_inh_1df"], g["E_H5"]
+        verdict = ("ung ho" if e["supported"] else "nguoc chieu du doan" if e["opposite_direction"]
+                   else f"CI chua 0, bao kem MDE {e['mde_log']} log" if e["ci_contains_0"] else "SE khong tinh duoc")
+        print(f"  E-H5: hieu log k_inh {e['prediction'].split()[1]} - {e['prediction'].split()[-1]} = {e['diff']:.2f}, "
+              f"CI95 [{e['ci95'][0]:.2f}, {e['ci95'][1]:.2f}] -> {verdict}", flush=True)
+        print(f"        LR k_inh rieng (1 df) {l1['stat']:.1f}, p {l1['p']:.2g}; "
+              f"hieu log k_inh khi cac tham so khac chung {l1['log_k_inh_difference']:.2f}", flush=True)
+
+
+def subject_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: int,
+                 verbose: bool = False, ckpt=None) -> dict:
     """Per-subject fits and a random-effects (REML) meta-analysis of log k_inh."""
     subs = sorted({s["sub"] for s in sessions})
     est, se = [], []
     per = {}
-    for sub in subs:
+    for i, sub in enumerate(subs):
         ss = [s for s in sessions if s["sub"] == sub]
-        r = fit_sessions(ss, base=pooled, n_starts=n_starts, seed=seed, starts=[{k: getattr(pooled, k) for k in pooled.FREE}])
+        r = fit_sessions(ss, base=pooled, n_starts=n_starts, seed=seed, starts=[{k: getattr(pooled, k) for k in pooled.FREE}],
+                         label=f"nguoi {i + 1}/{len(subs)} {sub}" if verbose else None, ckpt=ckpt)
         m = r["model"]
-        c = se_at_mle(m, ss)["crb"]
-        per[sub] = {"params": r["params"], "se_log_k_inh": c["k_inh"]["se"], "n_sessions": len(ss), "group": ss[0]["group"]}
-        if np.isfinite(c["k_inh"]["se"]) and c["k_inh"]["se"] < 5:
-            est.append(np.log(m.k_inh)); se.append(c["k_inh"]["se"])
+        # a single subject (1-3 sessions) can push a positive parameter to the
+        # boundary (exp underflow to 0): the Fisher matrix is then undefined.
+        # Record it and leave the subject out of the meta-analysis, as for any
+        # non-finite SE.
+        se_k, se_err = _se_log_k_inh(m, ss)
+        boundary = [k for k in m.POSITIVE if k in r["params"] and not r["params"][k] > 1e-8]
+        per[sub] = {"params": r["params"], "se_log_k_inh": se_k, "n_sessions": len(ss), "group": ss[0]["group"],
+                    "se_error": se_err, "at_boundary": boundary}
+        if verbose and (se_err or boundary):
+            why = f"{', '.join(boundary)} ve bien 0" if boundary else se_err
+            print(f"    {sub}: SE khong tinh duoc ({why}), bo khoi meta-analysis", flush=True)
+        if np.isfinite(se_k) and se_k < 5:
+            est.append(np.log(m.k_inh)); se.append(se_k)
     meta = reml_meta(np.array(est), np.array(se)) if len(est) >= 3 else {}
     return {"per_subject": per, "meta_log_k_inh": meta}
 
@@ -599,32 +846,74 @@ def run_fit(seed: int = CFG.SEED, fast: bool = False, n_starts: int | None = Non
         raise RuntimeError("Tieu chi dung K2/K3 kich hoat (xem fit_results.json). Day la ket qua can bao cao; "
                            "chi fit tiep voi --force-gate cho muc dich kham pha.")
     base = nominal_model()
+    ckpt = _checkpoint("fit", output_dir, sessions_key(sessions), seed, n_starts, fast, verbose=verbose)
+    n_prof = 5 if fast else CFG.PROFILE_N_GRID
     if verbose:
         print(f"Fitting M1-dev on {len(sessions)} sessions, {n_starts} starts...", flush=True)
-    r = fit_sessions(sessions, base=base, n_starts=n_starts, seed=seed)
+        print(f"  [1/4] fit gop ({n_starts} diem khoi dau); sau do [2/4] profile {len(RD.profile_params)} tham so "
+              f"x {n_prof} diem, [3/4] theo nhom, [4/4] theo nguoi", flush=True)
+    r = fit_sessions(sessions, base=base, n_starts=n_starts, seed=seed, label="gop" if verbose else None, ckpt=ckpt)
     m = r["model"]
     se = se_at_mle(m, sessions)["crb"]
     out = {"load": load_info, "stop_checks": stops, "pooled": {"params": r["params"], "loglik": r["loglik"], "success": r["success"],
                                         "se": {k: v["se"] for k, v in se.items()}, "rel_se": {k: v["rel_se"] for k, v in se.items()}},
            "time_constants_min": {"1/k_inh": 1 / m.k_inh, "1/k_d": 1 / m.k_d}}
+    if verbose:  # the headline numbers as soon as the pooled fit is done
+        print("  theta_hat: " + ", ".join(f"{k} {v:.4g}" for k, v in r["params"].items()), flush=True)
+        print("  rel SE   : " + ", ".join(f"{k} {se[k]['rel_se']:.3f}" for k in RD.key_params), flush=True)
+        print(f"  1/k_inh = {1 / m.k_inh:.1f} min, 1/k_d = {1 / m.k_d:.1f} min", flush=True)
     # profiles
     prof = {}
-    for p in RD.profile_params:
+    for i, p in enumerate(RD.profile_params):
+        if verbose:
+            print(f"  [2/4] profile {p} ({i + 1}/{len(RD.profile_params)})", flush=True)
         v0 = getattr(m, p)
-        grid = (v0 * np.exp(np.linspace(-CFG.PROFILE_LOG_HALF_RANGE, CFG.PROFILE_LOG_HALF_RANGE, 5 if fast else CFG.PROFILE_N_GRID))
-                if p in m.POSITIVE else v0 + np.linspace(-0.8, 0.8, 5 if fast else CFG.PROFILE_N_GRID) * abs(v0))
-        ll = profile_likelihood(sessions, RD.epoch_s / 60.0, r, p, grid, n_starts=1)
+        grid = (v0 * np.exp(np.linspace(-CFG.PROFILE_LOG_HALF_RANGE, CFG.PROFILE_LOG_HALF_RANGE, n_prof))
+                if p in m.POSITIVE else v0 + np.linspace(-0.8, 0.8, n_prof) * abs(v0))
+        ll = profile_likelihood(sessions, RD.epoch_s / 60.0, r, p, grid, n_starts=1,
+                                label=f"profile {p}" if verbose else None, ckpt=ckpt)
         prof[p] = {"grid": grid.tolist(), "loglik": ll.tolist(), "unimodal": profile_unimodal(ll)}
     out["profiles"] = prof
-    out["groups"] = group_fits(sessions, m, 1 if fast else 2, seed)
-    if not fast:
-        out["subjects"] = subject_fits(sessions, m, 1, seed)
-    _save("fit_results.json", out, output_dir)
     if verbose:
-        print("  theta_hat: " + ", ".join(f"{k} {v:.4g}" for k, v in r["params"].items()))
-        print("  rel SE   : " + ", ".join(f"{k} {se[k]['rel_se']:.3f}" for k in RD.key_params))
-        print(f"  1/k_inh = {1 / m.k_inh:.1f} min, 1/k_d = {1 / m.k_d:.1f} min")
+        print("  [3/4] fit theo nhom", flush=True)
+    out["groups"] = group_fits(sessions, m, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt)
+    if verbose:
+        print_groups(out["groups"])
+    if not fast:
+        if verbose:
+            print("  [4/4] fit theo nguoi", flush=True)
+        out["subjects"] = subject_fits(sessions, m, 1, seed, verbose=verbose, ckpt=ckpt)
+    path = _save("fit_results.json", out, output_dir)
+    ckpt.clear()
+    if verbose:
+        print(f"  xong, ket qua: {path}", flush=True)
     return out
+
+
+def run_groups(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None = None, feature_dir: str = FEATURES,
+               sessions: list[dict] | None = None, verbose: bool = True) -> dict:
+    """Redo the group analysis (E-H5) on an existing fit_results.json and update
+    it in place: the saved pooled and per-group fits are reused, only the
+    group SEs, the CI and the 1-df likelihood-ratio fit are computed."""
+    gates.require("E1")
+    d = output_dir or RESULTS
+    with open(os.path.join(d, "fit_results.json"), encoding="utf-8") as f:
+        fitres = json.load(f)
+    pooled = DeviationDMN(**fitres["pooled"]["params"])
+    if sessions is None:
+        sessions, _ = load_feature_sessions(feature_dir)
+    ckpt = _checkpoint("groups", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, fast,
+                       verbose=verbose)
+    if verbose:
+        print(f"Phan tich theo nhom (E-H5) tren {len(sessions)} phien", flush=True)
+    prev = (fitres.get("groups") or {}).get("groups")
+    fitres["groups"] = group_fits(sessions, pooled, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt, prev=prev)
+    path = _save("fit_results.json", fitres, output_dir)
+    ckpt.clear()
+    if verbose:
+        print_groups(fitres["groups"])
+        print(f"  da cap nhat: {path}", flush=True)
+    return fitres["groups"]
 
 
 def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None, output_dir: str | None = None,
@@ -637,7 +926,9 @@ def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None
     if sessions is None:
         sessions, _ = load_feature_sessions(feature_dir)
     n_boot = n_boot or (RD.n_boot_fast if fast else RD.n_boot)
-    boots = bootstrap(model, sessions, n_boot, seed, n_starts=2, n_jobs=1 if fast else None, verbose=verbose)
+    # n_boot is not in the fingerprint: replicate b is the same whatever the total
+    ckpt = _checkpoint("boot", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, verbose=verbose)
+    boots = bootstrap(model, sessions, n_boot, seed, n_starts=2, n_jobs=1 if fast else None, verbose=verbose, ckpt=ckpt)
     rmse = rmse_same_scale(boots, model, list(model.FREE))
     se = fitres["pooled"]["rel_se"]
     ratio = {k: rmse[k] / se[k] if se[k] and np.isfinite(se[k]) and se[k] > 0 else float("nan") for k in rmse}
@@ -646,6 +937,7 @@ def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None
     out = {"n_boot": n_boot, "rmse_bootstrap": rmse, "se_at_mle": se, "ratio_rmse_over_se": ratio, "gate_E2": gate,
            "boot_params": boots}
     _save("boot_results.json", out, output_dir)
+    ckpt.clear()
     return out
 
 
@@ -659,28 +951,45 @@ def run_check(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None =
     model = DeviationDMN(**fitres["pooled"]["params"])
     if sessions is None:
         sessions, _ = load_feature_sessions(feature_dir)
+    ckpt = _checkpoint("check", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, fast, verbose=verbose)
+    if verbose:
+        print("  [1/3] phan du", flush=True)
     resid = residual_checks(model, sessions)
     out = {"residuals": {k: v for k, v in resid.items() if k != "per_session"}}
-    out["loso"] = loso(sessions, nominal_model(), n_starts=1 if fast else 2, seed=seed, verbose=verbose)
+    if verbose:
+        print(f"  [2/3] LOSO tren {len(sessions)} phien", flush=True)
+    out["loso"] = loso(sessions, nominal_model(), n_starts=1 if fast else 2, seed=seed, verbose=verbose, ckpt=ckpt)
     # sensitivity variants (Sec 7): each returns a session list
     variants = sensitivity_loaders if sensitivity_loaders is not None else default_sensitivity_loaders(feature_dir)
     sens = {}
-    for name, loader in variants.items():
+    for i, (name, loader) in enumerate(variants.items()):
+        saved = ckpt.get(f"sens/{name}")
+        if saved is not None:
+            sens[name] = saved
+            if verbose:
+                print(f"  [3/3] phan tich nhay {i + 1}/{len(variants)} {name}: lay tu checkpoint", flush=True)
+            continue
+        if verbose:
+            print(f"  [3/3] phan tich nhay {i + 1}/{len(variants)} {name}", flush=True)
         try:
             ss = loader()
             if not ss:
                 sens[name] = {"skipped": "no sessions"}
-                continue
-            r = fit_sessions(ss, base=model, n_starts=1 if fast else 2, seed=seed,
-                             starts=[{k: getattr(model, k) for k in model.FREE}])
-            sens[name] = {"params": r["params"], "1/k_inh": 1 / r["params"]["k_inh"],
-                          "sign_alpha": float(np.sign(r["params"]["alpha"])), "sign_beta": float(np.sign(r["params"]["beta"]))}
+            else:
+                r = fit_sessions(ss, base=model, n_starts=1 if fast else 2, seed=seed,
+                                 starts=[{k: getattr(model, k) for k in model.FREE}],
+                                 label=f"nhay {name}" if verbose else None, ckpt=ckpt)
+                sens[name] = {"params": r["params"], "1/k_inh": 1 / r["params"]["k_inh"],
+                              "sign_alpha": float(np.sign(r["params"]["alpha"])), "sign_beta": float(np.sign(r["params"]["beta"]))}
         except Exception as e:  # a variant must never abort the check
             sens[name] = {"error": repr(e)}
+        if "error" not in sens[name]:  # errors are retried on a rerun
+            ckpt.put(f"sens/{name}", sens[name])
     out["sensitivity"] = sens
     n_ok = sum(1 for k, v in sens.items() if "params" in v and not k.startswith("postreg_"))
     out["gate_E3"] = gate_E3(resid, True, n_ok, verbose)
     _save("check_results.json", out, output_dir)
+    ckpt.clear()
     return out
 
 
@@ -703,4 +1012,5 @@ def _first_probes(s: dict, n: int) -> dict:
 
 
 def run(step: str = "design-crb", **kw) -> dict:
-    return {"design-crb": design_crb, "fit": run_fit, "boot": run_boot, "check": run_check}[step](**kw)
+    return {"design-crb": design_crb, "fit": run_fit, "groups": run_groups, "boot": run_boot,
+            "check": run_check}[step](**kw)

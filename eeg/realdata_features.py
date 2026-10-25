@@ -7,7 +7,10 @@ Pipeline per session
   1. read BDF (64 EEG channels, biosemi64 montage), 1-40 Hz FIR + 50 Hz notch
   2. bad channels (robust log-variance z > 4, reuses eeg.preprocess.mark_bad_channels)
      interpolated; average reference
-  3. ICA (picard if installed, else fastica); components rejected by ICLabel
+  3. ICA (picard extended-infomax if installed, else fastica) fitted on a
+     1-100 Hz copy of the same cleaned data (ICLabel's training band; the
+     Biosemi header already caps the recording at 52 Hz), unmixing applied to
+     the 1-40 Hz data; components rejected by ICLabel
      (mne-icalabel, p >= 0.8 eye/muscle) when available, otherwise by a
      documented heuristic (|r| > 0.8 with Fp1/Fp2, or > 60 % power above 20 Hz)
   4. regular 10-s grid from the recording start (epoch end times t_k = 10 k s);
@@ -76,7 +79,13 @@ def _ica_reject(raw, ica, log: dict) -> list[int]:
     """Component indices to reject: ICLabel if available, else heuristics."""
     try:
         from mne_icalabel import label_components
-        lab = label_components(raw, ica, method="iclabel")
+        with warnings.catch_warnings():
+            # ICLabel checks info["lowpass"] == 100 exactly. Biosemi BDF headers
+            # carry the hardware anti-alias cutoff (52 Hz at 256 Hz) and MNE's
+            # filter() never raises info["lowpass"], so the warning fires even
+            # though we fit on the widest band the recording contains.
+            warnings.filterwarnings("ignore", message=".*not filtered between 1 and 100 Hz.*")
+            lab = label_components(raw, ica, method="iclabel")
         probs, labels = np.asarray(lab["y_pred_proba"]), lab["labels"]
         bad = [i for i, (p, l) in enumerate(zip(probs, labels)) if l in ("eye blink", "muscle artifact") and p >= 0.8]
         log["ica_method"] = "iclabel"
@@ -98,28 +107,45 @@ def _ica_reject(raw, ica, log: dict) -> list[int]:
 
 def preprocess_raw(raw, log: dict, do_ica: bool = True):
     import mne
-    raw = raw.copy()
-    raw.filter(RD.l_freq, RD.h_freq, fir_design="firwin", verbose="error")
-    raw.notch_filter(RD.notch_hz, verbose="error")
-    bads = mark_bad_channels(raw, 4.0)
+
+    def _clean(r, h_freq, bads=None):
+        """Band-pass + notch + bad-channel interpolation + average reference."""
+        r = r.copy()
+        r.filter(RD.l_freq, h_freq, fir_design="firwin", verbose="error")
+        r.notch_filter(RD.notch_hz, verbose="error")
+        if bads is None:
+            bads = mark_bad_channels(r, 4.0)
+        if bads:
+            r.info["bads"] = list(bads)
+            r.interpolate_bads(reset_bads=True, verbose="error")
+        r.set_eeg_reference("average", projection=False, verbose="error")
+        return r, bads
+
+    raw0 = raw
+    raw, bads = _clean(raw0, RD.h_freq)
     log["bad_channels"] = bads
-    if bads:
-        raw.info["bads"] = bads
-        raw.interpolate_bads(reset_bads=True, verbose="error")
-    raw.set_eeg_reference("average", projection=False, verbose="error")
     if do_ica:
+        # ICLabel was trained on 1-100 Hz, extended-infomax decompositions:
+        # fit the ICA on a broadband copy (same pipeline, same interpolated
+        # channels, wider band), label there, then apply the unmixing to the
+        # 1-40 Hz data used for the features.
         try:
             import picard  # noqa: F401
-            method = "picard"
+            method, fit_params = "picard", dict(ortho=False, extended=True)
         except ImportError:
-            method = "fastica"
+            method, fit_params = "fastica", None
+        ica_hi = min(100.0, raw.info["sfreq"] / 2 - 10.0)
+        raw_ica, _ = _clean(raw0, ica_hi, bads=bads)
         n_comp = min(30, len(raw.ch_names) - len(bads) - 1)
-        ica = mne.preprocessing.ICA(n_components=n_comp, method=method, random_state=CFG.SEED, max_iter="auto",
-                                    verbose="error")
+        ica = mne.preprocessing.ICA(n_components=n_comp, method=method, fit_params=fit_params,
+                                    random_state=CFG.SEED, max_iter="auto", verbose="error")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            ica.fit(raw, verbose="error")
-        bad_ics = _ica_reject(raw, ica, log)
+            ica.fit(raw_ica, verbose="error")
+        bad_ics = _ica_reject(raw_ica, ica, log)
+        hw_lp = raw0.info["lowpass"]  # BDF header anti-alias cutoff (52 Hz at 256 Hz)
+        log["ica_method"] += f" / {method}, band {RD.l_freq:g}-{min(ica_hi, hw_lp):g} Hz"
+        del raw_ica
         ica.exclude = bad_ics
         raw = ica.apply(raw, verbose="error")
         log["ica_components"] = n_comp
@@ -268,25 +294,48 @@ def process_session(sess: dict, probes: pd.DataFrame, out_dir: str = FEATURES_DI
 def run(subjects=None, seed: int = CFG.SEED, n_jobs: int | None = None, do_ica: bool = True, verbose: bool = True) -> list[str]:
     from eeg import gates
     gates.require("E1")
+    import time
     probes = DS.load_probes()
+    sessions = [s for s in DS.sessions()
+                if not subjects or s["sub"] in subjects or s["sub"].replace("sub-", "") in subjects]
     done = []
-    for s in DS.sessions():
-        if subjects and s["sub"] not in subjects and s["sub"].replace("sub-", "") not in subjects:
-            continue
+    for i, s in enumerate(sessions, 1):
+        tag = f"[{i}/{len(sessions)}] {s['sub']} {s['ses']}"
         if not os.path.isfile(s["bdf_local"]):
             if verbose:
-                print(f"  {s['sub']} {s['ses']}: BDF chua tai, bo qua")
+                print(f"  {tag}: BDF chua tai, bo qua")
             continue
         out = os.path.join(FEATURES_DIR, f"{s['sub']}_{s['ses']}.npz")
         if os.path.isfile(out):
-            with np.load(out, allow_pickle=False) as z:
-                current = "format_version" in z.files and int(z["format_version"]) >= FORMAT_VERSION
-            if current:
+            stale = _stale_reason(out, do_ica)
+            if stale is None:
                 done.append(out)
                 continue
             if verbose:
-                print(f"  {s['sub']} {s['ses']}: file dac trung dinh dang cu, tinh lai", flush=True)
+                print(f"  {tag}: {stale}, tinh lai", flush=True)
         if verbose:
-            print(f"  {s['sub']} {s['ses']} ...", flush=True)
+            print(f"  {tag} ... ({time.strftime('%H:%M')})", flush=True)
+        t0 = time.time()
         done.append(process_session(s, probes, seed=seed, n_jobs=n_jobs, do_ica=do_ica))
+        if verbose:
+            print(f"  {tag}: xong, {(time.time() - t0) / 60:.1f} phut", flush=True)
     return done
+
+
+def _stale_reason(npz_path: str, do_ica: bool) -> str | None:
+    """None when the saved features are current; otherwise why to recompute.
+    The npz must have the current format and, when ICA is requested, the
+    prep log must record ICLabel labelling (not the fallback heuristic)."""
+    with np.load(npz_path, allow_pickle=False) as z:
+        if "format_version" not in z.files or int(z["format_version"]) < FORMAT_VERSION:
+            return "file dac trung dinh dang cu"
+    if not do_ica:
+        return None
+    log_path = npz_path.replace(".npz", "_prep_log.json")
+    if not os.path.isfile(log_path):
+        return "thieu prep log"
+    with open(log_path, encoding="utf-8") as f:
+        method = str(json.load(f).get("ica_method", ""))
+    if not method.startswith("iclabel"):
+        return f"ICA cu ({method})"
+    return None

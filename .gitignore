@@ -4,6 +4,7 @@ __pycache__/
 datasets/generated/
 outputs/figures/*.png
 outputs/results/*.json
+outputs/results/realdata/checkpoints/
 
 # Q1 pipeline data (raw downloads and derivatives are large)
 data/
@@ -11,6 +12,9 @@ outputs/gates/overrides.log
 
 # LaTeX build logs
 template_latex/*.log
+template_latex/*.aux
+template_latex/*.out
+template_latex/*.toc
 
 # GHDL work library
 hw/vhdl/work/

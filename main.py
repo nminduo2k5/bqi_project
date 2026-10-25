@@ -54,6 +54,8 @@ VÍ DỤ SỬ DỤNG
   python main.py realdata fetch [--dry-run] [--subjects sub-001 ...]   # 6,1 GB, cần lock
   python main.py realdata preprocess       # tiền xử lý + đặc trưng → data/ds001787/derivatives/features
   python main.py realdata fit | boot | check   # fit, E2, E3
+  python main.py realdata groups           # làm lại riêng phần theo nhóm (E-H5) trên fit_results.json đã có
+  python main.py realdata paper            # Hình 9–10, bảng, summary.json → outputs/paper/realdata (sau E3)
 
   # Pipeline Q1 (Q1_pipeline.md): kiểm định công cụ, cổng, đăng ký trước
   python main.py validate-tools            # cổng G0 (dữ liệu tổng hợp)
@@ -373,7 +375,10 @@ def cmd_realdata(args):
     elif step == "preprocess":
         from eeg import realdata_features
         realdata_features.run(args.subjects, seed=args.seed, n_jobs=args.n_jobs, do_ica=not args.no_ica)
-    elif step in ("fit", "boot", "check"):
+    elif step == "paper":
+        from experiments.run_realdata import run as paper_run
+        paper_run(seed=args.seed, n_ppc=20 if args.fast else 200)
+    elif step in ("fit", "groups", "boot", "check"):
         from model import realdata
         kw = {"seed": args.seed, "fast": args.fast, "output_dir": out_dir}
         if step == "fit":
@@ -521,8 +526,9 @@ def build_parser():
     p_model.set_defaults(func=cmd_model)
 
     p_rd = sub.add_parser("realdata", help="Dữ liệu thật ds001787 (Q1_pipeline.md v2.0): ratings | design-crb | "
-                                           "preregister | fetch | preprocess | fit | boot | check.")
-    p_rd.add_argument("step", choices=["ratings", "design-crb", "preregister", "fetch", "preprocess", "fit", "boot", "check"])
+                                           "preregister | fetch | preprocess | fit | groups | boot | check | paper.")
+    p_rd.add_argument("step", choices=["ratings", "design-crb", "preregister", "fetch", "preprocess", "fit", "groups",
+                                       "boot", "check", "paper"])
     p_rd.add_argument("--subjects", nargs="*", default=None, help="fetch/preprocess: ví dụ sub-001 sub-002 (mặc định tất cả)")
     p_rd.add_argument("--dry-run", action="store_true", help="fetch: chỉ liệt kê file và dung lượng")
     p_rd.add_argument("--yes", action="store_true", help="preregister: xác nhận khoá")

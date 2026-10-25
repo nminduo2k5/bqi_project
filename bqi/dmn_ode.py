@@ -207,6 +207,24 @@ class StateSpaceDMN:
         Q = E[n:, n:].T @ E[:n, n:]
         return F, c, 0.5 * (Q + Q.T)
 
+    def discretize_many(self, dts):
+        """`discretize` for many step lengths in one stacked call (the Kalman
+        filter on irregular sessions needs ~100 distinct steps per likelihood
+        evaluation). Returns F (K,2,2), c (K,2), Q (K,2,2)."""
+        dts = np.asarray(dts, float).reshape(-1)
+        M, u = self.drift()
+        n = 2
+        F = expm(M[None] * dts[:, None, None])
+        c = np.linalg.solve(M, ((F - np.eye(n)) @ u).T).T
+        GG = np.diag([self.sigma_A ** 2, self.sigma_Phi ** 2])
+        V = np.zeros((2 * n, 2 * n))
+        V[:n, :n] = -M
+        V[:n, n:] = GG
+        V[n:, n:] = M.T
+        E = expm(V[None] * dts[:, None, None])
+        Q = np.swapaxes(E[:, n:, n:], 1, 2) @ E[:, :n, n:]
+        return F, c, 0.5 * (Q + np.swapaxes(Q, 1, 2))
+
     def stationary_cov(self) -> np.ndarray:
         from scipy.linalg import solve_continuous_lyapunov
         M, _ = self.drift()

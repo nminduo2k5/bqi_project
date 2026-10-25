@@ -83,6 +83,56 @@ def test_simulated_session_statistics():
     assert np.isfinite(s["rating"]).all() and len(s["rating"]) == len(d.t_probe)
 
 
+def test_starting_points_with_unequal_session_lengths():
+    # real sessions have 120-361 epochs; moment_starts once used vstack and crashed
+    m = _dev()
+    sessions = []
+    for i, n in enumerate((120, 272, 361)):
+        d = IrregularDesign(tuple((np.arange(n) + 1) / 6), (True,) * n, (True,) * n, tuple(np.arange(2, n / 6 - 1, 2.5)))
+        sessions.append(RDM.simulate_session(m, d, seed=i))
+    pts = RDM.starting_points(sessions, m, 4, 0)
+    assert len(pts) == 4 and all(np.isfinite(list(p.values())).all() for p in pts)
+
+
+def _sim_sessions(m, lengths=(240, 240, 240, 240), seed=0):
+    out = []
+    for i, n in enumerate(lengths):
+        d = IrregularDesign(tuple((np.arange(n) + 1) / 6), (True,) * n, (True,) * n, tuple(np.arange(1.3, n / 6 - 1, 1.7)))
+        s = RDM.simulate_session(m, d, seed=seed + i)
+        out.append({**s, "sub": f"sub-{i:03d}", "group": "expert" if i % 2 == 0 else "novice", "rating_offset": 0.5})
+    return out
+
+
+def test_filtered_states_and_observed_information():
+    m = _dev()
+    sessions = _sim_sessions(m)
+    ll, info = kalman_filter_irregular(m, sessions[0], return_innovations=True)
+    F = info["filtered"]
+    n_ev = len(sessions[0]["t"]) + len(sessions[0]["t_probe"])
+    assert F.shape == (n_ev, 7) and np.all(np.diff(F[:, 0]) >= 0)
+    assert np.allclose(F[-1, 2:4], info["state"]) and np.allclose(F[-1, [4, 5, 6]], info["cov"])
+    assert abs(ll - kalman_filter_irregular(m, sessions[0])) < 1e-9
+    # correctly specified data: observed and expected information agree (sampling noise only)
+    obs = RDM.observed_information_se(m, sessions)
+    fis = RDM.se_at_mle(m, sessions)["crb"]
+    assert obs["positive_definite"]
+    for k in ("k_inh", "k_d", "r_A", "r_Phi"):
+        assert 0.5 < obs["params"][k]["rel_se"] / fis[k]["rel_se"] < 2.0, k
+
+
+def test_snr_and_posterior_predictive_ratings():
+    assert abs(RDM.snr(RDM.nominal_model())["A"] - 1.581) < 1e-3
+    assert abs(RDM.snr(RDM.nominal_at_snr(1.11))["A"] - 1.11) < 1e-9
+    m = _dev()
+    sessions = _sim_sessions(m, lengths=(150, 150, 150, 150), seed=3)
+    ppc = RDM.posterior_predictive_ratings(m, sessions, n_rep=5, seed=0)
+    lp = ppc["level_prop"]
+    assert ppc["levels"] == list(range(-3, 4))
+    assert abs(sum(lp["observed"]) - 1) < 1e-9 and abs(sum(lp["sim_mean"]) - 1) < 1e-9
+    assert all(lo <= hi for lo, hi in zip(lp["sim_lo"], lp["sim_hi"]))
+    assert np.isfinite(ppc["lag1_autocorr_median"]["sim_mean"]) and np.isfinite(ppc["sd_expert_minus_novice"]["observed"])
+
+
 def test_behaviour_alignment_and_decoding(tmp_path):
     # synthetic events (offset 12.3 s): probe 1 keys 1,2,0 ; probe 2 keys 0,3,1 ; probe 3 keys 2,2,2
     beh = tmp_path / "sub01_info.txt"
@@ -207,6 +257,12 @@ def test_fit_boot_check_pipeline_on_synthetic(tmp_path, monkeypatch):
     out = str(tmp_path / "res")
     fr = RDM.run_fit(seed=0, fast=True, output_dir=out, sessions=sessions, verbose=False)
     assert set(fr["pooled"]["params"]) == set(truth.FREE) and "profiles" in fr and "groups" in fr
+    g = fr["groups"]
+    assert {"E_H5", "lr_k_inh_1df", "log_k_inh_difference"} <= set(g) and g["lr_k_inh_1df"]["stat"] >= -1e-6
+    assert 0 <= g["lr_k_inh_1df"]["p"] <= 1 and 0 <= g["lr_all_params"]["p"] <= 1
+    # standalone group step reuses the saved group fits and gives the same difference
+    g2 = RDM.run_groups(seed=0, fast=True, output_dir=out, sessions=sessions, verbose=False)
+    assert abs(g2["E_H5"]["diff"] - g["E_H5"]["diff"]) < 1e-9
     br = RDM.run_boot(seed=0, fast=True, n_boot=3, output_dir=out, sessions=sessions, verbose=False)
     assert len(br["boot_params"]) == 3 and set(br["ratio_rmse_over_se"]) == set(truth.FREE)
     gates.record("E2", True, {})
