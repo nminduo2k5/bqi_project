@@ -1,0 +1,15 @@
+{
+  "gate": "E3",
+  "description": "Đủ tốt để diễn giải: phần dư trắng, LOSO, phân tích nhạy đã chạy",
+  "passed": true,
+  "time_utc": "2026-10-25T11:25:23+00:00",
+  "details": {
+    "ljung_box_p_median": [
+      0.2697869116488181,
+      0.39935356390967686
+    ],
+    "innovation_corr": 0.04961163586766429,
+    "loso_done": true,
+    "n_sensitivity_variants": 6
+  }
+}

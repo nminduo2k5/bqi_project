@@ -1,0 +1,20 @@
+{
+  "made": [
+    "fig9_realdata_session",
+    "fig10_realdata_profiles",
+    "table10_errors",
+    "table11_loso",
+    "tableI1_sensitivity",
+    "tableI2_ppc_levels",
+    "summary"
+  ],
+  "skipped": [],
+  "seed": 42,
+  "n_ppc": 200,
+  "gates": {
+    "E0": true,
+    "E1": true,
+    "E2": true,
+    "E3": true
+  }
+}

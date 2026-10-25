@@ -1,0 +1,27 @@
+{
+  "gate": "E2",
+  "description": "Xác định thực hành trên dữ liệu thật: RMSE bootstrap / SE trong [0.5, 2]",
+  "passed": true,
+  "time_utc": "2026-10-25T09:37:29+00:00",
+  "details": {
+    "ratio_rmse_over_se": {
+      "k_inh": 0.9801208377780084,
+      "k_int": 1.0274594851726588,
+      "k_d": 1.0147060789234748,
+      "sigma_A": 1.009274290380093,
+      "sigma_Phi": 1.0579432095911119,
+      "alpha": 1.6933794940929154,
+      "beta": 1.0012938570903323,
+      "r_A": 1.0137509003708136,
+      "r_Phi": 1.0309197551644402,
+      "r_Q": 1.078906937019681
+    },
+    "inside": {
+      "k_inh": true,
+      "k_d": true,
+      "alpha": true,
+      "beta": true
+    },
+    "profiles_unimodal": true
+  }
+}
