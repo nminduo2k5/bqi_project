@@ -38,6 +38,17 @@ Repo có **hai phần**. Phần tái hiện bài BQI (các mục bên dưới) c
 **Phần nghiên cứu mới** nằm trong `model/`, được viết để nộp tạp chí Q1, và **không dùng bất kỳ
 bảng số liệu nào của bài gốc**: mọi kết quả là thí nghiệm *in silico* sinh từ mô hình, có seed, tái tạo 100%.
 
+### Thầy đọc gì trước (cập nhật 09/11/2026)
+
+| Thứ cần xem | Đường dẫn |
+|---|---|
+| Bản thảo đầy đủ, PDF | [`template_latex/paper_reference.pdf`](template_latex/paper_reference.pdf) (tiếng Anh, 50 trang) · [`template_latex/paper_reference_vi.pdf`](template_latex/paper_reference_vi.pdf) (tiếng Việt, 49 trang) |
+| Tóm tắt 1 trang: phần mô hình (mục 2–4.6) | [`outputs/paper/model/TOM_TAT_GUI_THAY.md`](outputs/paper/model/TOM_TAT_GUI_THAY.md) |
+| Tóm tắt 1 trang: dữ liệu thật ds001787 (mục 4.7) | [`outputs/paper/realdata/TOM_TAT_GUI_THAY.md`](outputs/paper/realdata/TOM_TAT_GUI_THAY.md) |
+| Tóm tắt 1 trang: bộ thứ hai OSF 3uszv (mục 4.8) và đề xuất tách bài | [`outputs/paper/osf3uszv/TOM_TAT_GUI_THAY.md`](outputs/paper/osf3uszv/TOM_TAT_GUI_THAY.md) |
+
+Trạng thái: mô phỏng (cổng M0–M2), ds001787 (E0–E3) và OSF 3uszv (F0–F3) đều xong và đã viết vào bài; 114 test qua. Chưa làm: preprint của mô hình gốc (cần DOI để trích dẫn), tổng hợp FPGA.
+
 ### Câu hỏi
 
 Bài BQI đề xuất hệ ODE DMN–Φ–QoC (eq. 52–54) cho động lực của thiền. Pipeline hỏi ba câu kiểm chứng được bằng toán và mô phỏng:
@@ -119,7 +130,7 @@ Các bước dài in tiến độ và lưu checkpoint trong `outputs/results/rea
 
 ### Bộ dữ liệu thứ hai: OSF 3uszv ([`Q1_pipeline.md`](Q1_pipeline.md) §16, v2.4) — F0–F3 PASS, kết quả cuối 09/11/2026 đã viết vào bài (mục 4.8, Phụ lục H.2)
 
-Kết quả (số cuối 09/11/2026, sau khi xử lý lại 17 phiên novice bằng ICLabel): 48/58 phiên giữ; 1/k_inh = 7,1 phút (5,7–9,1) so với 0,76 trên ds001787, 1/k_d = 0,63 so với 5,0 phút — hai hằng số thời gian đổi chỗ; sai số Fisher của k_inh 8,5 % (dự đoán 6,7 %, profile 11,8 %); EEG lại không cải thiện dự đoán điểm tự chấm; α = 0,79 với CI chứa 0 (F-H3 không đạt); không khác biệt nhóm về k_inh (+0,14 log, CI −0,20…0,47). Bảng so sánh hai bộ: `python main.py osf3uszv compare` → `outputs/paper/comparison/`.
+Kết quả (số cuối 09/11/2026, sau khi xử lý lại 17 phiên novice bằng ICLabel): 48/58 phiên giữ; 1/k_inh = 7,1 phút (5,7–9,1) so với 0,76 trên ds001787, 1/k_d = 0,63 so với 5,0 phút — hai hằng số thời gian đổi chỗ; sai số Fisher của k_inh 8,5 % (dự đoán 6,7 %, profile 11,8 %); EEG lại không cải thiện dự đoán điểm tự chấm; α = 0,79 với CI chứa 0 (F-H3 không đạt); không khác biệt nhóm về k_inh (+0,14 log, CI −0,20…0,47). Bảng so sánh hai bộ: `python main.py osf3uszv compare` → `outputs/paper/comparison/`. Tóm tắt cho thầy: [`outputs/paper/osf3uszv/TOM_TAT_GUI_THAY.md`](outputs/paper/osf3uszv/TOM_TAT_GUI_THAY.md). Số liệu thô: `outputs/results/osf3uszv/`.
 
 Theo yêu cầu thêm dữ liệu của thầy: bộ EEG thiền của Rodriguez-Larios et al. 2021 (*NeuroImage*; OSF 3uszv, CC0), 29 người thiền lâu năm + 29 người mới, mỗi người ~57 phút thiền hơi thở với 40 lần hỏi (2258 probe, 55 giờ EEG, 21 kênh Nexus-32 512 Hz) — phòng thí nghiệm độc lập với ds001787 và đủ lực cho so sánh nhóm (MDE 0,37 log). Cùng mô hình, cùng mã (`model/realdata.py` tham số hoá), cổng F0–F3 và đăng ký trước riêng ([`preregistration/predictions_osf3uszv.md`](preregistration/predictions_osf3uszv.md), khoá 03/11/2026 09:21 UTC; file đã tải trước khi khoá nhưng chỉ cột trigger được đọc — khai báo trong file).
 
@@ -130,6 +141,7 @@ python main.py osf3uszv design-crb     # F1 ✅ hạng 10/10; CRB(k_inh) 6,7 % g
 python main.py osf3uszv preregister --yes   # đã khoá
 python main.py osf3uszv preprocess     # 58 phiên (đọc 1/4 dòng lặp → 512 Hz, hạ 256 Hz, ICA + ICLabel, đặc trưng)
 python main.py osf3uszv fit | boot | check | paper   # F2, F3 → outputs/results/osf3uszv, outputs/paper/osf3uszv
+python main.py osf3uszv compare        # hai bộ cạnh nhau, kiểm tra lặp lại R1–R3 → outputs/paper/comparison/
 ```
 
 ### Hướng tiếp theo: "neural design" — mạch neural dấu chấm tĩnh + VHDL ([`hw/README.md`](hw/README.md))

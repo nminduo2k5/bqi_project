@@ -1,0 +1,44 @@
+  checkpoint: nap 130 muc da xong tu K:\bqi_project\outputs\results\osf3uszv\checkpoints\check.json
+  [1/3] phan du
+  [2/3] LOSO tren 48 phien
+  loso 1/48 lay tu checkpoint
+  loso 2/48 lay tu checkpoint
+  loso 3/48 lay tu checkpoint
+  loso 4/48 lay tu checkpoint
+  loso 5/48 lay tu checkpoint
+  loso 6/48 lay tu checkpoint
+  loso 7/48 lay tu checkpoint
+  loso 8/48 lay tu checkpoint
+  loso 9/48 lay tu checkpoint
+  loso 10/48 lay tu checkpoint
+  loso 11/48 lay tu checkpoint
+  loso 12/48 lay tu checkpoint
+  loso 13/48 lay tu checkpoint
+  loso 14/48 lay tu checkpoint
+  loso 15/48 lay tu checkpoint
+  loso 16/48 lay tu checkpoint
+  loso 17/48 lay tu checkpoint
+  loso 18/48 lay tu checkpoint
+  loso 19/48 lay tu checkpoint
+  loso 20/48 lay tu checkpoint
+  loso 21/48 lay tu checkpoint
+  loso 22/48 lay tu checkpoint
+  loso 23/48 lay tu checkpoint
+  loso 24/48 lay tu checkpoint
+  loso 25/48 lay tu checkpoint
+  loso 26/48 lay tu checkpoint
+  loso 27/48 lay tu checkpoint
+  loso 28/48 lay tu checkpoint
+  loso 29/48 lay tu checkpoint
+  loso 30/48 lay tu checkpoint
+  loso 31/48 lay tu checkpoint
+  loso 32/48 lay tu checkpoint
+  loso 33/48 (m_22 task) ...
+    [loso 33/48 M1 1/2] lay tu checkpoint: -loglik 29873.75
+    [loso 33/48 M1 2/2] lay tu checkpoint: -loglik 29873.75
+    [loso 33/48 N1 1/1] bat dau
+    [loso 33/48 N1 1/1] xong: -loglik 5541.45, 17 vong, 0.5 phut
+  loso 34/48 (m_23 task) ...
+    [loso 34/48 M1 1/2] bat dau
+      [loso 34/48 M1 1/2] vong 28, -loglik tot nhat 30077.56, 1.0 phut
+      [loso 34/48 M1 1/2] vong 54, -loglik tot nhat 30049.84, 2.1 phut

@@ -1,0 +1,682 @@
+{
+  "n_sessions": 58,
+  "n_probes": 2258,
+  "subject_minutes": 3304.258194986979,
+  "missing_frac_mean": 0.34232411468115004,
+  "rank_10": {
+    "rank": 10,
+    "n_identifiable_candidates": 10,
+    "min_rel_eigenvalue": 0.1984903673219737,
+    "condition_number": 5.03802785743193,
+    "null_directions": []
+  },
+  "rank_11_with_rho": {
+    "rank": 11,
+    "n_identifiable_candidates": 11,
+    "min_rel_eigenvalue": 0.19854524425708797,
+    "condition_number": 5.036635371155713,
+    "null_directions": []
+  },
+  "crb": {
+    "pooled": {
+      "k_inh": 0.06654334081844535,
+      "k_int": 0.07944275390673358,
+      "k_d": 0.10410476472322681,
+      "sigma_A": 0.022659140330840075,
+      "sigma_Phi": 0.026565208993520082,
+      "alpha": 0.013398465123124514,
+      "beta": 0.026630431907099496,
+      "r_A": 0.008309789965009832,
+      "r_Phi": 0.007071603197557708,
+      "r_Q": 0.01806761157048341
+    },
+    "expert": {
+      "k_inh": 0.09429540369410443,
+      "k_int": 0.11258163367466495,
+      "k_d": 0.14747740791939234,
+      "sigma_A": 0.0321165056048104,
+      "sigma_Phi": 0.03764834788993189,
+      "alpha": 0.018901965331185582,
+      "beta": 0.037567339891305965,
+      "r_A": 0.011783394250704057,
+      "r_Phi": 0.010026346757487939,
+      "r_Q": 0.025478517437216772,
+      "_n_sessions": 29
+    },
+    "novice": {
+      "k_inh": 0.0939187345473669,
+      "k_int": 0.11211784943639934,
+      "k_d": 0.14697666510020294,
+      "sigma_A": 0.03197370241969036,
+      "sigma_Phi": 0.0374899118763296,
+      "alpha": 0.018994963332983703,
+      "beta": 0.03775562894115097,
+      "r_A": 0.011720493990525981,
+      "r_Phi": 0.009975362688957603,
+      "r_Q": 0.025625054441156352,
+      "_n_sessions": 29
+    }
+  },
+  "group_difference_log_k_inh": {
+    "se_diff": 0.1330877599811977,
+    "mde_80pct_alpha05": 0.37264572794735357,
+    "mde_factor": 1.4515699980469265
+  },
+  "nominal": {
+    "k_inh": 0.2,
+    "k_int": 0.081,
+    "k_d": 0.034,
+    "sigma_A": 0.1,
+    "sigma_Phi": 0.05,
+    "alpha": 2.34,
+    "beta": 1.87,
+    "r_A": 0.1,
+    "r_Phi": 0.1,
+    "r_Q": 0.3
+  },
+  "sessions": [
+    {
+      "sub": "m_2",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 372,
+      "n_masked": 123,
+      "missing_frac": 0.33064516129032256,
+      "n_probes": 40,
+      "duration_min": 62.066691080729164
+    },
+    {
+      "sub": "m_3",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 378,
+      "n_masked": 138,
+      "missing_frac": 0.36507936507936506,
+      "n_probes": 40,
+      "duration_min": 63.1500244140625
+    },
+    {
+      "sub": "m_4",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 325,
+      "n_masked": 109,
+      "missing_frac": 0.3353846153846154,
+      "n_probes": 40,
+      "duration_min": 54.3000244140625
+    },
+    {
+      "sub": "m_6",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 367,
+      "n_masked": 138,
+      "missing_frac": 0.3760217983651226,
+      "n_probes": 40,
+      "duration_min": 61.28335774739583
+    },
+    {
+      "sub": "m_7",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 344,
+      "n_masked": 116,
+      "missing_frac": 0.3372093023255814,
+      "n_probes": 40,
+      "duration_min": 57.46669108072917
+    },
+    {
+      "sub": "m_9",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 319,
+      "n_masked": 90,
+      "missing_frac": 0.28213166144200624,
+      "n_probes": 38,
+      "duration_min": 53.316691080729164
+    },
+    {
+      "sub": "m_10",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 324,
+      "n_masked": 109,
+      "missing_frac": 0.33641975308641975,
+      "n_probes": 39,
+      "duration_min": 54.1000244140625
+    },
+    {
+      "sub": "m_11",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 312,
+      "n_masked": 94,
+      "missing_frac": 0.30128205128205127,
+      "n_probes": 39,
+      "duration_min": 52.11669108072917
+    },
+    {
+      "sub": "m_12",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 332,
+      "n_masked": 102,
+      "missing_frac": 0.3072289156626506,
+      "n_probes": 39,
+      "duration_min": 55.483357747395836
+    },
+    {
+      "sub": "m_13",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 334,
+      "n_masked": 110,
+      "missing_frac": 0.32934131736526945,
+      "n_probes": 40,
+      "duration_min": 55.7000244140625
+    },
+    {
+      "sub": "m_14",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 339,
+      "n_masked": 109,
+      "missing_frac": 0.3215339233038348,
+      "n_probes": 34,
+      "duration_min": 56.6000244140625
+    },
+    {
+      "sub": "m_15",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 351,
+      "n_masked": 119,
+      "missing_frac": 0.33903133903133903,
+      "n_probes": 39,
+      "duration_min": 58.6500244140625
+    },
+    {
+      "sub": "m_16",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 327,
+      "n_masked": 110,
+      "missing_frac": 0.3363914373088685,
+      "n_probes": 40,
+      "duration_min": 54.5000244140625
+    },
+    {
+      "sub": "m_17",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 341,
+      "n_masked": 122,
+      "missing_frac": 0.35777126099706746,
+      "n_probes": 40,
+      "duration_min": 56.8500244140625
+    },
+    {
+      "sub": "m_19",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 342,
+      "n_masked": 122,
+      "missing_frac": 0.3567251461988304,
+      "n_probes": 40,
+      "duration_min": 57.1500244140625
+    },
+    {
+      "sub": "m_20",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 375,
+      "n_masked": 146,
+      "missing_frac": 0.3893333333333333,
+      "n_probes": 40,
+      "duration_min": 62.53335774739583
+    },
+    {
+      "sub": "m_21",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 355,
+      "n_masked": 123,
+      "missing_frac": 0.3464788732394366,
+      "n_probes": 40,
+      "duration_min": 59.26669108072917
+    },
+    {
+      "sub": "m_22",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 334,
+      "n_masked": 102,
+      "missing_frac": 0.30538922155688625,
+      "n_probes": 36,
+      "duration_min": 55.7500244140625
+    },
+    {
+      "sub": "m_23",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 323,
+      "n_masked": 113,
+      "missing_frac": 0.3498452012383901,
+      "n_probes": 40,
+      "duration_min": 53.9000244140625
+    },
+    {
+      "sub": "m_24",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 322,
+      "n_masked": 104,
+      "missing_frac": 0.32298136645962733,
+      "n_probes": 40,
+      "duration_min": 53.666691080729166
+    },
+    {
+      "sub": "m_25",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 353,
+      "n_masked": 132,
+      "missing_frac": 0.37393767705382436,
+      "n_probes": 40,
+      "duration_min": 58.883357747395834
+    },
+    {
+      "sub": "m_27",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 360,
+      "n_masked": 123,
+      "missing_frac": 0.3416666666666667,
+      "n_probes": 38,
+      "duration_min": 60.0000244140625
+    },
+    {
+      "sub": "m_28",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 337,
+      "n_masked": 114,
+      "missing_frac": 0.33827893175074186,
+      "n_probes": 40,
+      "duration_min": 56.166691080729166
+    },
+    {
+      "sub": "m_29",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 343,
+      "n_masked": 126,
+      "missing_frac": 0.3673469387755102,
+      "n_probes": 40,
+      "duration_min": 57.166691080729166
+    },
+    {
+      "sub": "m_30",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 307,
+      "n_masked": 109,
+      "missing_frac": 0.3550488599348534,
+      "n_probes": 40,
+      "duration_min": 51.316691080729164
+    },
+    {
+      "sub": "m_31",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 366,
+      "n_masked": 132,
+      "missing_frac": 0.36065573770491804,
+      "n_probes": 40,
+      "duration_min": 61.0000244140625
+    },
+    {
+      "sub": "m_32",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 280,
+      "n_masked": 106,
+      "missing_frac": 0.37857142857142856,
+      "n_probes": 34,
+      "duration_min": 46.7000244140625
+    },
+    {
+      "sub": "m_33",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 359,
+      "n_masked": 137,
+      "missing_frac": 0.3816155988857939,
+      "n_probes": 39,
+      "duration_min": 59.86669108072917
+    },
+    {
+      "sub": "m_34",
+      "ses": "task",
+      "group": "expert",
+      "n_epochs": 337,
+      "n_masked": 113,
+      "missing_frac": 0.3353115727002967,
+      "n_probes": 40,
+      "duration_min": 56.316691080729164
+    },
+    {
+      "sub": "c_2",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 350,
+      "n_masked": 107,
+      "missing_frac": 0.3057142857142857,
+      "n_probes": 40,
+      "duration_min": 58.416691080729166
+    },
+    {
+      "sub": "c_6",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 355,
+      "n_masked": 112,
+      "missing_frac": 0.3154929577464789,
+      "n_probes": 36,
+      "duration_min": 59.28335774739583
+    },
+    {
+      "sub": "c_9",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 343,
+      "n_masked": 118,
+      "missing_frac": 0.34402332361516036,
+      "n_probes": 40,
+      "duration_min": 57.18335774739583
+    },
+    {
+      "sub": "c_10",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 329,
+      "n_masked": 108,
+      "missing_frac": 0.3282674772036474,
+      "n_probes": 40,
+      "duration_min": 54.9000244140625
+    },
+    {
+      "sub": "c_12",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 360,
+      "n_masked": 138,
+      "missing_frac": 0.38333333333333336,
+      "n_probes": 40,
+      "duration_min": 60.03335774739583
+    },
+    {
+      "sub": "c_13",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 377,
+      "n_masked": 145,
+      "missing_frac": 0.38461538461538464,
+      "n_probes": 40,
+      "duration_min": 62.93335774739583
+    },
+    {
+      "sub": "c_14",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 325,
+      "n_masked": 105,
+      "missing_frac": 0.3230769230769231,
+      "n_probes": 40,
+      "duration_min": 54.233357747395836
+    },
+    {
+      "sub": "c_15",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 369,
+      "n_masked": 134,
+      "missing_frac": 0.36314363143631434,
+      "n_probes": 39,
+      "duration_min": 61.633357747395834
+    },
+    {
+      "sub": "c_16",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 367,
+      "n_masked": 127,
+      "missing_frac": 0.3460490463215259,
+      "n_probes": 40,
+      "duration_min": 61.26669108072917
+    },
+    {
+      "sub": "c_19",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 329,
+      "n_masked": 115,
+      "missing_frac": 0.3495440729483283,
+      "n_probes": 40,
+      "duration_min": 54.93335774739583
+    },
+    {
+      "sub": "c_22",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 387,
+      "n_masked": 150,
+      "missing_frac": 0.3875968992248062,
+      "n_probes": 40,
+      "duration_min": 64.56669108072917
+    },
+    {
+      "sub": "c_23",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 334,
+      "n_masked": 93,
+      "missing_frac": 0.27844311377245506,
+      "n_probes": 38,
+      "duration_min": 55.8000244140625
+    },
+    {
+      "sub": "c_24",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 345,
+      "n_masked": 125,
+      "missing_frac": 0.36231884057971014,
+      "n_probes": 40,
+      "duration_min": 57.53335774739583
+    },
+    {
+      "sub": "c_25",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 335,
+      "n_masked": 111,
+      "missing_frac": 0.33134328358208953,
+      "n_probes": 40,
+      "duration_min": 55.9500244140625
+    },
+    {
+      "sub": "c_26",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 329,
+      "n_masked": 101,
+      "missing_frac": 0.3069908814589666,
+      "n_probes": 39,
+      "duration_min": 54.93335774739583
+    },
+    {
+      "sub": "c_29",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 296,
+      "n_masked": 96,
+      "missing_frac": 0.32432432432432434,
+      "n_probes": 40,
+      "duration_min": 49.43335774739583
+    },
+    {
+      "sub": "c_30",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 345,
+      "n_masked": 120,
+      "missing_frac": 0.34782608695652173,
+      "n_probes": 38,
+      "duration_min": 57.633357747395834
+    },
+    {
+      "sub": "c_n1",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 324,
+      "n_masked": 100,
+      "missing_frac": 0.30864197530864196,
+      "n_probes": 39,
+      "duration_min": 54.03335774739583
+    },
+    {
+      "sub": "c_n2",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 355,
+      "n_masked": 119,
+      "missing_frac": 0.3352112676056338,
+      "n_probes": 40,
+      "duration_min": 59.21669108072917
+    },
+    {
+      "sub": "c_n3",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 341,
+      "n_masked": 117,
+      "missing_frac": 0.34310850439882695,
+      "n_probes": 39,
+      "duration_min": 56.916691080729166
+    },
+    {
+      "sub": "c_n4",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 340,
+      "n_masked": 116,
+      "missing_frac": 0.3411764705882353,
+      "n_probes": 40,
+      "duration_min": 56.76669108072917
+    },
+    {
+      "sub": "c_n5",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 359,
+      "n_masked": 133,
+      "missing_frac": 0.37047353760445684,
+      "n_probes": 40,
+      "duration_min": 59.96669108072917
+    },
+    {
+      "sub": "c_n6",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 382,
+      "n_masked": 143,
+      "missing_frac": 0.3743455497382199,
+      "n_probes": 40,
+      "duration_min": 63.68335774739583
+    },
+    {
+      "sub": "c_n7",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 333,
+      "n_masked": 108,
+      "missing_frac": 0.32432432432432434,
+      "n_probes": 39,
+      "duration_min": 55.58335774739583
+    },
+    {
+      "sub": "c_n8",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 359,
+      "n_masked": 130,
+      "missing_frac": 0.362116991643454,
+      "n_probes": 39,
+      "duration_min": 59.93335774739583
+    },
+    {
+      "sub": "c_n9",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 335,
+      "n_masked": 107,
+      "missing_frac": 0.3194029850746269,
+      "n_probes": 35,
+      "duration_min": 55.833333333333336
+    },
+    {
+      "sub": "c_n10",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 372,
+      "n_masked": 130,
+      "missing_frac": 0.34946236559139787,
+      "n_probes": 40,
+      "duration_min": 62.08335774739583
+    },
+    {
+      "sub": "c_n11",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 205,
+      "n_masked": 62,
+      "missing_frac": 0.3024390243902439,
+      "n_probes": 22,
+      "duration_min": 34.273494466145834
+    },
+    {
+      "sub": "c_n12",
+      "ses": "task",
+      "group": "novice",
+      "n_epochs": 360,
+      "n_masked": 138,
+      "missing_frac": 0.38333333333333336,
+      "n_probes": 40,
+      "duration_min": 60.03335774739583
+    }
+  ],
+  "gate_E1": {
+    "gate": "F1",
+    "passed": true,
+    "rank_10": 10,
+    "rank_11_with_rho": 11,
+    "min_rel_eigenvalue_10": 0.1984903673219737,
+    "min_rel_eigenvalue_11": 0.19854524425708797,
+    "crb_pooled": {
+      "k_inh": 0.06654334081844535,
+      "k_int": 0.07944275390673358,
+      "k_d": 0.10410476472322681,
+      "sigma_A": 0.022659140330840075,
+      "sigma_Phi": 0.026565208993520082,
+      "alpha": 0.013398465123124514,
+      "beta": 0.026630431907099496,
+      "r_A": 0.008309789965009832,
+      "r_Phi": 0.007071603197557708,
+      "r_Q": 0.01806761157048341
+    },
+    "n_sessions": 58,
+    "n_probes": 2258,
+    "predictions_locked": false
+  }
+}

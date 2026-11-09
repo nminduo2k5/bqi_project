@@ -1,0 +1,1318 @@
+{
+  "n_bells": 2258,
+  "n_valid": 2233,
+  "n_with_3_codes": 2235,
+  "n_late_codes": 61,
+  "n_sessions": 58,
+  "n_sessions_per_group": {
+    "expert": 29,
+    "novice": 29
+  },
+  "decoded_rate": 0.9889282550930026,
+  "three_codes_rate": 0.9898139946855624,
+  "answer_counts": {
+    "1": 1440,
+    "2": 528,
+    "3": 277,
+    "6": 3,
+    "7": 2,
+    "4": 2,
+    "5": 1
+  },
+  "observed_ranges": {
+    "q2": [
+      1,
+      7
+    ],
+    "q3": [
+      1,
+      7
+    ],
+    "focus": [
+      1,
+      7
+    ],
+    "engagement": [
+      1,
+      7
+    ]
+  },
+  "subject_minutes": 3304.258194986979,
+  "bell_gap_s_median": 77.063720703125,
+  "sessions": [
+    {
+      "sub": "m_2",
+      "group": "expert",
+      "duration_s": 3724.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 20,
+        "2": 12,
+        "3": 8
+      },
+      "response_latency_s_median": 17.52734375,
+      "bell_gap_s": {
+        "min": 50.1826171875,
+        "median": 78.3408203125,
+        "max": 109.25732421875
+      },
+      "first_bell_s": 599.89306640625
+    },
+    {
+      "sub": "m_3",
+      "group": "expert",
+      "duration_s": 3789.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 6,
+      "answer_counts": {
+        "1": 25,
+        "2": 10,
+        "3": 5
+      },
+      "response_latency_s_median": 20.434326171875,
+      "bell_gap_s": {
+        "min": 51.3447265625,
+        "median": 80.10986328125,
+        "max": 111.94384765625
+      },
+      "first_bell_s": 592.28515625
+    },
+    {
+      "sub": "m_4",
+      "group": "expert",
+      "duration_s": 3258.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 37,
+        "2": 3
+      },
+      "response_latency_s_median": 12.181884765625,
+      "bell_gap_s": {
+        "min": 47.130859375,
+        "median": 74.8818359375,
+        "max": 106.998046875
+      },
+      "first_bell_s": 340.4150390625
+    },
+    {
+      "sub": "m_6",
+      "group": "expert",
+      "duration_s": 3677.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 27,
+        "3": 10,
+        "2": 3
+      },
+      "response_latency_s_median": 20.33935546875,
+      "bell_gap_s": {
+        "min": 53.291015625,
+        "median": 78.1279296875,
+        "max": 140.705078125
+      },
+      "first_bell_s": 454.77734375
+    },
+    {
+      "sub": "m_7",
+      "group": "expert",
+      "duration_s": 3448.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 26,
+        "2": 12,
+        "3": 2
+      },
+      "response_latency_s_median": 13.5966796875,
+      "bell_gap_s": {
+        "min": 48.43310546875,
+        "median": 77.8740234375,
+        "max": 103.90380859375
+      },
+      "first_bell_s": 421.791015625
+    },
+    {
+      "sub": "m_9",
+      "group": "expert",
+      "duration_s": 3199.00146484375,
+      "n_bells": 38,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 5,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 36,
+        "2": 2
+      },
+      "response_latency_s_median": 8.72998046875,
+      "bell_gap_s": {
+        "min": 45.0029296875,
+        "median": 74.4599609375,
+        "max": 126.4892578125
+      },
+      "first_bell_s": 428.5
+    },
+    {
+      "sub": "m_10",
+      "group": "expert",
+      "duration_s": 3246.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 22,
+        "2": 9,
+        "3": 8
+      },
+      "response_latency_s_median": 13.322265625,
+      "bell_gap_s": {
+        "min": 47.31494140625,
+        "median": 74.950927734375,
+        "max": 147.494140625
+      },
+      "first_bell_s": 295.55224609375
+    },
+    {
+      "sub": "m_11",
+      "group": "expert",
+      "duration_s": 3127.00146484375,
+      "n_bells": 39,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 33,
+        "2": 6
+      },
+      "response_latency_s_median": 9.50830078125,
+      "bell_gap_s": {
+        "min": 47.3349609375,
+        "median": 72.64208984375,
+        "max": 110.68798828125
+      },
+      "first_bell_s": 192.611328125
+    },
+    {
+      "sub": "m_12",
+      "group": "expert",
+      "duration_s": 3329.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 3,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 39
+      },
+      "response_latency_s_median": 11.48388671875,
+      "bell_gap_s": {
+        "min": 48.49609375,
+        "median": 70.9970703125,
+        "max": 139.33837890625
+      },
+      "first_bell_s": 493.60400390625
+    },
+    {
+      "sub": "m_13",
+      "group": "expert",
+      "duration_s": 3342.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 27,
+        "3": 9,
+        "2": 4
+      },
+      "response_latency_s_median": 11.124755859375,
+      "bell_gap_s": {
+        "min": 46.13037109375,
+        "median": 75.22216796875,
+        "max": 135.47314453125
+      },
+      "first_bell_s": 365.43017578125
+    },
+    {
+      "sub": "m_14",
+      "group": "expert",
+      "duration_s": 3396.00146484375,
+      "n_bells": 34,
+      "n_valid": 31,
+      "n_with_3_codes": 32,
+      "n_late_codes": 7,
+      "n_practice_codes": 6,
+      "answer_counts": {
+        "1": 22,
+        "2": 5,
+        "3": 4,
+        "6": 1
+      },
+      "response_latency_s_median": 16.74853515625,
+      "bell_gap_s": {
+        "min": 51.6669921875,
+        "median": 82.7158203125,
+        "max": 171.93017578125
+      },
+      "first_bell_s": 428.3642578125
+    },
+    {
+      "sub": "m_15",
+      "group": "expert",
+      "duration_s": 3519.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 4,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "3": 4,
+        "2": 4
+      },
+      "response_latency_s_median": 17.7021484375,
+      "bell_gap_s": {
+        "min": 52.04736328125,
+        "median": 80.175537109375,
+        "max": 148.3671875
+      },
+      "first_bell_s": 445.05615234375
+    },
+    {
+      "sub": "m_16",
+      "group": "expert",
+      "duration_s": 3270.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 34,
+        "2": 5,
+        "3": 1
+      },
+      "response_latency_s_median": 13.731689453125,
+      "bell_gap_s": {
+        "min": 48.7890625,
+        "median": 72.876953125,
+        "max": 112.12060546875
+      },
+      "first_bell_s": 309.8740234375
+    },
+    {
+      "sub": "m_17",
+      "group": "expert",
+      "duration_s": 3411.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "2": 9
+      },
+      "response_latency_s_median": 13.92041015625,
+      "bell_gap_s": {
+        "min": 49.02685546875,
+        "median": 75.59716796875,
+        "max": 108.77734375
+      },
+      "first_bell_s": 431.26318359375
+    },
+    {
+      "sub": "m_19",
+      "group": "expert",
+      "duration_s": 3429.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "2": 8,
+        "3": 1
+      },
+      "response_latency_s_median": 14.940185546875,
+      "bell_gap_s": {
+        "min": 49.7412109375,
+        "median": 76.85400390625,
+        "max": 118.5869140625
+      },
+      "first_bell_s": 348.2021484375
+    },
+    {
+      "sub": "m_20",
+      "group": "expert",
+      "duration_s": 3752.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 20,
+        "2": 19,
+        "3": 1
+      },
+      "response_latency_s_median": 23.1865234375,
+      "bell_gap_s": {
+        "min": 55.0,
+        "median": 84.7041015625,
+        "max": 119.4609375
+      },
+      "first_bell_s": 397.71533203125
+    },
+    {
+      "sub": "m_21",
+      "group": "expert",
+      "duration_s": 3556.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 32,
+        "2": 6,
+        "3": 2
+      },
+      "response_latency_s_median": 16.52587890625,
+      "bell_gap_s": {
+        "min": 48.7197265625,
+        "median": 75.32763671875,
+        "max": 116.03076171875
+      },
+      "first_bell_s": 476.998046875
+    },
+    {
+      "sub": "m_22",
+      "group": "expert",
+      "duration_s": 3345.00146484375,
+      "n_bells": 36,
+      "n_valid": 35,
+      "n_with_3_codes": 35,
+      "n_late_codes": 3,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "3": 3,
+        "2": 2
+      },
+      "response_latency_s_median": 13.851806640625,
+      "bell_gap_s": {
+        "min": 49.36767578125,
+        "median": 78.06591796875,
+        "max": 157.26318359375
+      },
+      "first_bell_s": 441.2490234375
+    },
+    {
+      "sub": "m_23",
+      "group": "expert",
+      "duration_s": 3234.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 29,
+        "2": 8,
+        "3": 3
+      },
+      "response_latency_s_median": 13.481689453125,
+      "bell_gap_s": {
+        "min": 48.95263671875,
+        "median": 73.40283203125,
+        "max": 111.72705078125
+      },
+      "first_bell_s": 278.4013671875
+    },
+    {
+      "sub": "m_24",
+      "group": "expert",
+      "duration_s": 3220.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "2": 7,
+        "3": 2
+      },
+      "response_latency_s_median": 12.483642578125,
+      "bell_gap_s": {
+        "min": 46.62744140625,
+        "median": 70.61474609375,
+        "max": 104.56298828125
+      },
+      "first_bell_s": 351.47607421875
+    },
+    {
+      "sub": "m_25",
+      "group": "expert",
+      "duration_s": 3533.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 39,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 30,
+        "2": 6,
+        "3": 4
+      },
+      "response_latency_s_median": 17.827880859375,
+      "bell_gap_s": {
+        "min": 54.81396484375,
+        "median": 79.578125,
+        "max": 105.9541015625
+      },
+      "first_bell_s": 415.33544921875
+    },
+    {
+      "sub": "m_27",
+      "group": "expert",
+      "duration_s": 3600.00146484375,
+      "n_bells": 38,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 1,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 19,
+        "2": 11,
+        "3": 8
+      },
+      "response_latency_s_median": 18.298095703125,
+      "bell_gap_s": {
+        "min": 47.2841796875,
+        "median": 82.8974609375,
+        "max": 133.39208984375
+      },
+      "first_bell_s": 489.955078125
+    },
+    {
+      "sub": "m_28",
+      "group": "expert",
+      "duration_s": 3370.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 30,
+        "3": 5,
+        "2": 5
+      },
+      "response_latency_s_median": 12.5625,
+      "bell_gap_s": {
+        "min": 47.66064453125,
+        "median": 77.419921875,
+        "max": 101.6611328125
+      },
+      "first_bell_s": 379.60546875
+    },
+    {
+      "sub": "m_29",
+      "group": "expert",
+      "duration_s": 3430.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 25,
+        "2": 15
+      },
+      "response_latency_s_median": 16.073486328125,
+      "bell_gap_s": {
+        "min": 49.78564453125,
+        "median": 77.2734375,
+        "max": 113.69580078125
+      },
+      "first_bell_s": 373.5673828125
+    },
+    {
+      "sub": "m_30",
+      "group": "expert",
+      "duration_s": 3079.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 26,
+        "2": 10,
+        "3": 4
+      },
+      "response_latency_s_median": 13.81787109375,
+      "bell_gap_s": {
+        "min": 45.013671875,
+        "median": 75.89013671875,
+        "max": 117.4697265625
+      },
+      "first_bell_s": 129.482421875
+    },
+    {
+      "sub": "m_31",
+      "group": "expert",
+      "duration_s": 3660.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 32,
+        "2": 7,
+        "3": 1
+      },
+      "response_latency_s_median": 16.1455078125,
+      "bell_gap_s": {
+        "min": 49.4267578125,
+        "median": 84.4111328125,
+        "max": 110.951171875
+      },
+      "first_bell_s": 550.3974609375
+    },
+    {
+      "sub": "m_32",
+      "group": "expert",
+      "duration_s": 2802.00146484375,
+      "n_bells": 34,
+      "n_valid": 34,
+      "n_with_3_codes": 34,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 17,
+        "2": 13,
+        "3": 4
+      },
+      "response_latency_s_median": 17.51513671875,
+      "bell_gap_s": {
+        "min": 54.486328125,
+        "median": 78.17529296875,
+        "max": 109.51904296875
+      },
+      "first_bell_s": 179.01708984375
+    },
+    {
+      "sub": "m_33",
+      "group": "expert",
+      "duration_s": 3592.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 30,
+        "2": 6,
+        "3": 3
+      },
+      "response_latency_s_median": 19.6767578125,
+      "bell_gap_s": {
+        "min": 54.40283203125,
+        "median": 83.048583984375,
+        "max": 154.71728515625
+      },
+      "first_bell_s": 342.13330078125
+    },
+    {
+      "sub": "m_34",
+      "group": "expert",
+      "duration_s": 3379.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 37,
+        "2": 3
+      },
+      "response_latency_s_median": 12.140380859375,
+      "bell_gap_s": {
+        "min": 48.294921875,
+        "median": 74.98486328125,
+        "max": 109.18896484375
+      },
+      "first_bell_s": 462.89013671875
+    },
+    {
+      "sub": "c_2",
+      "group": "novice",
+      "duration_s": 3505.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 1,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 25,
+        "2": 10,
+        "3": 5
+      },
+      "response_latency_s_median": 13.62451171875,
+      "bell_gap_s": {
+        "min": 50.84423828125,
+        "median": 74.162109375,
+        "max": 106.69873046875
+      },
+      "first_bell_s": 545.65625
+    },
+    {
+      "sub": "c_6",
+      "group": "novice",
+      "duration_s": 3557.00146484375,
+      "n_bells": 36,
+      "n_valid": 33,
+      "n_with_3_codes": 33,
+      "n_late_codes": 5,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 20,
+        "2": 12,
+        "3": 3,
+        "6": 1
+      },
+      "response_latency_s_median": 15.339111328125,
+      "bell_gap_s": {
+        "min": 49.24365234375,
+        "median": 76.56103515625,
+        "max": 242.19287109375
+      },
+      "first_bell_s": 507.59326171875
+    },
+    {
+      "sub": "c_9",
+      "group": "novice",
+      "duration_s": 3431.00146484375,
+      "n_bells": 40,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 21,
+        "3": 11,
+        "2": 7,
+        "7": 1
+      },
+      "response_latency_s_median": 17.224609375,
+      "bell_gap_s": {
+        "min": 51.0458984375,
+        "median": 80.02880859375,
+        "max": 108.541015625
+      },
+      "first_bell_s": 331.22900390625
+    },
+    {
+      "sub": "c_10",
+      "group": "novice",
+      "duration_s": 3294.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "2": 22,
+        "1": 13,
+        "3": 5
+      },
+      "response_latency_s_median": 13.439453125,
+      "bell_gap_s": {
+        "min": 52.0849609375,
+        "median": 73.55322265625,
+        "max": 102.11083984375
+      },
+      "first_bell_s": 348.04248046875
+    },
+    {
+      "sub": "c_12",
+      "group": "novice",
+      "duration_s": 3602.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 24,
+        "2": 12,
+        "3": 4
+      },
+      "response_latency_s_median": 19.83251953125,
+      "bell_gap_s": {
+        "min": 49.10693359375,
+        "median": 81.5732421875,
+        "max": 108.86181640625
+      },
+      "first_bell_s": 404.89208984375
+    },
+    {
+      "sub": "c_13",
+      "group": "novice",
+      "duration_s": 3776.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 16,
+        "3": 13,
+        "2": 11
+      },
+      "response_latency_s_median": 20.83935546875,
+      "bell_gap_s": {
+        "min": 56.42236328125,
+        "median": 82.0703125,
+        "max": 105.64794921875
+      },
+      "first_bell_s": 502.5673828125
+    },
+    {
+      "sub": "c_14",
+      "group": "novice",
+      "duration_s": 3254.00146484375,
+      "n_bells": 40,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 22,
+        "2": 11,
+        "3": 6,
+        "4": 1
+      },
+      "response_latency_s_median": 13.08544921875,
+      "bell_gap_s": {
+        "min": 46.703125,
+        "median": 72.7431640625,
+        "max": 106.26025390625
+      },
+      "first_bell_s": 348.60107421875
+    },
+    {
+      "sub": "c_15",
+      "group": "novice",
+      "duration_s": 3698.00146484375,
+      "n_bells": 39,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 3,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 17,
+        "3": 13,
+        "2": 9
+      },
+      "response_latency_s_median": 18.27783203125,
+      "bell_gap_s": {
+        "min": 53.47509765625,
+        "median": 74.850830078125,
+        "max": 131.39306640625
+      },
+      "first_bell_s": 540.08935546875
+    },
+    {
+      "sub": "c_16",
+      "group": "novice",
+      "duration_s": 3676.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 26,
+        "3": 9,
+        "2": 5
+      },
+      "response_latency_s_median": 17.197998046875,
+      "bell_gap_s": {
+        "min": 55.3212890625,
+        "median": 76.43603515625,
+        "max": 115.77099609375
+      },
+      "first_bell_s": 538.2314453125
+    },
+    {
+      "sub": "c_19",
+      "group": "novice",
+      "duration_s": 3296.00146484375,
+      "n_bells": 40,
+      "n_valid": 39,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 25,
+        "3": 9,
+        "2": 5,
+        "5": 1
+      },
+      "response_latency_s_median": 15.13916015625,
+      "bell_gap_s": {
+        "min": 48.46826171875,
+        "median": 74.109375,
+        "max": 109.19482421875
+      },
+      "first_bell_s": 344.17529296875
+    },
+    {
+      "sub": "c_22",
+      "group": "novice",
+      "duration_s": 3874.00146484375,
+      "n_bells": 40,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 19,
+        "2": 14,
+        "3": 6,
+        "4": 1
+      },
+      "response_latency_s_median": 25.311767578125,
+      "bell_gap_s": {
+        "min": 58.27685546875,
+        "median": 88.326171875,
+        "max": 120.3232421875
+      },
+      "first_bell_s": 506.71044921875
+    },
+    {
+      "sub": "c_23",
+      "group": "novice",
+      "duration_s": 3348.00146484375,
+      "n_bells": 38,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 3,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 24,
+        "3": 10,
+        "2": 4
+      },
+      "response_latency_s_median": 12.695068359375,
+      "bell_gap_s": {
+        "min": 48.6357421875,
+        "median": 74.583984375,
+        "max": 165.2587890625
+      },
+      "first_bell_s": 462.84912109375
+    },
+    {
+      "sub": "c_24",
+      "group": "novice",
+      "duration_s": 3452.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "2": 21,
+        "1": 14,
+        "3": 5
+      },
+      "response_latency_s_median": 16.590576171875,
+      "bell_gap_s": {
+        "min": 50.28857421875,
+        "median": 80.751953125,
+        "max": 107.5810546875
+      },
+      "first_bell_s": 347.47412109375
+    },
+    {
+      "sub": "c_25",
+      "group": "novice",
+      "duration_s": 3357.00146484375,
+      "n_bells": 40,
+      "n_valid": 36,
+      "n_with_3_codes": 36,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 23,
+        "2": 13,
+        "3": 2,
+        "6": 1
+      },
+      "response_latency_s_median": 13.78466796875,
+      "bell_gap_s": {
+        "min": 48.30908203125,
+        "median": 75.0830078125,
+        "max": 109.5419921875
+      },
+      "first_bell_s": 411.13916015625
+    },
+    {
+      "sub": "c_26",
+      "group": "novice",
+      "duration_s": 3296.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 1,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 23,
+        "2": 14,
+        "3": 2
+      },
+      "response_latency_s_median": 11.7880859375,
+      "bell_gap_s": {
+        "min": 47.85400390625,
+        "median": 74.5712890625,
+        "max": 187.85205078125
+      },
+      "first_bell_s": 383.2431640625
+    },
+    {
+      "sub": "c_29",
+      "group": "novice",
+      "duration_s": 2966.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 31,
+        "2": 6,
+        "3": 3
+      },
+      "response_latency_s_median": 10.196044921875,
+      "bell_gap_s": {
+        "min": 47.14306640625,
+        "median": 71.51904296875,
+        "max": 109.1611328125
+      },
+      "first_bell_s": 149.6533203125
+    },
+    {
+      "sub": "c_30",
+      "group": "novice",
+      "duration_s": 3458.00146484375,
+      "n_bells": 38,
+      "n_valid": 37,
+      "n_with_3_codes": 37,
+      "n_late_codes": 2,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 21,
+        "2": 8,
+        "3": 8
+      },
+      "response_latency_s_median": 18.31298828125,
+      "bell_gap_s": {
+        "min": 52.11181640625,
+        "median": 79.4072265625,
+        "max": 151.166015625
+      },
+      "first_bell_s": 404.22705078125
+    },
+    {
+      "sub": "c_n1",
+      "group": "novice",
+      "duration_s": 3242.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 1,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 17,
+        "2": 16,
+        "3": 6
+      },
+      "response_latency_s_median": 11.02978515625,
+      "bell_gap_s": {
+        "min": 46.05712890625,
+        "median": 75.370849609375,
+        "max": 143.25732421875
+      },
+      "first_bell_s": 366.4921875
+    },
+    {
+      "sub": "c_n2",
+      "group": "novice",
+      "duration_s": 3553.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 29,
+        "2": 8,
+        "3": 3
+      },
+      "response_latency_s_median": 16.025146484375,
+      "bell_gap_s": {
+        "min": 54.837890625,
+        "median": 76.06103515625,
+        "max": 103.55126953125
+      },
+      "first_bell_s": 514.697265625
+    },
+    {
+      "sub": "c_n3",
+      "group": "novice",
+      "duration_s": 3415.00146484375,
+      "n_bells": 39,
+      "n_valid": 38,
+      "n_with_3_codes": 38,
+      "n_late_codes": 3,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 25,
+        "3": 7,
+        "2": 7
+      },
+      "response_latency_s_median": 17.462890625,
+      "bell_gap_s": {
+        "min": 53.0595703125,
+        "median": 80.560546875,
+        "max": 158.59619140625
+      },
+      "first_bell_s": 305.69921875
+    },
+    {
+      "sub": "c_n4",
+      "group": "novice",
+      "duration_s": 3406.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 25,
+        "2": 15
+      },
+      "response_latency_s_median": 14.406005859375,
+      "bell_gap_s": {
+        "min": 49.11376953125,
+        "median": 72.72314453125,
+        "max": 112.09423828125
+      },
+      "first_bell_s": 420.22509765625
+    },
+    {
+      "sub": "c_n5",
+      "group": "novice",
+      "duration_s": 3598.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 21,
+        "2": 15,
+        "3": 4
+      },
+      "response_latency_s_median": 19.066650390625,
+      "bell_gap_s": {
+        "min": 51.5830078125,
+        "median": 82.34375,
+        "max": 123.74365234375
+      },
+      "first_bell_s": 396.26220703125
+    },
+    {
+      "sub": "c_n6",
+      "group": "novice",
+      "duration_s": 3821.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 7,
+      "answer_counts": {
+        "1": 15,
+        "3": 13,
+        "2": 12
+      },
+      "response_latency_s_median": 18.723388671875,
+      "bell_gap_s": {
+        "min": 53.4248046875,
+        "median": 78.91015625,
+        "max": 116.06494140625
+      },
+      "first_bell_s": 588.09423828125
+    },
+    {
+      "sub": "c_n7",
+      "group": "novice",
+      "duration_s": 3335.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 4,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 25,
+        "3": 7,
+        "2": 7
+      },
+      "response_latency_s_median": 14.8037109375,
+      "bell_gap_s": {
+        "min": 51.546875,
+        "median": 77.3759765625,
+        "max": 182.43701171875
+      },
+      "first_bell_s": 405.09423828125
+    },
+    {
+      "sub": "c_n8",
+      "group": "novice",
+      "duration_s": 3596.00146484375,
+      "n_bells": 39,
+      "n_valid": 39,
+      "n_with_3_codes": 39,
+      "n_late_codes": 4,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 17,
+        "2": 12,
+        "3": 10
+      },
+      "response_latency_s_median": 18.908203125,
+      "bell_gap_s": {
+        "min": 58.82177734375,
+        "median": 77.404541015625,
+        "max": 181.369140625
+      },
+      "first_bell_s": 405.646484375
+    },
+    {
+      "sub": "c_n9",
+      "group": "novice",
+      "duration_s": 3350.0,
+      "n_bells": 35,
+      "n_valid": 30,
+      "n_with_3_codes": 31,
+      "n_late_codes": 11,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "3": 12,
+        "2": 11,
+        "1": 10,
+        "7": 1
+      },
+      "response_latency_s_median": 17.2880859375,
+      "bell_gap_s": {
+        "min": 53.75341796875,
+        "median": 76.3720703125,
+        "max": 174.31298828125
+      },
+      "first_bell_s": 388.7080078125
+    },
+    {
+      "sub": "c_n10",
+      "group": "novice",
+      "duration_s": 3725.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 23,
+        "2": 17
+      },
+      "response_latency_s_median": 18.031494140625,
+      "bell_gap_s": {
+        "min": 50.06884765625,
+        "median": 78.05029296875,
+        "max": 112.01025390625
+      },
+      "first_bell_s": 554.375
+    },
+    {
+      "sub": "c_n11",
+      "group": "novice",
+      "duration_s": 2056.40966796875,
+      "n_bells": 22,
+      "n_valid": 22,
+      "n_with_3_codes": 22,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 15,
+        "3": 5,
+        "2": 2
+      },
+      "response_latency_s_median": 14.11962890625,
+      "bell_gap_s": {
+        "min": 50.09130859375,
+        "median": 79.5673828125,
+        "max": 107.580078125
+      },
+      "first_bell_s": 378.22900390625
+    },
+    {
+      "sub": "c_n12",
+      "group": "novice",
+      "duration_s": 3602.00146484375,
+      "n_bells": 40,
+      "n_valid": 40,
+      "n_with_3_codes": 40,
+      "n_late_codes": 0,
+      "n_practice_codes": 5,
+      "answer_counts": {
+        "1": 24,
+        "2": 12,
+        "3": 4
+      },
+      "response_latency_s_median": 19.83251953125,
+      "bell_gap_s": {
+        "min": 49.10693359375,
+        "median": 81.5732421875,
+        "max": 108.86181640625
+      },
+      "first_bell_s": 404.89208984375
+    }
+  ]
+}
