@@ -5,6 +5,7 @@ datasets/generated/
 outputs/figures/*.png
 outputs/results/*.json
 outputs/results/realdata/checkpoints/
+outputs/results/osf3uszv/checkpoints/
 
 # Q1 pipeline data (raw downloads and derivatives are large)
 data/
@@ -29,3 +30,6 @@ hw/vhdl/work_ps/
 # OpenNeuro metadata clone (nested git repo; re-create with: git clone https://github.com/OpenNeuroDatasets/ds001787.git)
 ds001787/
 VSTEP_so_tay_kien_thuc.html
+
+# wrong download (reward-learning task, not meditation); unused
+ds004147/

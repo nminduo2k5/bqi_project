@@ -57,6 +57,17 @@ VÍ DỤ SỬ DỤNG
   python main.py realdata groups           # làm lại riêng phần theo nhóm (E-H5) trên fit_results.json đã có
   python main.py realdata paper            # Hình 9–10, bảng, summary.json → outputs/paper/realdata (sau E3)
 
+  # Bộ dữ liệu thứ hai: OSF 3uszv (Rodriguez-Larios 2021), 29 người thiền lâu năm + 29 người mới, cổng F0 → F3
+  python main.py osf3uszv fetch [--dry-run] [--groups m c] [--conditions task med rest]
+                                           # 12,1 GB file task (+3,2 GB med/rest), tải tiếp được khi đứt mạng
+  python main.py osf3uszv ratings          # F0: giải mã probe từ cột trigger (không đọc mẫu EEG)
+  python main.py osf3uszv design-crb       # F1: Rothenberg + CRB trên lịch probe thật
+  python main.py osf3uszv preregister --yes
+  python main.py osf3uszv preprocess       # đọc EEG, đặc trưng → data/osf3uszv/derivatives/features
+  python main.py osf3uszv fit | groups | boot | check   # fit, F2, F3 → outputs/results/osf3uszv
+  python main.py osf3uszv paper            # hình, bảng, summary.json → outputs/paper/osf3uszv (sau F3)
+  python main.py osf3uszv compare [--joint]   # bảng so sánh hai bộ + kiểm tra lặp lại R1–R3 (+ fit chung) → outputs/paper/comparison
+
   # Pipeline Q1 (Q1_pipeline.md): kiểm định công cụ, cổng, đăng ký trước
   python main.py validate-tools            # cổng G0 (dữ liệu tổng hợp)
   python main.py validate-tools --g3       # + cổng G3 (phục hồi tham số mô hình 7.2, chậm)
@@ -391,6 +402,55 @@ def cmd_realdata(args):
 
 
 # =============================================================================
+# Subcommand: osf3uszv  (second dataset: Rodriguez-Larios et al. 2021, OSF, CC0)
+# =============================================================================
+def cmd_osf3uszv(args):
+    from eeg import gates
+    step, out_dir = args.step, args.out_dir
+    if step == "fetch":
+        from eeg import fetch_osf
+        fetch_osf.fetch(tuple(args.groups), tuple(args.conditions), dry_run=args.dry_run)
+        return
+    if step == "ratings":                                   # F0: Events column only, no EEG sample read
+        from eeg.loaders import osf3uszv as DS
+        _, summary = DS.decode_all()
+        DS.gate_F0(summary)
+    elif step == "design-crb":                              # F1
+        from model import osf_pipeline
+        osf_pipeline.design_crb(output_dir=out_dir)
+    elif step == "preregister":
+        if not args.yes:
+            print("Khoá predictions_osf3uszv.md là không đảo ngược. Chạy lại với --yes để khoá.")
+            sys.exit(1)
+        try:
+            gates.require("F1", force=args.force_gate)
+        except gates.GateError as e:
+            print(f"[DỪNG] {e}")
+            sys.exit(1)
+        info = gates.lock_predictions(gates.PREDICTIONS_OSF, gates.LOCK_OSF)
+        print(f"Đã khoá {info['file']}\n  sha256: {info['sha256']}\n  lúc:    {info['locked_utc']}")
+    elif step == "preprocess":
+        from eeg import osf_features
+        osf_features.run(args.subjects, seed=args.seed, n_jobs=args.n_jobs, do_ica=not args.no_ica)
+    elif step == "paper":
+        from experiments.run_realdata import run as paper_run
+        paper_run(out_dir, n_ppc=20 if args.fast else 200, seed=args.seed, dataset="osf3uszv")
+    elif step == "compare":
+        from experiments.compare_realdata import run as compare_run
+        compare_run(out_dir or os.path.join(PROJECT_ROOT, "outputs", "paper", "comparison"), joint=args.joint, seed=args.seed)
+    elif step in ("fit", "groups", "boot", "check"):
+        from model import osf_pipeline
+        kw = {"seed": args.seed, "fast": args.fast, "output_dir": out_dir}
+        if step == "fit":
+            kw["n_starts"] = args.n_starts
+            kw["force"] = args.force_gate
+        if step == "boot":
+            kw["n_boot"] = args.n_boot
+        osf_pipeline.run(step, **kw)
+    print("\n✔ Trạng thái cổng: python main.py gates")
+
+
+# =============================================================================
 # Subcommand: dashboard
 # =============================================================================
 def cmd_dashboard(args):
@@ -541,6 +601,28 @@ def build_parser():
     p_rd.add_argument("--no-ica", action="store_true", help="preprocess: bỏ ICA (thử nhanh)")
     p_rd.add_argument("--out-dir", type=str, default=None, help="Mặc định: outputs/results/realdata")
     p_rd.set_defaults(func=cmd_realdata)
+
+    p_osf = sub.add_parser("osf3uszv", help="Bộ dữ liệu thứ hai, OSF 3uszv (Rodriguez-Larios 2021), cổng F0–F3: "
+                                            "fetch | ratings | design-crb | preregister | preprocess | fit | groups | boot | check.")
+    p_osf.add_argument("step", choices=["fetch", "ratings", "design-crb", "preregister", "preprocess", "fit", "groups",
+                                        "boot", "check", "paper", "compare"])
+    p_osf.add_argument("--joint", action="store_true", help="compare: thêm fit chung hai bộ, k_inh riêng từng bộ (chậm)")
+    p_osf.add_argument("--groups", nargs="+", choices=["m", "c"], default=["m", "c"],
+                       help="fetch: m = người thiền lâu năm, c = người mới (mặc định cả hai)")
+    p_osf.add_argument("--conditions", nargs="+", choices=["task", "med", "rest"], default=["task"],
+                       help="fetch: task = thiền có câu hỏi (mặc định, 12,1 GB); med, rest = thêm 3,2 GB, tải sau task")
+    p_osf.add_argument("--dry-run", action="store_true", help="fetch: chỉ liệt kê file và dung lượng")
+    p_osf.add_argument("--subjects", nargs="*", default=None, help="preprocess: ví dụ m_2 c_n1 (mặc định tất cả)")
+    p_osf.add_argument("--yes", action="store_true", help="preregister: xác nhận khoá")
+    p_osf.add_argument("--force-gate", action="store_true")
+    p_osf.add_argument("--seed", type=int, default=42)
+    p_osf.add_argument("--fast", action="store_true")
+    p_osf.add_argument("--n-starts", type=int, default=None, help="fit: số điểm xuất phát (mặc định 6)")
+    p_osf.add_argument("--n-boot", type=int, default=None, help="boot: số lần bootstrap (mặc định 200)")
+    p_osf.add_argument("--n-jobs", type=int, default=None)
+    p_osf.add_argument("--no-ica", action="store_true", help="preprocess: bỏ ICA (thử nhanh)")
+    p_osf.add_argument("--out-dir", type=str, default=None, help="Mặc định: outputs/results/osf3uszv")
+    p_osf.set_defaults(func=cmd_osf3uszv)
 
     p_dash = sub.add_parser("dashboard", help="Mở dashboard Streamlit (cần: pip install streamlit plotly).")
     p_dash.add_argument("--port", type=int, default=8501, help="Cổng HTTP (mặc định: 8501)")

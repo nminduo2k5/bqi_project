@@ -1,0 +1,45 @@
+{
+  "gate": "F0",
+  "description": "Giải mã rating OSF 3uszv từ cột trigger: chuông + câu trả lời + độ chắc chắn hợp lệ",
+  "passed": true,
+  "time_utc": "2026-11-03T09:13:31+00:00",
+  "details": {
+    "n_sessions": 58,
+    "n_sessions_per_group": {
+      "expert": 29,
+      "novice": 29
+    },
+    "n_bells": 2258,
+    "n_valid": 2233,
+    "decoded_rate": 0.9889282550930026,
+    "three_codes_rate": 0.9898139946855624,
+    "answer_counts": {
+      "1": 1440,
+      "2": 528,
+      "3": 277,
+      "6": 3,
+      "7": 2,
+      "4": 2,
+      "5": 1
+    },
+    "observed_ranges": {
+      "q2": [
+        1,
+        7
+      ],
+      "q3": [
+        1,
+        7
+      ],
+      "focus": [
+        1,
+        7
+      ],
+      "engagement": [
+        1,
+        7
+      ]
+    },
+    "bell_gap_s_median": 77.063720703125
+  }
+}

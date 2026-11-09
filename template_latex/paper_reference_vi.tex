@@ -4,7 +4,7 @@
 %%  BẢN TIẾNG VIỆT của paper_reference.tex (cùng số liệu, hình, bảng, tài liệu).
 %%  Mọi con số sinh từ:  python main.py model all --seed 42 --n-base 256 --profiles
 %%  rồi  python main.py model figures --profiles  (outputs/paper/model/).
-%%  Phần dữ liệu thật (mục 4.7, phụ lục về ds001787): các bước python main.py realdata ...
+%%  Phần dữ liệu thật (mục 4.7 ds001787, mục 4.8 OSF 3uszv, Phụ lục H): các bước python main.py realdata ... / osf3uszv ...
 %%  và  python main.py realdata paper  (outputs/paper/realdata/, số liệu trong summary.json).
 %%  Biên dịch: pdflatex (2 lần) trong thư mục template_latex/; xem HUONG_DAN_BIEN_DICH.md.
 %%  Phần thư mục tài liệu (\begin{thebibliography} ... \end{document}) được
@@ -50,7 +50,8 @@
 
 %% ─── Hình ───────────────────────────────────────────────────────────────────
 \usepackage{graphicx}
-\graphicspath{{../outputs/paper/model/}{../outputs/paper/realdata/}{./figures/}}
+\graphicspath{{../outputs/paper/model/}{../outputs/paper/realdata/}{../outputs/paper/osf3uszv/}{./figures/}}
+\renewcommand{\floatpagefraction}{0.8}   % a float page only for floats that fill most of it
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{tikz}
@@ -240,7 +241,7 @@
 \vspace{0.3cm}
 \begin{tcolorbox}[mathbox,title=Tóm tắt]
 \small
-Các mô hình động lực nối hoạt động của mạng chế độ mặc định (DMN), mức tích hợp thông tin ($\Phi$) và ``chất lượng ý thức'' (QoC) do người tập tự báo cáo trong khi thiền ngày càng được đề xuất nhiều, nhưng ba câu hỏi phải trả lời \emph{trước} khi phân tích dữ liệu lại hiếm khi được đặt ra: mô hình có nhất quán về mặt toán học không; tham số có xác định được từ các thiết kế lấy mẫu trải nghiệm đang dùng (vài lần hỏi tự chấm mỗi phiên, phiên dài 20--90 phút, đặc trưng EEG vài giây một lần) không; và điều khiển vòng kín (neurofeedback) làm được gì khi tham số chỉ là ước lượng. Bài này trả lời cả ba cho một mô hình ba biến DMN--$\Phi$--QoC mới được đề xuất. Thứ nhất, chúng tôi chứng minh rằng trong dạng gốc QoC là bộ lọc thông cao của đạo hàm $\Phi$ và $A_{\mathrm{DMN}}$, nên trạng thái dừng của nó bằng không với mọi giá trị tham số; các nghiệm dừng dạng đóng in kèm mô hình không thoả mãn chính phương trình của mô hình. Chúng tôi đề xuất mô hình không gian trạng thái tuyến tính--Gauss thay thế (M1) với quá trình Ornstein--Uhlenbeck cho DMN và một hàm đọc ra đại số, rồi dẫn ra kỳ vọng, hiệp phương sai và luật Gauss dừng của nó ở dạng đóng. Thứ hai, dùng thông tin Fisher kỳ vọng chính xác của cả phiên, chúng tôi mô tả khả năng xác định cấu trúc cho bốn cấu hình quan sát: chỉ điểm tự chấm xác định được 6 trong 10 tham số; điểm tự chấm cộng một kênh EEG còn đúng một đối xứng co giãn (được chỉ rõ bằng giải tích); điểm tự chấm cùng cả hai kênh EEG xác định đủ 12 tham số. Trên lưới 144 thiết kế, cận Cramér--Rao (CRB) dự đoán sai số căn quân phương của ước lượng hợp lý cực đại trong hệ số hai ở 24/24 ô thử (tỉ số trung vị 0,98), cho phép dùng CRB làm công cụ thiết kế. Bản đồ thiết kế thu được cho thấy tốc độ ức chế DMN $\kinh$ là tham số khó nhất: cần khoảng tám giờ-người EEG hai kênh (ví dụ 24 người $\times$ 20 phút) để đạt sai số tương đối 20\,\%, trong khi $A_0$, $\alpha$, $\beta$ đạt mức đó với 6 người $\times$ 20 phút; lịch hỏi đều không thua các lịch dồn đầu, dồn cuối hay theo cặp đã thử. Thứ ba, chúng tôi viết lại bài toán điều khiển thành điều tiết tuyến tính--bậc hai--Gauss (LQG). Với tham số thật, LQG đạt chi phí phiên thấp hơn 14 lần so với bang-bang và 38 lần so với không điều khiển, chi phí dừng dạng đóng khớp mô phỏng trong 3\,\%, và khi bộ điều khiển được thiết kế trên tham số ước lượng từ từng thiết kế thì mất mát hiệu quả trung vị chỉ vài phần trăm với các thiết kế đạt tiêu chí xác định được (3\,\% ở thiết kế tham chiếu) nhưng lên tới 38\,\% ở thiết kế nhỏ nhất không đạt (6 người, phiên 20 phút). Phân tích Sobol toàn cục trên dải tham số $\times 0{,}25$--$\times 4$ cho thấy khả năng xác định $\kinh$ do mức nền DMN và hệ số biến thiên của nó quyết định, chứ không do chính $\kinh$. Cuối cùng, trong một ứng dụng đã đăng ký trước trên dữ liệu EEG lấy mẫu trải nghiệm mở (ds001787; giữ 22 trong 40 phiên sau khi loại nhiễu giả), sai số Fisher của $\kinh$ là 10\,\%, nằm trong khoảng 9--13\,\% mà phân tích thiết kế dự đoán, nhưng hợp lý profile cho 22\,\% và cho thấy đại diện công suất alpha bị sai đặc tả; hằng số thời gian DMN ước lượng được là 0,8~phút, và không đại diện EEG nào cải thiện dự đoán ngoài mẫu cho điểm tự chấm. Các kết quả mô phỏng tái tạo được bằng một lệnh với seed cố định; đặc trưng EEG được coi là đại diện có nhiễu, và bài không tuyên bố gì về ý nghĩa thần kinh của các tham số.
+Các mô hình động lực nối hoạt động của mạng chế độ mặc định (DMN), mức tích hợp thông tin ($\Phi$) và ``chất lượng ý thức'' (QoC) do người tập tự báo cáo trong khi thiền ngày càng được đề xuất nhiều, nhưng ba câu hỏi phải trả lời \emph{trước} khi phân tích dữ liệu lại hiếm khi được đặt ra: mô hình có nhất quán về mặt toán học không; tham số có xác định được từ các thiết kế lấy mẫu trải nghiệm đang dùng (vài lần hỏi tự chấm mỗi phiên, phiên dài 20--90 phút, đặc trưng EEG vài giây một lần) không; và điều khiển vòng kín (neurofeedback) làm được gì khi tham số chỉ là ước lượng. Bài này trả lời cả ba cho một mô hình ba biến DMN--$\Phi$--QoC mới được đề xuất. Thứ nhất, chúng tôi chứng minh rằng trong dạng gốc QoC là bộ lọc thông cao của đạo hàm $\Phi$ và $A_{\mathrm{DMN}}$, nên trạng thái dừng của nó bằng không với mọi giá trị tham số; các nghiệm dừng dạng đóng in kèm mô hình không thoả mãn chính phương trình của mô hình. Chúng tôi đề xuất mô hình không gian trạng thái tuyến tính--Gauss thay thế (M1) với quá trình Ornstein--Uhlenbeck cho DMN và một hàm đọc ra đại số, rồi dẫn ra kỳ vọng, hiệp phương sai và luật Gauss dừng của nó ở dạng đóng. Thứ hai, dùng thông tin Fisher kỳ vọng chính xác của cả phiên, chúng tôi mô tả khả năng xác định cấu trúc cho bốn cấu hình quan sát: chỉ điểm tự chấm xác định được 6 trong 10 tham số; điểm tự chấm cộng một kênh EEG còn đúng một đối xứng co giãn (được chỉ rõ bằng giải tích); điểm tự chấm cùng cả hai kênh EEG xác định đủ 12 tham số. Trên lưới 144 thiết kế, cận Cramér--Rao (CRB) dự đoán sai số căn quân phương của ước lượng hợp lý cực đại trong hệ số hai ở 24/24 ô thử (tỉ số trung vị 0,98), cho phép dùng CRB làm công cụ thiết kế. Bản đồ thiết kế thu được cho thấy tốc độ ức chế DMN $\kinh$ là tham số khó nhất: cần khoảng tám giờ-người EEG hai kênh (ví dụ 24 người $\times$ 20 phút) để đạt sai số tương đối 20\,\%, trong khi $A_0$, $\alpha$, $\beta$ đạt mức đó với 6 người $\times$ 20 phút; lịch hỏi đều không thua các lịch dồn đầu, dồn cuối hay theo cặp đã thử. Thứ ba, chúng tôi viết lại bài toán điều khiển thành điều tiết tuyến tính--bậc hai--Gauss (LQG). Với tham số thật, LQG đạt chi phí phiên thấp hơn 14 lần so với bang-bang và 38 lần so với không điều khiển, chi phí dừng dạng đóng khớp mô phỏng trong 3\,\%, và khi bộ điều khiển được thiết kế trên tham số ước lượng từ từng thiết kế thì mất mát hiệu quả trung vị chỉ vài phần trăm với các thiết kế đạt tiêu chí xác định được (3\,\% ở thiết kế tham chiếu) nhưng lên tới 38\,\% ở thiết kế nhỏ nhất không đạt (6 người, phiên 20 phút). Phân tích Sobol toàn cục trên dải tham số $\times 0{,}25$--$\times 4$ cho thấy khả năng xác định $\kinh$ do mức nền DMN và hệ số biến thiên của nó quyết định, chứ không do chính $\kinh$. Cuối cùng, trong một ứng dụng đã đăng ký trước trên dữ liệu EEG lấy mẫu trải nghiệm mở (ds001787; giữ 22 trong 40 phiên sau khi loại nhiễu giả), sai số Fisher của $\kinh$ là 10\,\%, nằm trong khoảng 9--13\,\% mà phân tích thiết kế dự đoán, nhưng hợp lý profile cho 22\,\% và cho thấy đại diện công suất alpha bị sai đặc tả; hằng số thời gian DMN ước lượng được là 0,8~phút, và không đại diện EEG nào cải thiện dự đoán ngoài mẫu cho điểm tự chấm. Một ứng dụng đã đăng ký trước thứ hai trên một bộ dữ liệu độc lập (OSF 3uszv; 29 người thiền lâu năm và 29 người mới, giữ 48 trong 58 phiên) lặp lại được độ chính xác của các con số sai số theo Fisher (dự đoán 6,7\,\%, đạt 8,5\,\%) và việc các đại diện EEG không có giá trị dự đoán ngoài mẫu, nhưng không lặp lại được các hằng số tốc độ: hằng số thời gian DMN là 7~phút, và khác biệt nhóm thấy trên bộ thứ nhất không xuất hiện lại. Các kết quả mô phỏng tái tạo được bằng một lệnh với seed cố định; đặc trưng EEG được coi là đại diện có nhiễu, và bài không tuyên bố gì về ý nghĩa thần kinh của các tham số.
 \end{tcolorbox}
 
 \noindent\textbf{Từ khoá:} thiền; mạng chế độ mặc định; mô hình không gian trạng thái; thông tin Fisher; khả năng xác định cấu trúc; thiết kế thí nghiệm tối ưu; lấy mẫu trải nghiệm; bộ lọc Kalman; điều khiển LQG; neurofeedback; phân tích độ nhạy Sobol; đăng ký trước; dữ liệu EEG mở.
@@ -265,10 +266,10 @@ Câu (ii) và (iii) là kinh điển trong nhận dạng hệ thống và sinh h
   \item \textbf{Khả năng xác định tham số và bản đồ thiết kế định lượng} (\Cref{sec:res-ident,sec:res-design}). Vì M1 tuyến tính--Gauss, phân phối đồng thời của mọi quan sát trong một phiên là Gauss với mô-men dạng đóng, và thông tin Fisher kỳ vọng tính được \emph{chính xác}, không cần mô phỏng. Chúng tôi dùng nó (a) để thiết lập khả năng xác định cấu trúc theo tiêu chí hạng của Rothenberg cho bốn cấu hình quan sát, chỉ ra các đối xứng chính xác khiến thiết kế một kênh EEG không xác định được; (b) để tính cận Cramér--Rao (CRB) trên lưới 144 thiết kế; (c) để kiểm chứng CRB bằng phục hồi tham số hợp lý cực đại (ML) trên dữ liệu mô phỏng ở 24 thiết kế; và (d) để rút ra thiết kế tối thiểu và quy tắc co giãn đơn giản cho từng tham số.
   \item \textbf{Điều khiển vòng kín và sự phụ thuộc vào chất lượng thiết kế} (\Cref{sec:res-control}). Chúng tôi đặt bài toán điều khiển dưới dạng điều tiết tuyến tính--bậc hai--Gauss (LQG) đưa QoC về mục tiêu, so sánh với chính sách bang-bang dùng cùng bộ ước lượng trạng thái, cho chi phí dừng vòng kín ở dạng đóng, và định lượng mất mát hiệu quả khi bộ điều khiển được thiết kế trên tham số ước lượng từ từng thiết kế thí nghiệm. Điều này nối thẳng bản đồ thiết kế với hiệu năng đạt được của một vòng neurofeedback dựa trên mô hình.
   \item \textbf{Độ nhạy toàn cục} (\Cref{sec:res-sens}). Phân tích Sobol dựa trên phương sai trên dải $\times 0{,}25$--$\times 4$ quanh tham số danh nghĩa cho biết kết luận nào bền vững và tham số nào chi phối khả năng xác định cũng như hiệu năng điều khiển.
-  \item \textbf{Một phép thử đã đăng ký trước trên dữ liệu mở} (\Cref{sec:res-real}). Chúng tôi fit M1 lên bộ dữ liệu EEG lấy mẫu trải nghiệm mà thiết kế tham chiếu dựa theo, so sai số mà phân tích thiết kế dự đoán với sai số đạt được, và kiểm định dự đoán ngoài mẫu cho điểm tự chấm so với các mô hình rỗng, theo một bản đăng ký trước đã khoá và các cổng kiểm tra.
+  \item \textbf{Hai phép thử đã đăng ký trước trên dữ liệu mở} (\Cref{sec:res-real,sec:res-osf}). Chúng tôi fit M1 lên bộ dữ liệu EEG lấy mẫu trải nghiệm mà thiết kế tham chiếu dựa theo và, theo một bản đăng ký trước thứ hai, lên một bộ dữ liệu độc lập của một phòng thí nghiệm khác; trên mỗi bộ chúng tôi so sai số mà phân tích thiết kế dự đoán với sai số đạt được và kiểm định dự đoán ngoài mẫu cho điểm tự chấm so với các mô hình rỗng, theo các bản đăng ký trước đã khoá và các cổng kiểm tra, rồi báo cáo kết quả nào lặp lại giữa hai bộ.
 \end{enumerate}
 
-\paragraph{Bài này không tuyên bố gì.} Các kết quả mô phỏng dùng điểm làm việc danh nghĩa, còn ứng dụng trên dữ liệu thật coi đặc trưng EEG là đại diện có nhiễu: chúng tôi không tuyên bố công suất alpha vùng sau đo hoạt động DMN hay độ phức tạp Lempel--Ziv đo $\Phi$, cũng không về việc thiền có ``làm tăng'' $\Phi$ hay QoC hay không. Đóng góp mang tính phương pháp: một phân tích đầy đủ, tái tạo được, về những gì một lớp mô hình cụ thể có thể và không thể mang lại \emph{trước} khi thu dữ liệu, các khuyến nghị thiết kế mà người làm thực nghiệm dùng được ngay, và một phép thử đã đăng ký trước cho các khuyến nghị đó trên dữ liệu mở. Mọi kết quả mô phỏng được sinh bằng một lệnh duy nhất từ mã đi kèm với seed ngẫu nhiên cố định (\Cref{sec:repro}).
+\paragraph{Bài này không tuyên bố gì.} Các kết quả mô phỏng dùng điểm làm việc danh nghĩa, còn các ứng dụng trên dữ liệu thật coi đặc trưng EEG là đại diện có nhiễu: chúng tôi không tuyên bố công suất alpha vùng sau đo hoạt động DMN hay độ phức tạp Lempel--Ziv đo $\Phi$, cũng không về việc thiền có ``làm tăng'' $\Phi$ hay QoC hay không. Đóng góp mang tính phương pháp: một phân tích đầy đủ, tái tạo được, về những gì một lớp mô hình cụ thể có thể và không thể mang lại \emph{trước} khi thu dữ liệu, các khuyến nghị thiết kế mà người làm thực nghiệm dùng được ngay, và hai phép thử đã đăng ký trước cho các khuyến nghị đó trên dữ liệu mở. Mọi kết quả mô phỏng được sinh bằng một lệnh duy nhất từ mã đi kèm với seed ngẫu nhiên cố định (\Cref{sec:repro}).
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Mô hình}
@@ -384,7 +385,7 @@ và ở các epoch hỏi $t\in\mathcal P$ (mỗi $T_p$ phút) người tập bá
   \mathrm{rating}_t=\QoC_t+\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,\rQ^2).
   \label{eq:obsRating}
 \end{equation}
-Cấu trúc này phản ánh các bộ dữ liệu thiền lấy mẫu trải nghiệm hiện có như ds001787 \citep{Brandmeyer2018}, trong đó EEG được ghi liên tục và các lần hỏi cách nhau vài phút. Trong thực tế, kênh DMN $y_A$ sẽ là một đại diện EEG của hoạt động DMN (ví dụ alpha vùng sau hoặc một đặc trưng định vị nguồn) và $y_\Phi$ là một thước đo phức tạp hay tích hợp; việc ánh xạ đặc trưng thật sang $(A,\Phi)$ nằm ngoài phạm vi phân tích thiết kế, vốn chỉ hỏi có thể học được gì \emph{nếu} những đặc trưng như vậy tồn tại với mức nhiễu $\rA,\rPhi$; \Cref{sec:res-real} thử hai đại diện ứng viên trên ds001787. Bốn cấu hình quan sát được xét: (a) chỉ điểm tự chấm, (b) điểm tự chấm $+\,y_A$, (c) điểm tự chấm $+\,y_\Phi$, (d) điểm tự chấm $+\,y_A+y_\Phi$.
+Cấu trúc này phản ánh các bộ dữ liệu thiền lấy mẫu trải nghiệm hiện có như ds001787 \citep{Brandmeyer2018}, trong đó EEG được ghi liên tục và các lần hỏi cách nhau vài phút. Trong thực tế, kênh DMN $y_A$ sẽ là một đại diện EEG của hoạt động DMN (ví dụ alpha vùng sau hoặc một đặc trưng định vị nguồn) và $y_\Phi$ là một thước đo phức tạp hay tích hợp; việc ánh xạ đặc trưng thật sang $(A,\Phi)$ nằm ngoài phạm vi phân tích thiết kế, vốn chỉ hỏi có thể học được gì \emph{nếu} những đặc trưng như vậy tồn tại với mức nhiễu $\rA,\rPhi$; \Cref{sec:res-real,sec:res-osf} thử hai đại diện ứng viên trên ds001787 và trên một bộ dữ liệu thứ hai. Bốn cấu hình quan sát được xét: (a) chỉ điểm tự chấm, (b) điểm tự chấm $+\,y_A$, (c) điểm tự chấm $+\,y_\Phi$, (d) điểm tự chấm $+\,y_A+y_\Phi$.
 
 Vectơ tham số tự do là
 \begin{equation}
@@ -501,7 +502,7 @@ Mọi thiết lập ở trên nằm trong một mô-đun cấu hình duy nhất;
 python main.py model all -{}-seed 42 -{}-n-base 256 -{}-profiles\\
 python main.py gates
 \end{center}
-rồi đến script xuất hình; 104 unit test bao phủ mô hình, bộ lọc, ma trận Fisher, các cổng, pipeline dữ liệu thật và các script hình. Bốn cổng nữa (E0--E3) quản lý phân tích dữ liệu thật ở \Cref{sec:res-real} và được liệt kê ở đó. Tính toán dùng NumPy và SciPy \citep{Harris2020,Virtanen2020}. Mã và kết quả sẽ được lưu trữ với DOI khi công bố.
+rồi đến script xuất hình; 114 unit test bao phủ mô hình, bộ lọc, ma trận Fisher, các cổng, hai pipeline dữ liệu thật và các script hình. Tám cổng nữa (E0--E3 và F0--F3) quản lý các phân tích dữ liệu thật ở \Cref{sec:res-real,sec:res-osf} và được liệt kê ở đó. Tính toán dùng NumPy và SciPy \citep{Harris2020,Virtanen2020}. Mã và kết quả sẽ được lưu trữ với DOI khi công bố.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Kết quả}
@@ -817,6 +818,62 @@ So sánh & LPD M1 & LPD rỗng & $\Delta$LPD [CI 95\,\%] & MAE M1 & MAE rỗng \
 
 Tóm lại, trên ds001787 (22 trong 40 phiên, 554 lần hỏi có điểm), hằng số tốc độ DMN được ước lượng với sai số tương đối 10\,\% theo thông tin Fisher, so với 9--13\,\% mà phân tích thiết kế dự đoán, nhưng 22\,\% theo hợp lý profile, và M1 không dự đoán điểm tự chấm ngoài mẫu tốt hơn hồi quy tức thời trên các đặc trưng EEG.
 
+\subsection{Lặp lại trên một bộ dữ liệu lấy mẫu trải nghiệm thứ hai}
+\label{sec:res-osf}
+
+Một bộ dữ liệu không phân biệt được tính chất của mô hình với tính chất của bản ghi. Vì vậy chúng tôi lặp lại toàn bộ phân tích, với cùng mã, mô hình, đặc trưng và cổng, trên một bộ dữ liệu độc lập của một phòng thí nghiệm khác: EEG lấy mẫu trải nghiệm của \citet{RodriguezLarios2021} (OSF 3uszv, CC0), gồm 29 người có trên ba năm kinh nghiệm thiền và 29 người chưa từng thiền, mỗi người được ghi một lần trong khoảng một giờ thiền tập trung hơi thở bị ngắt bởi tiếng chuông trung bình 77~s một lần (40 lần hỏi mỗi phiên; 58 phiên, 2\,258 lần hỏi, 55 giờ-người; EEG Nexus-32 21 kênh ở 512~Hz). Mỗi lần chuông, người tập báo mình đang tập trung vào hơi thở, đang nghĩ chuyện khác hay bị thứ khác làm phân tán, rồi chấm độ chắc chắn, mức buồn ngủ và độ sâu của sự tập trung hoặc cuốn theo, đều trên thang 1--7. Điểm tự chấm đã đăng ký là độ chắc chắn có dấu, $r=+c$ khi tập trung vào hơi thở và $-c$ trong hai trường hợp còn lại, từ $-7$ đến $7$; phân phối của nó hai cực (88\,\% điểm có $|r|\ge5$). Bản đăng ký trước thứ hai (\path{predictions_osf3uszv.md}, khoá lúc 09:21 UTC ngày 3/11/2026) lặp lại các giả thuyết E-H1--E-H5 thành F-H1--F-H5, tách F-H5 thành chiều lý thuyết và chiều đã thấy trên ds001787, và thêm ba kiểm tra lặp lại cố định trước khi xem bất kỳ EEG nào của bộ này: R1, khoảng profile của $1/\kinh$ chồng lên khoảng 0,49--1,17~phút của ds001787; R2, tỉ số thông tin quan sát trên kỳ vọng của kênh alpha lại vượt 1,5 trên dữ liệu thật và gần 1 trên dữ liệu mô phỏng từ fit; R3, giá trị của $1/\kd$ (không dự đoán). Các file nén đã được tải về trước khi khoá; chỉ cột trigger của chúng, dùng cho cổng giải mã F0 và cổng thiết kế F1, và một đoạn hai phút của một file, dùng để xác lập rằng file text ghi lặp mỗi mẫu EEG bốn lần (2\,048 dòng mỗi giây ở 512~Hz), đã được đọc. Ba lựa chọn được cố định trước khi khoá và khác với ds001787: EEG được hạ mẫu về 256~Hz để đặc trưng độ phức tạp tính ở cùng tần số; $y_A$ dùng năm kênh vùng sau có sẵn (P3, Pz, P4, O1, O2); và quy tắc nhiễu giả chính là ngưỡng thích ứng theo phiên mà ds001787 đã cho thấy là cần thiết, còn quy tắc cố định 150~$\mu$V là một biến thể độ nhạy (\Cref{app:realdata}).
+
+\paragraph{Các cổng và dữ liệu được giữ.} Giải mã thu được câu trả lời và độ chắc chắn hợp lệ ở 2\,233 trong 2\,258 lần chuông (F0: 98,9\,\%). Trên lịch hỏi thật, ma trận Fisher có hạng đầy đủ (F1), và việc hỏi dày hơn cùng phiên dài hơn cho CRB tương đối dự đoán của $\kinh$ là 6,7\,\% (9,4\,\% mỗi nhóm) và khác biệt nhóm nhỏ nhất phát hiện được là 0,37 đơn vị log, so với 9,1\,\% và 0,51 trên ds001787. Đặc trưng alpha có tự tương quan mạnh (trung vị tự tương quan trễ 1 là 0,77), và lần này đặc trưng độ phức tạp cũng có cấu trúc thời gian (0,20). Quy tắc thích ứng giữ 48 trong 58 phiên (25 người lâu năm, 23 người mới, 1\,838 lần hỏi có điểm); mười phiên bị loại có hơn 40\,\% epoch thiếu. Riêng cửa sổ hỏi đã chiếm 34\,\% mỗi phiên (một lần trả lời mất trung bình 16~s, cứ 77~s một lần), nên các phiên được giữ vẫn có trung vị 36\,\% epoch thiếu. Cổng F2 và F3 đều qua. \Cref{fig:osf-session} cho thấy một phiên được giữ.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.9\linewidth]{fig11_osf_session.pdf}
+\caption{Một phiên của bộ dữ liệu thứ hai (c\_10, người mới; phiên được giữ có nhiều lần hỏi có điểm nhất) được lọc bằng M1 tại ước lượng gộp, như \Cref{fig:real-session}. Đại diện alpha (trên) trôi theo thang phút, với các bước nhảy mức gần phút 5 và phút 40, và $A$ đã lọc bám theo nó. Đại diện độ phức tạp (giữa) lần này mang tín hiệu, và $\Phi$ đã lọc dao động theo thang vài chục giây; hai epoch ngoại lai nằm ngoài trục. Điểm tự chấm (dưới) luân phiên giữa khoảng $+7$ và $-5$ không có phụ thuộc chuỗi, và dự đoán một bước, chỉ từ EEG hay có cả điểm quá khứ, đều nằm ở trung bình phiên.}
+\label{fig:osf-session}
+\end{figure}
+
+\paragraph{Ước lượng và sai số.} \Cref{tab:real-compare} đặt hai bộ dữ liệu cạnh nhau. Đại diện DMN lần này chậm, $1/\hat k_{\mathrm{inh}}=7{,}1$~phút (khoảng profile 95\,\% là 5,7--9,1~phút), gấp chín lần 0,76~phút của ds001787, còn biến tích hợp ẩn lại nhanh, $1/\hat k_d=0{,}63$~phút (0,45--0,91~phút), nhanh gấp tám lần trước: hai hằng số thời gian đã đổi chỗ cho nhau. Hệ số ghép xác định được và âm, $\hat\kappa=-0{,}33$ (từ $-0{,}50$ đến $-0{,}23$). Kênh DMN có tỉ số tín hiệu trên nhiễu bằng mức danh nghĩa (1,57 so với 1,58) và kênh tích hợp có 0,54, gấp tám lần giá trị trên ds001787. Ba con số sai số khớp nhau hơn so với ds001787 (\Cref{tab:osf-errors}): với $\kinh$, CRB dự đoán trước khi khoá là 6,7\,\%, SE Fisher tại ước lượng 8,5\,\%, SE theo thông tin quan sát 12,2\,\%, SE profile 11,8\,\% và RMSE bootstrap 8,8\,\% (tỉ số 1,03; các tỉ số của F2 là 1,00--1,08 cho cả mười tham số). F-H1 được ủng hộ theo cả tiêu chí Fisher lẫn tiêu chí dựa trên hàm hợp lý. Tỉ số thông tin quan sát trên kỳ vọng là 1,43 cho $\kinh$, 1,39 cho $\sA$ và 1,13 cho $\rA$ trên dữ liệu thật và 0,93--0,99 trên dữ liệu mô phỏng từ fit, nên dấu hiệu sai đặc tả của kênh alpha vẫn có nhưng yếu hơn mức 2,1--2,5 của ds001787, và không còn khu trú ở kênh đó (1,45 cho $\kd$, 1,44 cho $\sPhi$). R2 không đạt theo tiêu chí 1,5 đã đăng ký.
+
+\paragraph{Các hệ số khuếch đại và dự đoán.} $\hat\alpha=0{,}79$ (CI Fisher 95\,\% từ $-0{,}24$ đến $1{,}82$; bootstrap từ $-0{,}24$ đến $1{,}92$, 11 trong 200 lần ra giá trị không dương): F-H3 không được ủng hộ, dù ước lượng điểm dương như trên ds001787. Tính theo đơn vị SD trong phiên của điểm tự chấm, hệ số này là 0,15, so với 11,8 trên ds001787, nơi $\Phi$ được xác định chỉ bởi điểm tự chấm; ở đây $\Phi$ bị kênh độ phức tạp ghim lại và đóng góp ít vào báo cáo. $\hat\beta=0{,}02$ (từ $-0{,}34$ đến $0{,}38$; F-H4 không xác định). Ngoài mẫu, M1 không phân biệt được với các mô hình rỗng (\Cref{tab:osf-loso}): $\Delta$LPD so với hồi quy tức thời là $+0{,}0004$ (từ $-0{,}0006$ đến $0{,}0014$) và so với M1 chỉ có điểm tự chấm là $-0{,}0006$ (từ $-0{,}0018$ đến $0{,}0006$), với sai số tuyệt đối trung bình 4,5 trên thang 14 mức cho mọi mô hình trừ trung bình chạy (4,7). F-H2 không được ủng hộ, như trên ds001787, và vì một lý do căn bản hơn: điểm tự chấm của bộ này không có phụ thuộc chuỗi để mà dự đoán (trung vị tự tương quan trễ 1 là $-0{,}01$), nên điểm quá khứ cũng không giúp gì, và phân phối hai cực của chúng nằm ngoài tầm với của một hàm đọc ra Gauss (\Cref{tab:osf-ppc}).
+
+\paragraph{Nhóm và từng người.} Với 25 và 23 phiên, hai fit theo nhóm cho $\hat k_{\mathrm{inh}}=0{,}154$ và $0{,}134~\text{phút}^{-1}$, hiệu log $+0{,}14$ (CI Wald 95\,\% từ $-0{,}20$ đến $0{,}47$; tỉ số hợp lý một bậc tự do $\chi^2_1=2{,}67$, $p=0{,}10$), dưới khác biệt nhỏ nhất phát hiện được 0,37. Cả F-H5a (người lâu năm cao hơn) lẫn F-H5b (người lâu năm thấp hơn, chiều của ds001787) đều không được ủng hộ: hiệu $-1{,}19$ thấy trên ds001787 không lặp lại. Hai nhóm có khác nhau ở các tham số khác ($\chi^2_{10}=256$, $p<10^{-15}$): ở người mới, biến tích hợp nhanh và ồn ($1/\kd=0{,}33$~phút, $\sPhi=1{,}1$) và gắn dương với báo cáo ($\alpha=2{,}0$, $\beta=+0{,}75$); ở người lâu năm nó chậm hơn ($1/\kd=0{,}89$~phút, $\sPhi=0{,}68$) và cả hai hệ số khuếch đại gần không hoặc âm ($\alpha=-0{,}15$, $\beta=-0{,}66$). Fit theo từng người cho sai số chuẩn hữu hạn ở 35 trong 48 người (ở 11 trong số còn lại $\sPhi$ được ước lượng bằng không); phân tích gộp của họ cho hằng số thời gian DMN 3,3~phút (2,0--5,7~phút) với $\tau=1{,}49$ đơn vị log và $I^2=0{,}92$, độ dị biệt lớn như trên ds001787.
+
+\paragraph{Kiểm tra và độ bền.} Innovation của kênh alpha kém trắng hơn trước (trung vị p Ljung--Box $0{,}058$, với 17 trong 48 phiên dưới 0,01; $p=0{,}42$ cho $y_\Phi$); innovation của hai kênh gần như không tương quan (trung vị 0,05). Kiểm tra dự đoán hậu nghiệm tái tạo được việc điểm tự chấm không có phụ thuộc chuỗi (tự tương quan trễ 1 mô phỏng $-0{,}03$, dải từ $-0{,}08$ đến $0{,}02$) nhưng không tái tạo được phân phối hai cực của chúng, và người lâu năm lại chấm điểm với độ phân tán nhỏ hơn mức mô hình gộp ngụ ý (hiệu SD trong phiên quan sát $-1{,}01$, mô phỏng $-0{,}31$, dải từ $-0{,}55$ đến $-0{,}05$). Trong bảy phân tích độ nhạy đã khoá, sáu chạy được: biến thể chỉ giữ các phiên có không quá 20\,\% epoch thiếu không giữ được phiên nào, vì riêng cửa sổ hỏi đã vượt 20\,\% ở mọi phiên, một sơ suất của bản đăng ký trước. Qua sáu phân tích đó (\Cref{tab:osf-sens}), dấu của $\alpha$ giữ nguyên ở năm (nó âm với đại diện số mũ aperiodic), dấu của $\beta$ ở một, và hằng số thời gian DMN nằm trong khoảng profile chính ở bốn (theta trán cho 17~phút và z-score theo phiên 4,8~phút; quy tắc nhiễu giả cố định cho 5,7~phút trên 24 phiên, sát mép dưới). Quy tắc độ bền 80\,\% đạt với dấu của $\alpha$ nhưng không với $\beta$ hay $1/\kinh$; vì khoảng tin cậy của $\alpha$ chứa 0, các ước lượng được trình bày theo lối mô tả. Một biến thể ngoài đăng ký, thêm sau khi xem \Cref{fig:osf-session} và không tính vào quy tắc, che đoạn EEG trước lần hỏi đầu tiên: hằng số thời gian DMN tăng lên 16~phút, nên bước chuyển mức alpha ở đầu phiên là phần nhanh nhất của đại diện này.
+
+\begin{table}[htbp]
+\centering
+\caption{Hai ứng dụng đã đăng ký trước đặt cạnh nhau. Hằng số thời gian tính bằng phút với khoảng profile 95\,\%; hệ số khuếch đại với khoảng Fisher 95\,\% và theo đơn vị SD trong phiên của điểm tự chấm (1,11 và 5,22). SE của $\kinh$: tương đối, theo CRB dự đoán trước khi khoá, thông tin Fisher tại ước lượng, thông tin quan sát và hợp lý profile. Quan sát/kỳ vọng: SE theo thông tin quan sát chia SE theo thông tin kỳ vọng trên dữ liệu thật (trong ngoặc: trên dữ liệu mô phỏng từ fit). $\Delta$LPD: mật độ dự đoán log ngoài mẫu của M1 trừ N2 (chỉ EEG) và trừ N1 (EEG và điểm quá khứ). Hiệu nhóm: $\log\kinh$, fit người lâu năm trừ fit người mới, khoảng Wald 95\,\%. Phân tích gộp: $1/\kinh$ hiệu ứng ngẫu nhiên trên những người có SE hữu hạn và SD giữa người $\tau$ của $\log\kinh$. Độ nhạy: số biến thể đã khoá giữ nguyên dấu của $\alpha$, dấu của $\beta$ và khoảng profile của $1/\kinh$.}
+\label{tab:real-compare}
+\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+ & ds001787 & OSF 3uszv \\
+\midrule
+Phiên giữ / ghi; số người                & 22 / 40; 16 & 48 / 58; 48 \\
+Lần hỏi có điểm; khoảng hỏi; phiên      & 554; 2~phút; 45~phút & 1\,838; 77~s; 57~phút \\
+Thang điểm; SD trong phiên               & $-3$ đến $3$; 1,11 & $-7$ đến $7$; 5,22 \\
+$1/\kinh$ (phút)                         & 0,76 [0,49; 1,17] & 7,1 [5,7; 9,1] \\
+$1/\kd$ (phút)                           & 5,0 [3,1; 8,7] & 0,63 [0,45; 0,91] \\
+$\kappa$                                 & $\approx0$, profile phẳng & $-0{,}33$ [$-0{,}50$; $-0{,}23$] \\
+SNR của $y_A$; của $y_\Phi$              & 1,11; 0,06 & 1,57; 0,54 \\
+SE của $\kinh$: CRB / Fisher / q.\,sát / profile & 9,1 / 9,9 / 22,8 / 21,9\,\% & 6,7 / 8,5 / 12,2 / 11,8\,\% \\
+RMSE bootstrap / SE Fisher của $\kinh$   & 0,98 & 1,03 \\
+SE quan sát/kỳ vọng: $\kinh$, $\sA$, $\rA$ & 2,30; 2,48; 2,14 (1,05--1,07) & 1,43; 1,39; 1,13 (0,93--0,99) \\
+$\alpha$ [95\,\%]; theo SD điểm          & 13,1 [4,9; 21,3]; 11,8 & 0,79 [$-0{,}24$; 1,82]; 0,15 \\
+$\beta$ [95\,\%]; theo SD điểm           & $-0{,}03$ [$-0{,}19$; $0{,}14$]; $-0{,}02$ & 0,02 [$-0{,}34$; $0{,}38$]; 0,00 \\
+$\Delta$LPD so với N2; so với N1         & $-0{,}010$; $-0{,}031$ & $+0{,}000$; $-0{,}001$ \\
+Tự tương quan trễ 1 của điểm tự chấm     & 0,22 & $-0{,}01$ \\
+Hiệu nhóm của $\log\kinh$                & $-1{,}19$ [$-1{,}56$; $-0{,}81$] & $+0{,}14$ [$-0{,}20$; $0{,}47$] \\
+Phân tích gộp: $1/\kinh$; $\tau$; số người & 0,95 [0,40; 2,26]; 1,19; 9 & 3,3 [2,0; 5,7]; 1,49; 35 \\
+Trung vị p Ljung--Box: $y_A$, $y_\Phi$   & 0,27; 0,40 & 0,06; 0,42 \\
+Độ nhạy: $\alpha$, $\beta$, $1/\kinh$ giữ nguyên & 6/6; 4/6; 4/6 & 5/6; 1/6; 4/6 \\
+Cổng                                     & E0--E3 qua & F0--F3 qua \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Điều gì lặp lại.} Ba kết quả chung cho cả hai bộ dữ liệu, và hai kết quả thì không. (i) Các con số sai số theo Fisher chính xác trên cả hai: với $\kinh$, cận tính trước khi khoá, SE Fisher tại ước lượng và RMSE bootstrap khớp nhau trong 10\,\% trên ds001787 và trong 30\,\% ở đây, và trên cả hai bộ SE dựa trên hàm hợp lý của kênh alpha vượt SE Fisher. (ii) Không đại diện EEG nào cải thiện dự đoán ngoài mẫu cho báo cáo ở bộ nào. (iii) Độ dị biệt giữa người của $\log\kinh$ lớn ở cả hai ($\tau$ là 1,2 và 1,5). (iv) $\alpha>0$ không lặp lại: ước lượng dương ở cả hai, nhưng khoảng tin cậy chỉ loại 0 trên ds001787, và ở cả hai bộ giá trị của nó theo SD của điểm tự chấm nói lên ít điều. (v) Bản thân các hằng số tốc độ không lặp lại: $1/\kinh$ là 0,76~phút trên ds001787 và 7,1~phút ở đây (R1 trượt chín lần), $1/\kd$ là 5,0 so với 0,63~phút, và chiều của khác biệt nhóm khác nhau. Việc hai hằng số thời gian đổi chỗ có một cách đọc đơn giản. Trên ds001787, đại diện độ phức tạp là nhiễu, nên $\Phi$ và $\kd$ được xác định bởi điểm tự chấm và $1/\kd$ đo xu hướng trôi chậm của báo cáo; ở đây, đại diện độ phức tạp mang tín hiệu 30~s ghim $\Phi$ lại, báo cáo không trôi, còn đại diện alpha trôi theo thang phút trong các phiên dài một giờ (\Cref{fig:osf-session}). Một fit Ornstein--Uhlenbeck trả về thang thời gian trội của bất kỳ đặc trưng nào được đưa vào, và thang thời gian đó là tính chất của bản ghi và của đặc trưng hơn là của một quá trình DMN: đại diện theta trán cho 17~phút trên bộ này và 4~phút trên bộ kia. Tóm lại, trên bộ dữ liệu thứ hai (48 trong 58 phiên, 1\,838 lần hỏi có điểm), phân tích thiết kế lại dự đoán đúng sai số Fisher của $\kinh$ (dự đoán 6,7\,\%, đạt 8,5\,\%, 12\,\% theo hợp lý profile), các đại diện EEG lại không thêm được gì cho dự đoán báo cáo, và các hằng số tốc độ ước lượng trên bộ thứ nhất không lặp lại.
+
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Thảo luận}
 \label{sec:discussion}
@@ -831,28 +888,32 @@ Tóm lại, trên ds001787 (22 trong 40 phiên, 554 lần hỏi có điểm), h�
 
 \paragraph{Dữ liệu thật bổ sung điều gì.} Ứng dụng trên ds001787 (\Cref{sec:res-real}) ủng hộ phân tích thiết kế ở chỗ nó là phát biểu về thông tin, và đặt giới hạn cho nó ở chỗ nó dựa vào việc mô hình đúng. Xét theo Fisher, phân tích đã chính xác: cận tính trước khi thấy EEG và cận tại tỉ số tín hiệu trên nhiễu đo được kẹp hai bên sai số đạt được, và bootstrap tham số tái tạo được cận trên các thiết kế thật đầy khoảng trống. Điều một phân tích thiết kế không lường trước được là sai đặc tả. Với đại diện công suất alpha, thông tin quan sát và hợp lý profile cho sai số hơn gấp đôi giá trị theo thông tin kỳ vọng, nên các con số của bản đồ thiết kế cần được đọc như cận dưới khi chưa biết đại diện có tuân theo mô hình hay không, và khoảng dựa trên hàm hợp lý nên được báo cạnh khoảng dựa trên Fisher. Bài học thứ hai liên quan đến mô hình quan sát hơn là động lực. Hai đại diện đã đăng ký không mang thông tin phát hiện được nào về báo cáo ngoài sự phụ thuộc chuỗi của chính báo cáo: kênh LZc gần như chỉ là nhiễu, alpha vùng sau không gắn với điểm tự chấm, và dự đoán ngoài mẫu không tốt lên khi thêm EEG. Tìm một đặc trưng EEG bám theo trạng thái được báo cáo, với tỉ số tín hiệu trên nhiễu trong khoảng mà \Cref{sec:res-design} cho thấy là cần thiết, là bài toán mở mà mô hình để lại cho người làm thực nghiệm.
 
+\paragraph{Bộ dữ liệu thứ hai bổ sung điều gì.} Phép lặp lại (\Cref{sec:res-osf}) tách hai loại kết quả. Các kết quả về phương pháp đứng vững: trên một bản ghi độc lập với bộ khuếch đại, montage, lịch hỏi và thang điểm khác, sai số dự đoán trước khi khoá, SE Fisher tại ước lượng và RMSE bootstrap lại khớp nhau, SE dựa trên hàm hợp lý lại vượt SE Fisher ở kênh alpha, và các đại diện EEG lại không thêm được gì cho dự đoán báo cáo. Các kết quả về nội dung thì không: hằng số thời gian DMN chuyển từ 0,8 sang 7~phút, hằng số thời gian của biến tích hợp ẩn từ 5 sang 0,6~phút, và khác biệt nhóm về $\kinh$ mà ds001787 cho thấy đã biến mất. Bài học không phải là một trong hai ước lượng sai, mà là một hằng số tốc độ ước lượng từ một đại diện chưa hiệu chuẩn là tính chất của đại diện đó trong bản ghi đó, ở đây bị chi phối bởi sự trôi chậm của công suất alpha trong một phiên dài một giờ và, trên ds001787, bởi sự phụ thuộc chuỗi của báo cáo. Các tham số mà một phân tích thiết kế hứa hẹn mang lại chỉ có ý nghĩa ngang với ánh xạ từ đặc trưng sang biến trạng thái, và ánh xạ đó phải được thiết lập và chứng tỏ là ổn định giữa các phòng thí nghiệm trước khi dùng bản đồ thiết kế để lên kế hoạch cho một nghiên cứu.
+
 \subsection{Hạn chế}
 \label{sec:limitations}
 
 \begin{itemize}
-  \item \textbf{Một bộ dữ liệu và các đại diện chưa hiệu chuẩn.} Phân tích thiết kế là \emph{in silico}, và phép thử thực nghiệm duy nhất của nó là một bộ dữ liệu (\Cref{sec:res-real}). Ở đó quy tắc nhiễu giả đã đăng ký loại 18 trong 40 phiên một cách không ngẫu nhiên; đặc trưng EEG là đại diện chưa có ánh xạ hiệu chuẩn sang $A$ hay $\Phi$ (alpha vùng sau không phải thước đo hoạt động DMN, LZc không phải thước đo $\Phi$); các mức $A_0$, $\Phi^*$ và $\gamma_0$ không ước lượng được; kênh alpha có dấu hiệu sai đặc tả; và so sánh nhóm bị nhiễu bởi giới và tuổi. Điểm danh nghĩa của các mô phỏng là điểm làm việc; phân tích độ nhạy phủ một dải rộng quanh nó nhưng không phủ các chế độ khác về chất.
+  \item \textbf{Hai bộ dữ liệu và các đại diện chưa hiệu chuẩn.} Phân tích thiết kế là \emph{in silico}, và các phép thử thực nghiệm của nó là hai bộ dữ liệu (\Cref{sec:res-real,sec:res-osf}) có hằng số tốc độ lệch nhau mười lần. Trên ds001787, quy tắc nhiễu giả đã đăng ký loại 18 trong 40 phiên một cách không ngẫu nhiên và so sánh nhóm bị nhiễu bởi giới và tuổi; trên bộ thứ hai, riêng cửa sổ hỏi đã bỏ một phần ba EEG, điểm tự chấm hai cực và độc lập theo chuỗi, và mỗi phiên có một đoạn đầu trước lần hỏi đầu tiên mà việc che nó làm hằng số thời gian DMN tăng gấp đôi. Ở cả hai, đặc trưng EEG là đại diện chưa có ánh xạ hiệu chuẩn sang $A$ hay $\Phi$ (alpha vùng sau không phải thước đo hoạt động DMN, LZc không phải thước đo $\Phi$); các mức $A_0$, $\Phi^*$ và $\gamma_0$ không ước lượng được; và kênh alpha có dấu hiệu sai đặc tả. Điểm danh nghĩa của các mô phỏng là điểm làm việc; phân tích độ nhạy phủ một dải rộng quanh nó nhưng không phủ các chế độ khác về chất.
   \item \textbf{Tuyến tính và Gauss.} M1 tuyến tính với nhiễu Gauss cộng tính và hàm đọc ra tuyến tính, và điểm tự chấm được coi là liên tục. Điểm tự chấm thật là thứ bậc và bị chặn, mức DMN nằm trong $[0,\Amax]$, và động lực thiền có thể gồm các chuyển trạng thái rời rạc \citep{Hasenkamp2012,Christoff2016}. Trên ds001787, hàm đọc ra Gauss tái tạo được sự phụ thuộc chuỗi và các mức biên của điểm tự chấm nhưng không tái tạo được phần giữa lệch của phân phối (\Cref{tab:real-ppc}). Mở rộng phi tuyến (hàm đọc ra bão hoà, nhiễu phụ thuộc trạng thái, chuyển chế độ) sẽ cần bộ lọc xấp xỉ và thông tin Fisher dựa trên mô phỏng; phân tích hiện tại là đường cơ sở chính xác để so sánh các mở rộng như vậy.
   \item \textbf{Ánh xạ từ đặc trưng EEG sang $(A,\Phi)$} được giả định, với mức nhiễu là biến thiết kế. Thiết lập ánh xạ đó là việc thực nghiệm; kết quả của chúng tôi cho biết nó phải tốt đến đâu ($r\lesssim0{,}1$--$0{,}2$ thang tín hiệu) để động lực xác định được.
   \item \textbf{Bản đồ thiết kế được biểu diễn theo phút ở tốc độ danh nghĩa.} Độ dài phiên 20--90 phút tương ứng 4--18 hằng số thời gian DMN ở $\kinh=0{,}2$ nhưng chỉ 0,9--3,9 ở giá trị in sẵn $0{,}043\ \text{phút}^{-1}$. Phân tích độ nhạy cho thấy $\CRB(\kinh)$ chỉ phụ thuộc yếu vào chính $\kinh$ trong $\times0{,}25$--$\times4$ ($S_T=0{,}13$), nhưng người đọc kỳ vọng động lực DMN chậm hơn nhiều nên quy đổi độ dài phiên theo đơn vị $1/\kinh$ và dự liệu yêu cầu dịch về phía phiên dài hơn.
   \item \textbf{Gánh nặng của việc hỏi chưa được tính.} Hỏi dày (mỗi 30~s) cải thiện các hệ số khuếch đại trong bản đồ nhưng làm gián đoạn chính việc tập mà nó đo; bản đồ cần đọc cùng với một trần số lần hỏi mà giao thức chấp nhận được, điều nằm ngoài mô hình.
   \item \textbf{Tối ưu lịch hỏi} chỉ giới hạn ở hai họ dễ diễn giải; tối ưu tự do trên vị trí các lần hỏi có thể tìm được lịch tốt hơn, dù các chênh lệch nhỏ quan sát được gợi ý ít dư địa cải thiện ở cấu hình (d).
   \item \textbf{Điều khiển} giả định đầu vào cộng tính vào phương trình DMN với độ lợi đã biết, chấp hành hoàn hảo trong giới hạn và không trễ, và so sánh chính sách trên chi phí bậc hai. Phân tích độ bền phủ sai số tham số nhưng không phủ sai cấu trúc mô hình.
-  \item \textbf{Khác biệt giữa người} không được mô hình hoá: mọi người dùng chung một vectơ tham số. Mở rộng phân cấp sẽ thay đổi bản đồ thiết kế về lượng (nhiều người hơn, phiên ngắn hơn) nhưng không thay đổi cấu trúc khả năng xác định. Trên ds001787, độ lệch chuẩn giữa người của $\log\kinh$ là 1,19 ($I^2=0{,}92$), nên fit gộp ở đó cùng lắm mô tả một người tập trung bình.
+  \item \textbf{Khác biệt giữa người} không được mô hình hoá: mọi người dùng chung một vectơ tham số. Mở rộng phân cấp sẽ thay đổi bản đồ thiết kế về lượng (nhiều người hơn, phiên ngắn hơn) nhưng không thay đổi cấu trúc khả năng xác định. Trên ds001787, độ lệch chuẩn giữa người của $\log\kinh$ là 1,19 và trên bộ thứ hai là 1,49 ($I^2=0{,}92$ ở cả hai), nên các fit gộp cùng lắm mô tả một người tập trung bình.
 \end{itemize}
 
 \section{Kết luận}
 \label{sec:conclusion}
 
-Với một mô hình DMN--$\Phi$--QoC của động lực thiền mới được đề xuất, chúng tôi đã chỉ ra dạng gốc không có QoC duy trì, đề xuất mô hình tuyến tính--Gauss thay thế với hành vi dừng dạng đóng, xác lập chính xác cấu hình quan sát nào xác định được tham số, kiểm chứng cận Cramér--Rao bằng hợp lý cực đại trên toàn không gian thiết kế, rút ra bản đồ thiết kế định lượng và quy tắc co giãn cho số người, độ dài phiên, khoảng hỏi và chất lượng EEG, đặt và giải bài toán điều khiển vòng kín, và định lượng sai số ước lượng từ mỗi thiết kế lan truyền ra hiệu năng điều khiển như thế nào. Một ứng dụng đã đăng ký trước trên dữ liệu EEG lấy mẫu trải nghiệm mở đã xác nhận các dự đoán dựa trên Fisher của phân tích thiết kế trên một thiết kế thật có khoảng trống, phát hiện sai đặc tả ở đại diện công suất alpha làm độ bất định thực của tốc độ DMN tăng gấp đôi, và không thấy hai đại diện EEG có giá trị dự đoán ngoài mẫu nào cho trạng thái được báo cáo. Sự kết hợp giữa thông tin Fisher chính xác, các cổng kiểm tra bằng máy, đăng ký trước và một lệnh tái tạo duy nhất, theo chúng tôi, là một khuôn mẫu cho cách các mô hình động lực của trạng thái tâm trí nên được khảo sát trước và trong khi đem đến dữ liệu.
+Với một mô hình DMN--$\Phi$--QoC của động lực thiền mới được đề xuất, chúng tôi đã chỉ ra dạng gốc không có QoC duy trì, đề xuất mô hình tuyến tính--Gauss thay thế với hành vi dừng dạng đóng, xác lập chính xác cấu hình quan sát nào xác định được tham số, kiểm chứng cận Cramér--Rao bằng hợp lý cực đại trên toàn không gian thiết kế, rút ra bản đồ thiết kế định lượng và quy tắc co giãn cho số người, độ dài phiên, khoảng hỏi và chất lượng EEG, đặt và giải bài toán điều khiển vòng kín, và định lượng sai số ước lượng từ mỗi thiết kế lan truyền ra hiệu năng điều khiển như thế nào. Hai ứng dụng đã đăng ký trước trên dữ liệu EEG lấy mẫu trải nghiệm mở của hai phòng thí nghiệm khác nhau đã xác nhận các dự đoán dựa trên Fisher của phân tích thiết kế trên các thiết kế thật có khoảng trống, phát hiện sai đặc tả ở đại diện công suất alpha làm rộng độ bất định theo hàm hợp lý của tốc độ DMN, không thấy hai đại diện EEG có giá trị dự đoán ngoài mẫu nào cho trạng thái được báo cáo ở bộ nào, và cho thấy bản thân các hằng số tốc độ, ước lượng từ các đại diện chưa hiệu chuẩn, không chuyển được từ bản ghi này sang bản ghi kia. Sự kết hợp giữa thông tin Fisher chính xác, các cổng kiểm tra bằng máy, đăng ký trước và một lệnh tái tạo duy nhất, theo chúng tôi, là một khuôn mẫu cho cách các mô hình động lực của trạng thái tâm trí nên được khảo sát trước và trong khi đem đến dữ liệu.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section*{Dữ liệu và mã nguồn}
-Ứng dụng trên dữ liệu thật dùng bộ dữ liệu mở ds001787 \citep{Delorme2024ds}, phát hành theo giấy phép CC0 (\path{https://doi.org/10.18112/openneuro.ds001787.v1.1.1}) và được Brandmeyer và Delorme mô tả \citep{Brandmeyer2018}. Mọi kết quả khác được sinh \emph{in silico}. Tất cả được tạo bằng mã Python đi kèm với seed 42: mô hình và phân tích thiết kế bằng \path{bqi/dmn_ode.py}, \path{model/}, \path{eeg/model_fit.py} và \path{experiments/run_model_paper.py}; phân tích dữ liệu thật bằng \path{eeg/realdata_features.py}, \path{model/realdata.py} và \path{experiments/run_realdata.py}. Bản đăng ký trước và khoá SHA-256 của nó nằm trong \path{preregistration/}; bản chụp cấu hình, kết quả thô, hồ sơ các cổng và hình nằm trong \path{outputs/}. Kho mã và bản lưu trữ đóng băng có DOI sẽ được công khai khi bài được chấp nhận.
+\begingroup\raggedright
+Các ứng dụng trên dữ liệu thật dùng hai bộ dữ liệu mở phát hành theo giấy phép CC0: ds001787 \citep{Delorme2024ds}, \path{https://doi.org/10.18112/openneuro.ds001787.v1.1.1}, được Brandmeyer và Delorme mô tả \citep{Brandmeyer2018}, và EEG thô của Rodriguez-Larios và cộng sự \citep{RodriguezLarios2021} trên Open Science Framework, \path{https://osf.io/3uszv/} (thành phần v8msp). Mọi kết quả khác được sinh \emph{in silico}. Tất cả được tạo bằng mã Python đi kèm với seed 42: mô hình và phân tích thiết kế bằng \path{bqi/dmn_ode.py}, \path{model/}, \path{eeg/model_fit.py} và \path{experiments/run_model_paper.py}; các phân tích dữ liệu thật bằng \path{eeg/realdata_features.py}, \path{eeg/osf_features.py}, \path{model/realdata.py}, \path{model/osf_pipeline.py}, \path{experiments/run_realdata.py} và \path{experiments/compare_realdata.py}. Hai bản đăng ký trước và khoá SHA-256 của chúng nằm trong \path{preregistration/}; bản chụp cấu hình, kết quả thô, hồ sơ các cổng và hình nằm trong \path{outputs/}. Kho mã và bản lưu trữ đóng băng có DOI sẽ được công khai khi bài được chấp nhận.
+\par\endgroup
 
 \section*{Lời cảm ơn}
 Nghiên cứu được thực hiện tại Trường Đại học Phenikaa, Hà Nội. Mọi tính toán chạy trên máy tính cá nhân; không nhận tài trợ bên ngoài. % TODO: bổ sung tài trợ hoặc mã số đề tài nếu có.
@@ -1090,6 +1151,130 @@ $1/\kinh$: 5 hay 23 phút? & 0,76 phút [0,49; 1,17] & không phải cả hai \\
 \end{tabular}
 \end{table}
 
+\paragraph{Bộ dữ liệu thứ hai: đăng ký trước và khai báo.} Bản đăng ký trước thứ hai (\path{predictions_osf3uszv.md}, khoá SHA-256 lúc 09:21 UTC ngày 3/11/2026) được soạn sau cổng giải mã F0 và cổng thiết kế F1, dùng lại kế hoạch phân tích của ds001787 với các khác biệt nêu ở \Cref{sec:res-osf}. Khác với ds001787, các file nén (174 file, 15,4~GB, gồm cả các bản ghi thiền không ngắt quãng và nghỉ không được phân tích ở đây) đã được tải về ngày 2--3/11, trước khi khoá, vì mỗi file được phát hành như một bản nén duy nhất chứa cả trigger lẫn EEG. Những gì đã đọc trước khi khoá được khai báo trong file: các script phân tích của tác giả, cột trigger của 58 file task (tương ứng với file sự kiện của ds001787), và một đoạn hai phút của một file (m\_task\_2, dòng 3\,000\,000--3\,245\,760) dùng để xác lập cấu trúc lấy mẫu: mỗi mẫu EEG được ghi bốn lần (2\,048 dòng mỗi giây, EEG ở 512~Hz), và đỉnh alpha chẩm chỉ nằm ở 10~Hz theo cách đọc đó. Chưa đặc trưng nào và chưa liên hệ EEG--điểm tự chấm nào được tính. Bản đăng ký là bản của ds001787 với các giả thuyết đổi tên thành F-H1--F-H5, F-H5 tách thành F-H5a ($\kinh$ cao hơn ở nhóm lâu năm, chiều lý thuyết) và F-H5b (thấp hơn, chiều quan sát được trên ds001787), các kiểm tra lặp lại R1--R3, bảy biến thể độ nhạy đã khoá (sáu của ds001787 và quy tắc cố định 150~$\mu$V), và quy tắc độ bền áp dụng ở mức 80\,\% các biến thể chạy được.
+
+\paragraph{Bộ dữ liệu thứ hai: các sai lệch.}
+\begin{enumerate}[label=(\roman*)]
+  \item Biến thể chỉ giữ các phiên có không quá 20\,\% epoch thiếu không giữ được phiên nào: với một lần hỏi mỗi 77~s và cửa sổ trả lời trung bình 16~s, riêng cửa sổ hỏi đã chiếm 28--34\,\% mọi phiên. Biến thể này được chép từ ds001787 mà không đối chiếu với lịch hỏi của bộ này; quy tắc độ bền được áp dụng trên sáu biến thể chạy được.
+  \item Hệ số ghép $\kappa$ được ước lượng âm, và khoảng profile của một tham số tự do về dấu được lấy trên lưới tuyến tính thay vì lưới log dùng cho các tốc độ (chỉ thay đổi ở script tổng hợp).
+  \item Mười bảy trong 58 phiên (đều của người mới, c\_24--c\_30 và c\_n1--c\_n12) lúc đầu được tiền xử lý trên một máy không import được gói ICLabel, nên heuristic dự phòng đã ghi trong tài liệu (tương quan với Fp1/Fp2 trên 0,8, hoặc hơn 60\,\% công suất trên 20~Hz) loại trung vị 6 thành phần thay vì 2. Chúng đã được xử lý lại bằng ICLabel (ngày 7/11/2026) trước khi fit; mọi con số báo cáo ở đây dùng bản xử lý lại, nên cả 58 phiên đi qua cùng một pipeline.
+  \item Mười ba trong 48 người bị loại khỏi phân tích gộp theo quy tắc SE không hữu hạn (11 người vì $\sPhi$ bằng không, hai người vì $\rA$ hoặc $\rPhi$ ở biên); các phân tích khám phá (buồn ngủ làm biến đồng biến, độ sâu tập trung thay cho độ chắc chắn, xu hướng trong phiên) không được báo cáo.
+  \item Một biến thể độ nhạy ngoài đăng ký, che EEG từ đầu phiên đến một phút trước lần hỏi đầu tiên, được thêm sau khi xem \Cref{fig:osf-session}; nó được báo riêng trong \Cref{tab:osf-sens} và không tính vào quy tắc độ bền.
+\end{enumerate}
+
+\paragraph{Bộ dữ liệu thứ hai: tiền xử lý, đặc trưng và giữ phiên.} 21 cột EEG (19 kênh hệ 10--20 và hai dái tai) được đọc từ file text bằng cách lấy một dòng trong mỗi nhóm bốn dòng giống hệt, đổi sang vôn, gán vị trí 10--20 chuẩn và hạ mẫu từ 512 về 256~Hz; phần còn lại của pipeline là của ds001787 (1--40~Hz, notch 50~Hz, kênh xấu theo cùng quy tắc, trung vị 0 và nhiều nhất 2 mỗi phiên; tham chiếu trung bình; Picard extended-infomax trên bản sao 1--100~Hz với 20 thành phần, ICLabel ở 0,8; ICA loại trung vị 2 thành phần, từ 1 đến 7). $y_A$ là log công suất 8--12~Hz trên P3, Pz, P4, O1 và O2; phương án theta trán dùng Fz và Cz; đặc trưng độ phức tạp dùng đúng 19 kênh như trước, đủ cả. Cửa sổ hỏi kéo dài từ tiếng chuông đến 3~s sau mã trả lời cuối. Quy tắc nhiễu giả chính là ngưỡng thích ứng theo phiên trên các kênh đặc trưng, $\max(150~\mu\mathrm V,\ \text{trung vị phiên}+5\,\mathrm{MAD})$ (trung vị 37\,\% epoch thiếu trên 58 phiên, trong đó 34\,\% là cửa sổ hỏi); quy tắc cố định 150~$\mu$V cho trung vị 42\,\% và giữ 24 phiên. Mười phiên bị loại vì hơn 40\,\% epoch thiếu (m\_6, m\_13, m\_20, m\_33, c\_15, c\_22, c\_n1, c\_n4, c\_n5, c\_n10); không phiên nào có dưới tám lần hỏi có điểm. Các phiên mở đầu bằng hướng dẫn và một lần hỏi tập dượt, tiếng chuông đầu tiên đến sau trung bình 6,7~phút; đoạn đầu này là một phần của chuỗi được fit.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig12_osf_profiles.pdf}
+\caption{Log-hợp lý profile của ba hằng số tốc độ trên bộ dữ liệu thứ hai, như \Cref{fig:real-profiles}. Profile của $\kinh$ rộng gấp 1,38 lần đường bậc hai Fisher (khoảng 95\,\% là 0,110--0,175~phút$^{-1}$), của $\kd$ gấp 1,4 lần, còn profile của $\kappa$, vốn âm, bất đối xứng (từ $-0{,}50$ đến $-0{,}23$).}
+\label{fig:osf-profiles}
+\end{figure}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Ba con số sai số trên bộ dữ liệu thứ hai, như \Cref{tab:real-errors} (tốc độ theo phút$^{-1}$; sai số tương đối). CRB dự đoán trên 58 thiết kế thật trước khi khoá (F1), trên 48 thiết kế được giữ, và trên các thiết kế này với $\rA$ đặt theo tỉ số tín hiệu trên nhiễu đo được. Sai số tương đối của $\beta$ lớn vì $\hat\beta\approx0$.}
+\label{tab:osf-errors}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & & \multicolumn{3}{c}{CRB dự đoán} & \multicolumn{2}{c}{SE tại MLE} & & \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-7}
+ & Ước lượng & 58 thiết kế & 48 thiết kế & SNR đo được & Fisher & quan sát & RMSE & RMSE/SE \\
+\midrule
+$\kinh$  & 0,140      & 0,067 & 0,074 & 0,074 & 0,085 & 0,122 & 0,088 & 1,03 \\
+$\kappa$ & $-0{,}335$ & 0,079 & 0,088 & 0,088 & 0,146 & 0,208 & 0,157 & 1,07 \\
+$\kd$    & 1,58       & 0,104 & 0,115 & 0,115 & 0,129 & 0,187 & 0,132 & 1,02 \\
+$\alpha$ & 0,791      & 0,013 & 0,015 & 0,015 & 0,667 & 0,844 & 0,676 & 1,01 \\
+$\beta$  & 0,018      & 0,027 & 0,030 & 0,030 & 10,1  & 17,9  & 10,8  & 1,08 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Dự đoán bỏ-một-phiên cho điểm tự chấm trên bộ dữ liệu thứ hai (1\,838 lần hỏi, 48 phiên; giả thuyết F-H2), như \Cref{tab:real-loso}. Điểm tự chấm chạy từ $-7$ đến $7$.}
+\label{tab:osf-loso}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+So sánh & LPD M1 & LPD rỗng & $\Delta$LPD [CI 95\,\%] & MAE M1 & MAE rỗng \\
+\midrule
+(a) M1 với N2 & $-3{,}0746$ & $-3{,}0749$ & $+0{,}0004$ [$-0{,}0006$; $0{,}0014$] & 4,54 & 4,56 \\
+(b) M1 với N1 & $-3{,}0746$ & $-3{,}0740$ & $-0{,}0006$ [$-0{,}0018$; $0{,}0006$] & 4,54 & 4,55 \\
+(b) M1 với N3 & $-3{,}0746$ & $-3{,}1445$ & $+0{,}0712$ [$0{,}0609$; $0{,}0815$] & 4,54 & 4,66 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Phân tích độ nhạy trên bộ dữ liệu thứ hai: ước lượng gộp, hằng số thời gian tính bằng phút. Sáu dòng dưới phân tích chính là các biến thể đã khoá chạy được; biến thể đã khoá thứ bảy (không quá 20\,\% epoch thiếu) không giữ được phiên nào. Dòng cuối là biến thể ngoài đăng ký, không tính vào quy tắc độ bền.}
+\label{tab:osf-sens}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Biến thể & Số phiên & $\alpha$ & $\beta$ & $1/\kinh$ & $1/\kd$ \\
+\midrule
+Phân tích chính (quy tắc nhiễu giả thích ứng) & 48 & 0,79 & $+0{,}018$ & 7,12 & 0,63 \\
+\midrule
+$y_A$: alpha tuần hoàn                       & 48 & 0,79 & $+0{,}069$ & 7,74 & 0,38 \\
+$y_A$: theta trán                            & 48 & 0,76 & $-0{,}293$ & 16,76 & 1,63 \\
+$y_\Phi$: số mũ aperiodic đổi dấu            & 48 & $-0{,}10$ & $-0{,}127$ & 7,91 & 1,09 \\
+z-score theo phiên                           & 48 & 0,82 & $-0{,}108$ & 4,81 & 0,57 \\
+Không quá 20\,\% epoch thiếu                 &  0 & -- & -- & -- & -- \\
+20 lần hỏi đầu                               & 48 & 1,43 & $-0{,}096$ & 7,10 & 0,62 \\
+Quy tắc nhiễu giả cố định 150~$\mu$V         & 24 & 0,36 & $-0{,}470$ & 5,74 & 0,28 \\
+\midrule
+Che đoạn trước lần hỏi đầu (ngoài đăng ký)   & 48 & 1,02 & $+0{,}285$ & 16,00 & 0,20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Kiểm tra dự đoán hậu nghiệm cho điểm độ chắc chắn có dấu trên 48 phiên được giữ của bộ dữ liệu thứ hai, như \Cref{tab:real-ppc}, trên 15 mức từ $-7$ đến $7$ (mức 0 không thể xuất hiện trong dữ liệu). Dữ liệu hai cực; một hàm đọc ra Gauss với SD đã fit thì không. Mô phỏng: trung bình qua 200 lần kèm dải 95\,\%.}
+\label{tab:osf-ppc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Mức & $-7$ & $-6$ & $-5$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$ \\
+\midrule
+Quan sát (\%)  & 12,6 & 11,3 & 5,4 & 2,0 & 1,5 & 0,5 & 1,0 & 0,0 \\
+Mô phỏng (\%)  & 7,0 & 2,7 & 3,4 & 4,1 & 4,9 & 5,6 & 6,1 & 6,7 \\
+Dải 95\,\%     & 5,8--8,0 & 2,0--3,5 & 2,7--4,2 & 3,2--5,1 & 4,0--5,8 & 4,5--6,7 & 5,2--7,2 & 5,6--8,1 \\
+\midrule
+Mức & $+1$ & $+2$ & $+3$ & $+4$ & $+5$ & $+6$ & $+7$ & \\
+\midrule
+Quan sát (\%)  & 1,3 & 0,9 & 1,7 & 4,5 & 11,8 & 19,8 & 25,8 & \\
+Mô phỏng (\%)  & 6,9 & 7,0 & 6,9 & 6,6 & 6,0 & 5,4 & 20,8 & \\
+Dải 95\,\%     & 5,8--8,0 & 5,8--8,3 & 5,8--7,9 & 5,5--7,7 & 5,1--7,2 & 4,4--6,5 & 19,1--22,9 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Các giả thuyết đã đăng ký và kiểm tra lặp lại trên bộ dữ liệu thứ hai cùng kết cục (khoảng 95\,\%).}
+\label{tab:osf-tests}
+\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+Giả thuyết & Kết quả & Kết cục \\
+\midrule
+F-H1: SE của $\kinh$ không quá 20\,\% & Fisher 8,5\,\%; profile 11,8\,\%; RMSE/SE 1,03 & ủng hộ \\
+F-H2: M1 thắng các mô hình rỗng & $\Delta$LPD $+0{,}0004$ (N2), $-0{,}0006$ (N1) & không ủng hộ \\
+F-H3: $\alpha>0$ & $0{,}79$ [$-0{,}24$; $1{,}82$] & không ủng hộ \\
+F-H4: dấu của $\beta$ & $0{,}02$ [$-0{,}34$; $0{,}38$] & không xác định \\
+F-H5a: $\kinh$ cao hơn ở người lâu năm & $+0{,}14$ [$-0{,}20$; $0{,}47$]; LR $p=0{,}10$ & không ủng hộ \\
+F-H5b: $\kinh$ thấp hơn ở người lâu năm & như trên & không ủng hộ \\
+R1: $1/\kinh$ trong 0,49--1,17 phút & 7,1 phút [5,7; 9,1] & không lặp lại \\
+R2: SE quan sát/kỳ vọng $>1{,}5$, $\approx1$ khi mô phỏng & 1,43; 1,39; 1,13; mô phỏng 0,93--0,99 & không lặp lại \\
+R3: $1/\kd$ & 0,63 phút [0,45; 0,91]; ds001787: 5,0 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Tái tạo}
 \label{app:repro}
 
@@ -1118,6 +1303,20 @@ python main.py realdata check \quad \# E3: phần dư, LOSO, độ nhạy\\
 python main.py realdata paper \quad \# fig9, fig10, bảng, summary.json
 \end{tcolorbox}
 Trên một laptop hai nhân, tiền xử lý mất khoảng chín giờ, chủ yếu cho 20 surrogate của thước đo độ phức tạp, còn các bước còn lại tổng cộng vài giờ. Mọi con số trích ở \Cref{sec:res-real} và \Cref{app:realdata} được ghi vào \path{outputs/paper/realdata/summary.json}.
+
+Bộ dữ liệu thứ hai (\Cref{sec:res-osf}) chạy qua đúng các bước đó dưới các cổng F0--F3 và khoá riêng của nó; bảng so sánh \Cref{tab:real-compare} và các kiểm tra lặp lại do lệnh cuối tạo ra:
+\begin{tcolorbox}[algbox]
+\small\ttfamily
+python main.py osf3uszv fetch \quad \# 174 file nén từ OSF, kiểm MD5\\
+python main.py osf3uszv ratings \quad \# F0: giải mã cột trigger\\
+python main.py osf3uszv design-crb \quad \# F1: hạng, CRB dự đoán, MDE\\
+python main.py osf3uszv preregister -{}-yes \quad \# khoá SHA-256\\
+python main.py osf3uszv preprocess \quad \# 512 Hz từ file text, 256 Hz, ICA, đặc trưng\\
+python main.py osf3uszv fit | boot | check \quad \# F2, F3\\
+python main.py osf3uszv paper \quad \# fig11, fig12, bảng, summary.json\\
+python main.py osf3uszv compare \quad \# hai bộ cạnh nhau, R1--R3
+\end{tcolorbox}
+Với 58 phiên dài một giờ, tiền xử lý mất khoảng 15 phút mỗi phiên và các bước fit, bootstrap, check khoảng hai ngày trên cùng laptop; mỗi bước lưu checkpoint và chạy tiếp được. Các con số của \Cref{sec:res-osf} nằm trong \path{outputs/paper/osf3uszv/summary.json} và \path{outputs/paper/comparison/comparison.json}.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 %% Tài liệu tham khảo: GIỮ NGUYÊN danh mục của bản tiếng Anh (chép bằng script
@@ -1297,6 +1496,11 @@ Information and the accuracy attainable in the estimation of statistical paramet
 Raue, A., Kreutz, C., Maiwald, T., Bachmann, J., Schilling, M., Klingm\"uller, U.\ and Timmer, J.\ (2009).
 Structural and practical identifiability analysis of partially observed dynamical models by exploiting the profile likelihood.
 \textit{Bioinformatics}, 25(15), 1923--1929.
+
+\bibitem[Rodriguez-Larios et al.(2021)]{RodriguezLarios2021}
+Rodriguez-Larios, J., Bracho Montes de Oca, E.\ A.\ and Alaerts, K.\ (2021).
+The EEG spectral properties of meditation and mind wandering differ between experienced meditators and novices.
+\textit{NeuroImage}, 245, 118669. Data: Open Science Framework, \path{https://osf.io/3uszv/}.
 
 \bibitem{Ros2020}
 Ros, T.\ et al.\ (2020).

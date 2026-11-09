@@ -1,0 +1,20 @@
+{
+  "made": [
+    "fig11_osf_session",
+    "fig12_osf_profiles",
+    "table12_errors_osf",
+    "table13_loso_osf",
+    "tableJ1_sensitivity_osf",
+    "tableJ2_ppc_levels_osf",
+    "summary"
+  ],
+  "skipped": [],
+  "seed": 42,
+  "n_ppc": 200,
+  "gates": {
+    "F0": true,
+    "F1": true,
+    "F2": true,
+    "F3": true
+  }
+}

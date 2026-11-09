@@ -4,9 +4,9 @@
 %%  Manuscript built from the "model paper" pipeline (Q1_pipeline_model.md).
 %%  Every number is produced by:  python main.py model all --seed 42 --n-base 256 --profiles
 %%  followed by  python main.py model figures  (outputs/paper/model/).
-%%  The real-data section (Sec. 4.7, App. on ds001787) follows the
-%%  python main.py realdata ... steps and  python main.py realdata paper
-%%  (outputs/paper/realdata/, numbers in summary.json).
+%%  The real-data sections (Sec. 4.7 ds001787, Sec. 4.8 OSF 3uszv, App. H) follow the
+%%  python main.py realdata ... / osf3uszv ... steps and the `paper` and `compare` steps
+%%  (outputs/paper/realdata/, outputs/paper/osf3uszv/, outputs/paper/comparison/; numbers in summary.json).
 %%  Author: Dung Vu — Phenikaa University
 %%  Compile: pdflatex (x2) from the template_latex/ folder; figures are read
 %%  from ../outputs/paper/model/ and ../outputs/paper/realdata/ via \graphicspath.
@@ -52,7 +52,8 @@
 
 %% ─── Graphics and plots ───────────────────────────────────────────────────────
 \usepackage{graphicx}
-\graphicspath{{../outputs/paper/model/}{../outputs/paper/realdata/}{./figures/}}
+\graphicspath{{../outputs/paper/model/}{../outputs/paper/realdata/}{../outputs/paper/osf3uszv/}{./figures/}}
+\renewcommand{\floatpagefraction}{0.8}   % a float page only for floats that fill most of it
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{tikz}
@@ -269,7 +270,7 @@
 \vspace{0.3cm}
 \begin{tcolorbox}[mathbox,title=Abstract]
 \small
-Dynamical models that link default-mode-network (DMN) activity, information integration ($\Phi$) and a reported ``quality of consciousness'' (QoC) during meditation are increasingly proposed, but three questions that precede any data analysis are rarely asked: whether the model is mathematically consistent, whether its parameters can be identified from the experience-sampling designs actually in use (a few self-report probes per session, sessions of 20--90 minutes, EEG features every few seconds), and what closed-loop control (neurofeedback) can achieve when the parameters are only estimated. We answer all three for a recently proposed three-variable DMN--$\Phi$--QoC model. First, we prove that in the original formulation QoC is a high-pass filter of the derivatives of $\Phi$ and $A_{\mathrm{DMN}}$, so its steady state is identically zero for every parameter value; the closed-form steady states printed with the model do not satisfy its own equations. We propose a linear-Gaussian state-space replacement (M1) with an Ornstein--Uhlenbeck DMN process and an algebraic read-out, and derive its stationary mean, covariance and Gaussian law in closed form. Second, using the exact expected Fisher information of a whole session we characterise structural identifiability for four observation configurations: ratings alone identify 6 of 10 parameters, ratings plus one EEG channel leave one exact scaling symmetry each (made explicit analytically), and ratings with both EEG channels identify all 12 parameters. Over a grid of 144 designs the Cram\'er--Rao bound (CRB) predicts the root-mean-square error of maximum-likelihood recovery within a factor of two in 24 of 24 tested cells (median ratio 0.98), which licenses the CRB as a design tool. The resulting design map shows that the DMN inhibition rate $\kinh$ is the hardest parameter: it needs about eight subject-hours of two-channel EEG (e.g.\ 24 subjects $\times$ 20 min) for a relative error of 20\,\%, whereas $A_0$, $\alpha$ and $\beta$ reach that level with 6 subjects $\times$ 20 min; uniform probe schedules are not beaten by the front-loaded, back-loaded or paired schedules we tested. Third, we recast the control problem as linear-quadratic-Gaussian (LQG) regulation. With true parameters LQG attains a session cost 14 times lower than bang-bang control and 38 times lower than no control, its closed-form stationary cost matches simulation within 3\,\%, and when the controller is designed on parameters estimated from each design the median efficiency loss is a few per cent for designs that meet the identifiability criterion (3\,\% at the reference design) but reaches 38\,\% for the smallest design that fails it (6 subjects, 20-minute sessions). A global Sobol analysis over a $\times 0.25$--$\times 4$ parameter range shows that the identifiability of $\kinh$ is governed by the DMN baseline and its coefficient of variation rather than by $\kinh$ itself. Finally, in a preregistered application to open experience-sampling EEG data (ds001787; 22 of 40 sessions retained after artefact rejection) the Fisher error of $\kinh$ was 10\,\%, within the 9--13\,\% predicted by the design analysis, but the profile likelihood gave 22\,\% and exposed a misspecified alpha-power proxy; the fitted DMN time constant was 0.8~min, and neither EEG proxy improved out-of-sample prediction of the ratings. The simulation results are reproducible from a single command with a fixed seed; EEG features are treated as noisy proxies, and no claim is made about the neural meaning of the parameters.
+Dynamical models that link default-mode-network (DMN) activity, information integration ($\Phi$) and a reported ``quality of consciousness'' (QoC) during meditation are increasingly proposed, but three questions that precede any data analysis are rarely asked: whether the model is mathematically consistent, whether its parameters can be identified from the experience-sampling designs actually in use (a few self-report probes per session, sessions of 20--90 minutes, EEG features every few seconds), and what closed-loop control (neurofeedback) can achieve when the parameters are only estimated. We answer all three for a recently proposed three-variable DMN--$\Phi$--QoC model. First, we prove that in the original formulation QoC is a high-pass filter of the derivatives of $\Phi$ and $A_{\mathrm{DMN}}$, so its steady state is identically zero for every parameter value; the closed-form steady states printed with the model do not satisfy its own equations. We propose a linear-Gaussian state-space replacement (M1) with an Ornstein--Uhlenbeck DMN process and an algebraic read-out, and derive its stationary mean, covariance and Gaussian law in closed form. Second, using the exact expected Fisher information of a whole session we characterise structural identifiability for four observation configurations: ratings alone identify 6 of 10 parameters, ratings plus one EEG channel leave one exact scaling symmetry each (made explicit analytically), and ratings with both EEG channels identify all 12 parameters. Over a grid of 144 designs the Cram\'er--Rao bound (CRB) predicts the root-mean-square error of maximum-likelihood recovery within a factor of two in 24 of 24 tested cells (median ratio 0.98), which licenses the CRB as a design tool. The resulting design map shows that the DMN inhibition rate $\kinh$ is the hardest parameter: it needs about eight subject-hours of two-channel EEG (e.g.\ 24 subjects $\times$ 20 min) for a relative error of 20\,\%, whereas $A_0$, $\alpha$ and $\beta$ reach that level with 6 subjects $\times$ 20 min; uniform probe schedules are not beaten by the front-loaded, back-loaded or paired schedules we tested. Third, we recast the control problem as linear-quadratic-Gaussian (LQG) regulation. With true parameters LQG attains a session cost 14 times lower than bang-bang control and 38 times lower than no control, its closed-form stationary cost matches simulation within 3\,\%, and when the controller is designed on parameters estimated from each design the median efficiency loss is a few per cent for designs that meet the identifiability criterion (3\,\% at the reference design) but reaches 38\,\% for the smallest design that fails it (6 subjects, 20-minute sessions). A global Sobol analysis over a $\times 0.25$--$\times 4$ parameter range shows that the identifiability of $\kinh$ is governed by the DMN baseline and its coefficient of variation rather than by $\kinh$ itself. Finally, in a preregistered application to open experience-sampling EEG data (ds001787; 22 of 40 sessions retained after artefact rejection) the Fisher error of $\kinh$ was 10\,\%, within the 9--13\,\% predicted by the design analysis, but the profile likelihood gave 22\,\% and exposed a misspecified alpha-power proxy; the fitted DMN time constant was 0.8~min, and neither EEG proxy improved out-of-sample prediction of the ratings. A second preregistered application to an independent dataset (OSF 3uszv; 29 experienced meditators and 29 novices, 48 of 58 sessions retained) reproduced the accuracy of the Fisher-based error numbers (6.7\,\% predicted, 8.5\,\% achieved) and the absence of out-of-sample value of the EEG proxies, but not the rate constants: the DMN time constant was 7~min, and the group difference found on the first dataset did not recur. The simulation results are reproducible from a single command with a fixed seed; EEG features are treated as noisy proxies, and no claim is made about the neural meaning of the parameters.
 \end{tcolorbox}
 
 \noindent\textbf{Keywords:} meditation; default mode network; state-space model; Fisher information; structural identifiability; optimal experimental design; experience sampling; Kalman filter; LQG control; neurofeedback; Sobol sensitivity analysis; preregistration; open EEG data.
@@ -294,10 +295,10 @@ Questions (ii) and (iii) are classical in systems identification and systems bio
   \item \textbf{Identifiability and a quantitative design map} (\Cref{sec:res-ident,sec:res-design}). Because M1 is linear-Gaussian, the joint distribution of all observations of a session is Gaussian with closed-form moments, and the expected Fisher information can be computed \emph{exactly}, without simulation. We use it (a) to establish structural identifiability by Rothenberg's rank criterion for four observation configurations, exhibiting the exact symmetries that make single-EEG-channel designs non-identifiable; (b) to compute Cram\'er--Rao bounds (CRB) over a grid of 144 designs; (c) to validate the CRB against maximum-likelihood (ML) recovery on simulated data at 24 designs; and (d) to derive minimal designs and simple scaling rules for each parameter.
   \item \textbf{Closed-loop control and its dependence on design quality} (\Cref{sec:res-control}). We formulate the control problem as linear-quadratic-Gaussian (LQG) regulation of QoC towards a target, compare it with a bang-bang policy using the same state estimator, give the closed-loop stationary cost in closed form, and quantify the loss of efficiency when the controller is designed on parameter estimates obtained from each experimental design. This links the design map directly to the achievable performance of a model-based neurofeedback loop.
   \item \textbf{Global sensitivity} (\Cref{sec:res-sens}). A variance-based Sobol analysis over a $\times 0.25$--$\times 4$ range around the nominal parameters shows which conclusions are robust and which parameters govern identifiability and control performance.
-  \item \textbf{A preregistered test on open data} (\Cref{sec:res-real}). We fit M1 to the experience-sampling EEG dataset on which the reference design is patterned, compare the error predicted by the design analysis with the error achieved, and test out-of-sample prediction of the ratings against null models, under a locked preregistration and verification gates.
+  \item \textbf{Two preregistered tests on open data} (\Cref{sec:res-real,sec:res-osf}). We fit M1 to the experience-sampling EEG dataset on which the reference design is patterned and, under a second preregistration, to an independent dataset from another laboratory; on each we compare the error predicted by the design analysis with the error achieved and test out-of-sample prediction of the ratings against null models, under locked preregistrations and verification gates, and we report which findings replicate across the two.
 \end{enumerate}
 
-\paragraph{What this paper does not claim.} The simulation results use nominal working points, and the real-data application treats EEG features as noisy proxies: we make no claim that posterior alpha power measures DMN activity or that Lempel--Ziv complexity measures $\Phi$, nor about whether meditation ``increases'' $\Phi$ or QoC. The contribution is methodological: a complete, reproducible analysis of what a specific class of models can and cannot deliver \emph{before} data are collected, design recommendations that experimenters can apply directly, and one preregistered test of these recommendations on open data. All simulation results are produced by a single command from the accompanying code with a fixed random seed (\Cref{sec:repro}).
+\paragraph{What this paper does not claim.} The simulation results use nominal working points, and the real-data applications treat EEG features as noisy proxies: we make no claim that posterior alpha power measures DMN activity or that Lempel--Ziv complexity measures $\Phi$, nor about whether meditation ``increases'' $\Phi$ or QoC. The contribution is methodological: a complete, reproducible analysis of what a specific class of models can and cannot deliver \emph{before} data are collected, design recommendations that experimenters can apply directly, and two preregistered tests of these recommendations on open data. All simulation results are produced by a single command from the accompanying code with a fixed random seed (\Cref{sec:repro}).
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Models}
@@ -413,7 +414,7 @@ and at the probe epochs $t\in\mathcal P$ (every $T_p$ minutes) the practitioner 
   \mathrm{rating}_t=\QoC_t+\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,\rQ^2).
   \label{eq:obsRating}
 \end{equation}
-This mirrors the structure of existing experience-sampling meditation data sets such as ds001787 \citep{Brandmeyer2018}, in which EEG is recorded continuously and probes occur every few minutes. The DMN channel $y_A$ would in practice be an EEG proxy of DMN activity (e.g.\ posterior alpha or a source-localised feature) and $y_\Phi$ a complexity or integration measure; the mapping of real features to $(A,\Phi)$ is outside the scope of the design analysis, which asks what could be learned \emph{if} such features existed with noise levels $\rA,\rPhi$; \Cref{sec:res-real} tries two candidate proxies on ds001787. Four observation configurations are considered: (a) ratings only, (b) ratings $+\,y_A$, (c) ratings $+\,y_\Phi$, (d) ratings $+\,y_A+y_\Phi$.
+This mirrors the structure of existing experience-sampling meditation data sets such as ds001787 \citep{Brandmeyer2018}, in which EEG is recorded continuously and probes occur every few minutes. The DMN channel $y_A$ would in practice be an EEG proxy of DMN activity (e.g.\ posterior alpha or a source-localised feature) and $y_\Phi$ a complexity or integration measure; the mapping of real features to $(A,\Phi)$ is outside the scope of the design analysis, which asks what could be learned \emph{if} such features existed with noise levels $\rA,\rPhi$; \Cref{sec:res-real,sec:res-osf} try two candidate proxies on ds001787 and on a second dataset. Four observation configurations are considered: (a) ratings only, (b) ratings $+\,y_A$, (c) ratings $+\,y_\Phi$, (d) ratings $+\,y_A+y_\Phi$.
 
 The free parameter vector is
 \begin{equation}
@@ -530,7 +531,7 @@ Every setting above lives in one configuration module; a snapshot is written nex
 python main.py model all -{}-seed 42 -{}-n-base 256 -{}-profiles\\
 python main.py gates
 \end{center}
-followed by the figure script; 104 unit tests cover the model, filter, Fisher matrix, gates, real-data pipeline and figure scripts. Four further gates (E0--E3) govern the real-data analysis of \Cref{sec:res-real} and are listed there. Computations use NumPy and SciPy \citep{Harris2020,Virtanen2020}. Code and outputs will be archived with a DOI at publication.
+followed by the figure script; 114 unit tests cover the model, filter, Fisher matrix, gates, the two real-data pipelines and the figure scripts. Eight further gates (E0--E3 and F0--F3) govern the real-data analyses of \Cref{sec:res-real,sec:res-osf} and are listed there. Computations use NumPy and SciPy \citep{Harris2020,Virtanen2020}. Code and outputs will be archived with a DOI at publication.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Results}
@@ -845,6 +846,62 @@ Comparison & LPD M1 & LPD null & $\Delta$LPD [95\,\% CI] & MAE M1 & MAE null \\
 
 In short, on ds001787 (22 of 40 sessions, 554 rated probes) the DMN rate constant was estimated with a relative error of 10\,\% by the Fisher information, against 9--13\,\% predicted by the design analysis, but 22\,\% by the profile likelihood, and M1 did not predict ratings out of sample better than an instantaneous regression on the EEG features.
 
+\subsection{Replication on a second experience-sampling dataset}
+\label{sec:res-osf}
+
+One dataset cannot tell a property of the model from a property of the recording. We therefore repeated the whole analysis, with the same code, model, features and gates, on an independent dataset from a different laboratory: the experience-sampling EEG of \citet{RodriguezLarios2021} (OSF 3uszv, CC0), 29 practitioners with more than three years of meditation experience and 29 participants without any, each recorded once during about an hour of breath-focus meditation interrupted by a bell every 77~s on average (40 probes per session; 58 sessions, 2{,}258 probes, 55 subject-hours; 21-channel Nexus-32 EEG at 512~Hz). At each bell the participant reported whether they had been focusing on the breath, thinking about something else or distracted by something else, then rated their confidence, their sleepiness and the depth of focus or absorption, all on 1--7 scales. The preregistered rating is the signed confidence, $r=+c$ for breath focus and $-c$ otherwise, from $-7$ to $7$; it is bimodal (88\,\% of the ratings have $|r|\ge5$). The second preregistration (\path{predictions_osf3uszv.md}, locked at 09:21 UTC on 3 November 2026) repeats hypotheses E-H1--E-H5 as F-H1--F-H5, splits F-H5 into the theoretical direction and the direction found on ds001787, and adds three replication checks fixed before any EEG of this dataset was examined: R1, the profile interval of $1/\kinh$ overlaps the ds001787 interval of 0.49--1.17~min; R2, the observed-over-expected information ratio of the alpha channel again exceeds 1.5 on the data and is near 1 on data simulated from the fit; R3, the value of $1/\kd$ (no prediction). The archives had been downloaded before the lock; only their trigger column, used for the decoding gate F0 and the design gate F1, and one two-minute segment of one file, used to establish that the text files repeat every EEG sample four times (2{,}048 rows per second at 512~Hz), had been read. Three choices were fixed before the lock and differ from ds001787: the EEG was resampled to 256~Hz so that the complexity feature is computed at the same rate; $y_A$ uses the five posterior channels available (P3, Pz, P4, O1, O2); and the primary artefact rule is the session-adaptive threshold that ds001787 had shown to be necessary, with the fixed 150~$\mu$V rule as a sensitivity variant (\Cref{app:realdata}).
+
+\paragraph{Gates and retained data.} Decoding recovered a valid answer and confidence at 2{,}233 of 2{,}258 bells (F0: 98.9\,\%). On the real probe schedules the Fisher matrix has full rank (F1), and the denser probing and longer sessions give a predicted relative CRB of 6.7\,\% for $\kinh$ (9.4\,\% per group) and a minimal detectable group difference of 0.37 log units, against 9.1\,\% and 0.51 on ds001787. The alpha feature is strongly autocorrelated (median lag-1 autocorrelation 0.77), and this time the complexity feature has temporal structure as well (0.20). The adaptive rule retained 48 of 58 sessions (25 experienced, 23 novices, 1{,}838 rated probes); the ten excluded sessions had more than 40\,\% missing epochs. The probe windows alone cover 34\,\% of a session (a response takes 16~s on average, every 77~s), so the retained sessions still have a median of 36\,\% missing epochs. Gates F2 and F3 passed. \Cref{fig:osf-session} shows one retained session.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.9\linewidth]{fig11_osf_session.pdf}
+\caption{One session of the second dataset (c\_10, novice; the retained session with the most rated probes) filtered with M1 at the pooled estimate, as in \Cref{fig:real-session}. The alpha proxy (top) drifts over minutes, with level shifts near 5 and 40~min, and the filtered $A$ follows it. The complexity proxy (middle) now carries a signal, and the filtered $\Phi$ fluctuates on a scale of tens of seconds; two outlying epochs lie outside the axis. The ratings (bottom) alternate between about $+7$ and $-5$ with no serial dependence, and the one-step predictions, from EEG alone or with past ratings, stay at the session mean.}
+\label{fig:osf-session}
+\end{figure}
+
+\paragraph{Estimates and errors.} \Cref{tab:real-compare} places the two datasets side by side. The DMN proxy is now slow, $1/\hat k_{\mathrm{inh}}=7.1$~min (95\,\% profile interval 5.7--9.1~min), nine times the 0.76~min of ds001787, and the latent integration variable is fast, $1/\hat k_d=0.63$~min (0.45--0.91~min), eight times faster than before: the two time constants have exchanged places. The coupling is determined and negative, $\hat\kappa=-0.33$ ($-0.50$ to $-0.23$). The DMN channel has the nominal signal-to-noise ratio (1.57 against 1.58) and the integration channel 0.54, eight times its value on ds001787. The three error numbers agree better than on ds001787 (\Cref{tab:osf-errors}): for $\kinh$ the CRB predicted before the lock is 6.7\,\%, the Fisher SE at the estimate 8.5\,\%, the observed-information SE 12.2\,\%, the profile SE 11.8\,\% and the bootstrap RMSE 8.8\,\% (ratio 1.03; the F2 ratios are 1.00--1.08 for all ten parameters). F-H1 is supported by the Fisher criterion and by the likelihood-based one. The observed-over-expected ratio is 1.43 for $\kinh$, 1.39 for $\sA$ and 1.13 for $\rA$ on the data and 0.93--0.99 on data simulated from the fit, so the misspecification signature of the alpha channel is present but weaker than the 2.1--2.5 of ds001787, and it is no longer confined to that channel (1.45 for $\kd$, 1.44 for $\sPhi$). R2 is not met by its preregistered criterion of 1.5.
+
+\paragraph{Gains and prediction.} $\hat\alpha=0.79$ (Fisher 95\,\% CI $-0.24$ to $1.82$; bootstrap $-0.24$ to $1.92$, 11 of 200 replicates at or below zero): F-H3 is not supported, although the point estimate is positive as on ds001787. In units of the within-session rating SD the gain is 0.15, against 11.8 on ds001787, where $\Phi$ was identified by the ratings alone; here $\Phi$ is pinned by the complexity channel and contributes little to the reports. $\hat\beta=0.02$ ($-0.34$ to $0.38$; F-H4 undetermined). Out of sample, M1 is indistinguishable from the null models (\Cref{tab:osf-loso}): $\Delta$LPD against the instantaneous regression is $+0.0004$ ($-0.0006$ to $0.0014$) and against the rating-only M1 $-0.0006$ ($-0.0018$ to $0.0006$), with a mean absolute error of 4.5 on a 14-point scale for every model but the running mean (4.7). F-H2 is not supported, as on ds001787, and for a more basic reason: the ratings of this dataset have no serial dependence to predict (median lag-1 autocorrelation $-0.01$), so past ratings do not help either, and their bimodal distribution is out of reach of a Gaussian read-out (\Cref{tab:osf-ppc}).
+
+\paragraph{Groups and subjects.} With 25 and 23 sessions the two group fits give $\hat k_{\mathrm{inh}}=0.154$ and $0.134~\mathrm{min^{-1}}$, a log difference of $+0.14$ (Wald 95\,\% CI $-0.20$ to $0.47$; one-degree-of-freedom likelihood ratio $\chi^2_1=2.67$, $p=0.10$), below the minimal detectable difference of 0.37. Neither F-H5a (experienced higher) nor F-H5b (experienced lower, the ds001787 direction) is supported: the difference of $-1.19$ found on ds001787 does not recur. The groups do differ in other parameters ($\chi^2_{10}=256$, $p<10^{-15}$): in the novices the integration variable is fast and noisy ($1/\kd=0.33$~min, $\sPhi=1.1$) and loads positively on the reports ($\alpha=2.0$, $\beta=+0.75$); in the experienced practitioners it is slower ($1/\kd=0.89$~min, $\sPhi=0.68$) and both gains are near zero or negative ($\alpha=-0.15$, $\beta=-0.66$). Per-subject fits gave finite standard errors for 35 of 48 subjects (for 11 of the others $\sPhi$ was estimated at zero); their meta-analysis gives a DMN time constant of 3.3~min (2.0--5.7~min) with $\tau=1.49$ log units and $I^2=0.92$, a heterogeneity as large as on ds001787.
+
+\paragraph{Checks and robustness.} The innovations of the alpha channel are less white than before (median Ljung--Box $p=0.058$, with 17 of 48 sessions below 0.01; $p=0.42$ for $y_\Phi$); those of the two channels are nearly uncorrelated (median 0.05). The posterior predictive check reproduces the absence of serial dependence in the ratings (simulated lag-1 autocorrelation $-0.03$, band $-0.08$ to $0.02$) but not their bimodal distribution, and the experienced practitioners again rate with a smaller spread than the pooled model implies (observed difference in within-session SD $-1.01$, simulated $-0.31$, band $-0.55$ to $-0.05$). Of the seven locked sensitivity analyses six could be run: the variant restricted to sessions with at most 20\,\% missing epochs retains no session, because the probe windows alone exceed 20\,\% in every session, an oversight of the preregistration. Across the six (\Cref{tab:osf-sens}), the sign of $\alpha$ is kept in five (it is negative with the aperiodic-exponent proxy), the sign of $\beta$ in one, and the DMN time constant stays inside the main profile interval in four (frontal theta gives 17~min and per-session z-scoring 4.8~min; the fixed artefact rule gives 5.7~min on 24 sessions, just inside the lower end). The 80\,\% robustness rule is met for the sign of $\alpha$ but not for $\beta$ or $1/\kinh$; since the interval of $\alpha$ contains zero, the estimates are reported descriptively. One post-registration variant, added after \Cref{fig:osf-session} had been examined and not counted in the rule, masks the EEG before the first probe: the DMN time constant rises to 16~min, so the level shift of alpha at the start of the session is the fastest part of this proxy.
+
+\begin{table}[htbp]
+\centering
+\caption{The two preregistered applications side by side. Time constants in minutes with 95\,\% profile intervals; gains with Fisher 95\,\% intervals and per unit of the within-session SD of the ratings (1.11 and 5.22). SE of $\kinh$: relative, from the CRB predicted before the lock, the Fisher information at the estimate, the observed information and the profile likelihood. Obs/exp: observed- over expected-information SE on the data (in parentheses: on data simulated from the fit). $\Delta$LPD: out-of-sample log predictive density of M1 minus N2 (EEG only) and minus N1 (EEG and past ratings). Group difference: $\log\kinh$, experienced minus novice fit, Wald 95\,\% interval. Meta-analysis: random-effects $1/\kinh$ over the subjects with a finite SE and the between-subject SD $\tau$ of $\log\kinh$. Sensitivity: locked variants that keep the sign of $\alpha$, the sign of $\beta$ and the profile interval of $1/\kinh$.}
+\label{tab:real-compare}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+ & ds001787 & OSF 3uszv \\
+\midrule
+Sessions retained / recorded; subjects   & 22 / 40; 16 & 48 / 58; 48 \\
+Rated probes; probe interval; session   & 554; 2~min; 45~min & 1{,}838; 77~s; 57~min \\
+Rating scale; within-session SD         & $-3$ to $3$; 1.11 & $-7$ to $7$; 5.22 \\
+$1/\kinh$ (min)                          & 0.76 [0.49, 1.17] & 7.1 [5.7, 9.1] \\
+$1/\kd$ (min)                            & 5.0 [3.1, 8.7] & 0.63 [0.45, 0.91] \\
+$\kappa$                                 & $\approx0$, flat profile & $-0.33$ [$-0.50$, $-0.23$] \\
+SNR of $y_A$; of $y_\Phi$                & 1.11; 0.06 & 1.57; 0.54 \\
+SE of $\kinh$: CRB / Fisher / obs.\ / profile & 9.1 / 9.9 / 22.8 / 21.9\,\% & 6.7 / 8.5 / 12.2 / 11.8\,\% \\
+Bootstrap RMSE / Fisher SE of $\kinh$    & 0.98 & 1.03 \\
+Obs/exp SE: $\kinh$, $\sA$, $\rA$        & 2.30, 2.48, 2.14 (1.05--1.07) & 1.43, 1.39, 1.13 (0.93--0.99) \\
+$\alpha$ [95\,\%]; per rating SD        & 13.1 [4.9, 21.3]; 11.8 & 0.79 [$-0.24$, 1.82]; 0.15 \\
+$\beta$ [95\,\%]; per rating SD         & $-0.03$ [$-0.19$, $0.14$]; $-0.02$ & 0.02 [$-0.34$, $0.38$]; 0.00 \\
+$\Delta$LPD vs N2; vs N1                 & $-0.010$; $-0.031$ & $+0.000$; $-0.001$ \\
+Lag-1 autocorrelation of the ratings     & 0.22 & $-0.01$ \\
+Group difference in $\log\kinh$          & $-1.19$ [$-1.56$, $-0.81$] & $+0.14$ [$-0.20$, $0.47$] \\
+Meta-analysis: $1/\kinh$; $\tau$; subjects & 0.95 [0.40, 2.26]; 1.19; 9 & 3.3 [2.0, 5.7]; 1.49; 35 \\
+Ljung--Box median $p$: $y_A$, $y_\Phi$   & 0.27, 0.40 & 0.06, 0.42 \\
+Sensitivity: $\alpha$, $\beta$, $1/\kinh$ kept & 6/6, 4/6, 4/6 & 5/6, 1/6, 4/6 \\
+Gates                                    & E0--E3 passed & F0--F3 passed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{What replicates.} Three findings are common to the two datasets and two are not. (i) The Fisher-based error numbers were accurate on both: for $\kinh$ the bound computed before the lock, the Fisher SE at the estimate and the bootstrap RMSE agree within 10\,\% on ds001787 and within 30\,\% here, and on both datasets the likelihood-based SE of the alpha channel exceeds the Fisher SE. (ii) Neither EEG proxy improves the out-of-sample prediction of the reports on either dataset. (iii) The between-subject heterogeneity of $\log\kinh$ is large on both ($\tau$ of 1.2 and 1.5). (iv) $\alpha>0$ does not replicate: the estimate is positive on both, but the interval excludes zero only on ds001787, and on both its value per rating SD says little. (v) The rate constants themselves do not replicate: $1/\kinh$ is 0.76~min on ds001787 and 7.1~min here (R1 fails by a factor of nine), $1/\kd$ is 5.0 against 0.63~min, and the direction of the group difference differs. The exchange of the two time constants has a simple reading. On ds001787 the complexity proxy was noise, so $\Phi$ and $\kd$ were identified by the ratings and $1/\kd$ measured the slow drift of the reports; here the complexity proxy carries a 30-s signal that fixes $\Phi$, the reports have no drift, and the alpha proxy drifts over minutes within the hour-long sessions (\Cref{fig:osf-session}). An Ornstein--Uhlenbeck fit returns the dominant time scale of whatever feature it is given, and that time scale is a property of the recording and of the feature rather than of a DMN process: the frontal-theta alternative gives 17~min on this dataset and 4~min on the other. In short, on the second dataset (48 of 58 sessions, 1{,}838 rated probes) the design analysis again predicted the Fisher error of $\kinh$ (6.7\,\% predicted, 8.5\,\% achieved, 12\,\% by the profile likelihood), the EEG proxies again added nothing to the prediction of the reports, and the rate constants estimated on the first dataset did not replicate.
+
 %% ─────────────────────────────────────────────────────────────────────────────
 \section{Discussion}
 \label{sec:discussion}
@@ -859,28 +916,32 @@ In short, on ds001787 (22 of 40 sessions, 554 rated probes) the DMN rate constan
 
 \paragraph{What the real data add.} The application to ds001787 (\Cref{sec:res-real}) supports the design analysis where it is a statement about information and qualifies it where it rests on the model being right. In Fisher terms the analysis was accurate: the bound computed before any EEG was seen and the bound at the measured signal-to-noise ratio bracket the error achieved, and the parametric bootstrap reproduced the bound on real, gap-ridden designs. What a design analysis cannot anticipate is misspecification. For the alpha-power proxy the observed information and the profile likelihood give errors more than twice the expected-information value, so design-map numbers should be read as lower bounds whenever a proxy is not known to follow the model, and likelihood-based intervals should be reported beside Fisher-based ones. The second lesson concerns the observation model rather than the dynamics. The two proxies we preregistered carried no detectable information about the reports beyond the reports' own serial dependence: the LZc channel was almost pure noise, posterior alpha did not load on the ratings, and out-of-sample prediction did not improve when EEG was added. Finding an EEG feature that tracks the reported state, with a signal-to-noise ratio in the range that \Cref{sec:res-design} shows to be necessary, is the open problem that the model leaves to experimenters.
 
+\paragraph{What the second dataset adds.} The replication (\Cref{sec:res-osf}) separates the two kinds of result. The methodological ones held: on an independent recording with a different amplifier, montage, probe schedule and rating scale, the error predicted before the lock, the Fisher SE at the estimate and the bootstrap RMSE again agreed, the likelihood-based SE again exceeded the Fisher SE for the alpha channel, and the EEG proxies again added nothing to the prediction of the reports. The substantive ones did not: the DMN time constant moved from 0.8 to 7~min, the latent integration time constant from 5 to 0.6~min, and the group difference in $\kinh$ that ds001787 had shown disappeared. The lesson is not that one of the two estimates is wrong but that a rate constant estimated from an uncalibrated proxy is a property of the proxy in that recording, which here is governed by slow drifts of alpha power over an hour-long session and, on ds001787, by the serial dependence of the reports. The parameters that a design analysis can promise to deliver are only as meaningful as the mapping from features to state variables, and that mapping must be established and shown to be stable across laboratories before a design map is used to plan a study.
+
 \subsection{Limitations}
 \label{sec:limitations}
 
 \begin{itemize}
-  \item \textbf{One dataset and uncalibrated proxies.} The design analysis is \emph{in silico}, and its only empirical test is one dataset (\Cref{sec:res-real}). There the preregistered artefact rule excluded 18 of 40 sessions non-randomly; the EEG features are proxies without a calibrated mapping to $A$ or $\Phi$ (posterior alpha is not a measure of DMN activity, LZc is not a measure of $\Phi$); the levels $A_0$, $\Phi^*$ and $\gamma_0$ are not estimable; the alpha channel shows signs of misspecification; and the group comparison is confounded by sex and age. The nominal point of the simulations is a working point; the sensitivity analysis covers a wide range around it but not qualitatively different regimes.
+  \item \textbf{Two datasets and uncalibrated proxies.} The design analysis is \emph{in silico}, and its empirical tests are two datasets (\Cref{sec:res-real,sec:res-osf}) whose rate constants disagree by a factor of ten. On ds001787 the preregistered artefact rule excluded 18 of 40 sessions non-randomly, and the group comparison is confounded by sex and age; on the second dataset the probe windows alone remove a third of the EEG, the ratings are bimodal and serially independent, and the sessions include an initial segment before the first probe whose masking doubles the DMN time constant. On both, the EEG features are proxies without a calibrated mapping to $A$ or $\Phi$ (posterior alpha is not a measure of DMN activity, LZc is not a measure of $\Phi$); the levels $A_0$, $\Phi^*$ and $\gamma_0$ are not estimable; and the alpha channel shows signs of misspecification. The nominal point of the simulations is a working point; the sensitivity analysis covers a wide range around it but not qualitatively different regimes.
   \item \textbf{Linearity and Gaussianity.} M1 is linear with additive Gaussian noise and a linear read-out, and ratings are treated as continuous. Real ratings are ordinal and bounded, the DMN level is confined to $[0,\Amax]$, and meditation dynamics may involve discrete state switches \citep{Hasenkamp2012,Christoff2016}. On ds001787 the Gaussian read-out reproduced the serial dependence and the extreme levels of the ratings but not their skewed centre (\Cref{tab:real-ppc}). Non-linear extensions (saturating read-out, state-dependent noise, regime switching) would require approximate filters and simulation-based Fisher information; the present analysis is the exact baseline against which such extensions can be compared.
   \item \textbf{The mapping of EEG features to $(A,\Phi)$} is assumed, with noise levels as design variables. Establishing such a mapping is an empirical task; our results say how good it must be ($r\lesssim0.1$--$0.2$ of the signal scale) for the dynamics to be identifiable.
   \item \textbf{The design map is expressed in minutes at the nominal rates.} Session lengths of 20--90 min correspond to 4--18 DMN time constants at $\kinh=0.2$ but to only 0.9--3.9 at the printed value $0.043\ \mathrm{min^{-1}}$. The sensitivity analysis shows that $\CRB(\kinh)$ depends only weakly on $\kinh$ itself within $\times0.25$--$\times4$ ($S_T=0.13$), but a reader who expects much slower DMN dynamics should rescale session length in units of $1/\kinh$ and expect the requirement to shift towards longer sessions.
   \item \textbf{Probe burden is not costed.} Dense probing (every 30~s) improves the gains in the map but interrupts the practice it is meant to measure; the map should be read together with a ceiling on the number of probes that a protocol tolerates, which is outside the model.
   \item \textbf{Probe-schedule optimisation} was restricted to two interpretable families; a free optimisation over probe positions could find better schedules, although the small gaps we observe suggest limited room for improvement in configuration (d).
   \item \textbf{Control} assumes an additive input to the DMN equation with a known gain, perfect actuation within bounds and no delay, and compares policies on a quadratic cost. The robustness analysis covers parameter error but not model-structure error.
-  \item \textbf{Between-subject heterogeneity} is not modelled: subjects share one parameter vector. A hierarchical extension would change the design map quantitatively (more subjects, shorter sessions) but not the identifiability structure. On ds001787 the between-subject standard deviation of $\log\kinh$ was 1.19 ($I^2=0.92$), so the pooled fit there describes an average practitioner at best.
+  \item \textbf{Between-subject heterogeneity} is not modelled: subjects share one parameter vector. A hierarchical extension would change the design map quantitatively (more subjects, shorter sessions) but not the identifiability structure. On ds001787 the between-subject standard deviation of $\log\kinh$ was 1.19 and on the second dataset 1.49 ($I^2=0.92$ on both), so the pooled fits describe an average practitioner at best.
 \end{itemize}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-For a recently proposed DMN--$\Phi$--QoC model of meditation dynamics we have shown that the original formulation has no sustained QoC, proposed a linear-Gaussian replacement with closed-form stationary behaviour, established exactly which observation configurations identify its parameters, validated the Cram\'er--Rao bound against maximum likelihood across the design space, derived a quantitative design map and scaling rules for the number of subjects, session length, probe interval and EEG quality, formulated and solved the closed-loop control problem, and quantified how estimation error from each design propagates to control performance. A preregistered application to open experience-sampling EEG data confirmed the Fisher-based predictions of the design analysis on a real design with gaps, exposed a misspecification of the alpha-power proxy that doubles the actual uncertainty of the DMN rate, and found no out-of-sample value of the two EEG proxies for predicting the reported state. The combination of exact Fisher information, machine-checked verification gates, preregistration and a single reproducible command is, we believe, a template for how dynamical models of mental states should be examined before and when they are taken to data.
+For a recently proposed DMN--$\Phi$--QoC model of meditation dynamics we have shown that the original formulation has no sustained QoC, proposed a linear-Gaussian replacement with closed-form stationary behaviour, established exactly which observation configurations identify its parameters, validated the Cram\'er--Rao bound against maximum likelihood across the design space, derived a quantitative design map and scaling rules for the number of subjects, session length, probe interval and EEG quality, formulated and solved the closed-loop control problem, and quantified how estimation error from each design propagates to control performance. Two preregistered applications to open experience-sampling EEG data from different laboratories confirmed the Fisher-based predictions of the design analysis on real designs with gaps, exposed a misspecification of the alpha-power proxy that widens the likelihood-based uncertainty of the DMN rate, found no out-of-sample value of the two EEG proxies for predicting the reported state on either dataset, and showed that the rate constants themselves, estimated from uncalibrated proxies, do not transfer from one recording to the other. The combination of exact Fisher information, machine-checked verification gates, preregistration and a single reproducible command is, we believe, a template for how dynamical models of mental states should be examined before and when they are taken to data.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 \section*{Data and code availability}
-The real-data application uses the open dataset ds001787 \citep{Delorme2024ds}, released under CC0 (\path{https://doi.org/10.18112/openneuro.ds001787.v1.1.1}) and described by Brandmeyer and Delorme \citep{Brandmeyer2018}. All other results are generated \emph{in silico}. Everything is produced by the accompanying Python code with seed 42: the model and design analysis by \path{bqi/dmn_ode.py}, \path{model/}, \path{eeg/model_fit.py} and \path{experiments/run_model_paper.py}, the real-data analysis by \path{eeg/realdata_features.py}, \path{model/realdata.py} and \path{experiments/run_realdata.py}. The preregistration and its SHA-256 lock are in \path{preregistration/}; the configuration snapshot, raw results, gate records and figures are in \path{outputs/}. The repository and a frozen archive with a DOI will be made public upon acceptance.
+\begingroup\raggedright
+The real-data applications use two open datasets released under CC0: ds001787 \citep{Delorme2024ds}, \path{https://doi.org/10.18112/openneuro.ds001787.v1.1.1}, described by Brandmeyer and Delorme \citep{Brandmeyer2018}, and the raw EEG of Rodriguez-Larios et al.\ \citep{RodriguezLarios2021} on the Open Science Framework, \path{https://osf.io/3uszv/} (component v8msp). All other results are generated \emph{in silico}. Everything is produced by the accompanying Python code with seed 42: the model and design analysis by \path{bqi/dmn_ode.py}, \path{model/}, \path{eeg/model_fit.py} and \path{experiments/run_model_paper.py}, the real-data analyses by \path{eeg/realdata_features.py}, \path{eeg/osf_features.py}, \path{model/realdata.py}, \path{model/osf_pipeline.py}, \path{experiments/run_realdata.py} and \path{experiments/compare_realdata.py}. The two preregistrations and their SHA-256 locks are in \path{preregistration/}; the configuration snapshot, raw results, gate records and figures are in \path{outputs/}. The repository and a frozen archive with a DOI will be made public upon acceptance.
+\par\endgroup
 
 \section*{Acknowledgements}
 This work was carried out at Phenikaa University, Hanoi. All computations were run on personal computers; no external funding was received. % TODO: add funding or grant number if applicable.
@@ -1101,6 +1162,130 @@ $1/\kinh$: 5 or 23 min? & 0.76 min [0.49, 1.17] & neither \\
 \end{tabular}
 \end{table}
 
+\paragraph{Second dataset: lock and disclosures.} The second preregistration (\path{predictions_osf3uszv.md}, SHA-256 lock at 09:21 UTC on 3 November 2026) was written after the decoding gate F0 and the design gate F1 and reuses the analysis plan of ds001787 with the differences listed in \Cref{sec:res-osf}. Unlike ds001787, the archives (174 files, 15.4~GB, including the uninterrupted-meditation and rest recordings that are not analysed here) had been downloaded on 2--3 November before the lock, because the files are served as single compressed archives that contain the triggers and the EEG together. What had been read before the lock is declared in the file: the authors' analysis scripts, the trigger column of the 58 task files (the counterpart of the event files of ds001787), and one two-minute segment of one file (m\_task\_2, rows 3{,}000{,}000--3{,}245{,}760) that established the sampling structure: every EEG sample is written four times (2{,}048 rows per second, EEG at 512~Hz), and the occipital alpha peak lies at 10~Hz only under that reading. No feature and no EEG--rating relation had been computed. The preregistration is the one of ds001787 with the hypotheses relabelled F-H1--F-H5, F-H5 split into F-H5a ($\kinh$ higher in the experienced group, the theoretical direction) and F-H5b (lower, the direction observed on ds001787), the replication checks R1--R3, the seven locked sensitivity variants (the six of ds001787 and the fixed 150~$\mu$V rule), and the robustness rule applied at 80\,\% of the variants that run.
+
+\paragraph{Second dataset: deviations.}
+\begin{enumerate}[label=(\roman*)]
+  \item The variant restricted to sessions with at most 20\,\% missing epochs retains no session: with a probe every 77~s and a response window of 16~s on average, the probe windows alone cover 28--34\,\% of every session. The variant was copied from ds001787 without checking it against the probe schedule of this dataset; the robustness rule is applied to the six variants that run.
+  \item The coupling $\kappa$ is estimated negative, and the profile interval of a parameter with a free sign is taken on the linear grid rather than the log grid used for the rates (a change to the summary script only).
+  \item Seventeen of the 58 sessions (all novices, c\_24--c\_30 and c\_n1--c\_n12) were first preprocessed on a machine on which the ICLabel package could not be imported, so that the documented fallback heuristic (correlation with Fp1/Fp2 above 0.8, or more than 60\,\% of the power above 20~Hz) rejected a median of 6 components instead of 2. They were re-processed with ICLabel (7 November 2026) before the fits; every number reported here uses the re-processed features, so that all 58 sessions went through the same pipeline.
+  \item Thirteen of 48 subjects were excluded from the meta-analysis by the non-finite-SE rule (11 with $\sPhi$ at zero, two with $\rA$ or $\rPhi$ at a bound); the exploratory analyses (sleepiness as a covariate, depth of focus in place of confidence, within-session trends) are not reported.
+  \item One post-registration sensitivity variant, which masks the EEG from the start of the session to one minute before the first probe, was added after \Cref{fig:osf-session} had been examined; it is reported separately in \Cref{tab:osf-sens} and does not count towards the robustness rule.
+\end{enumerate}
+
+\paragraph{Second dataset: preprocessing, features and retention.} The 21 EEG columns (19 channels of the 10--20 system and both earlobes) were read from the text archives taking one row of each group of four identical rows, converted to volts, given standard 10--20 positions and resampled from 512 to 256~Hz; the rest of the pipeline is that of ds001787 (1--40~Hz, 50~Hz notch, bad channels by the same rule, median 0 and at most 2 per session; average reference; Picard extended-infomax on a 1--100~Hz copy with 20 components, ICLabel at 0.8; ICA removed a median of 2 components, range 1--7). $y_A$ is the log 8--12~Hz power over P3, Pz, P4, O1 and O2; the frontal-theta alternative uses Fz and Cz; the complexity feature uses the same 19 channels as before, all present. A probe window runs from the bell to 3~s after the last response. The primary artefact rule is the session-adaptive threshold on the feature channels, $\max(150~\mu\mathrm V,\ \text{session median}+5\,\mathrm{MAD})$ (median 37\,\% missing epochs over the 58 sessions, 34\,\% of which are probe windows); the fixed 150~$\mu$V rule gives a median of 42\,\% and retains 24 sessions. Ten sessions were excluded for more than 40\,\% missing epochs (m\_6, m\_13, m\_20, m\_33, c\_15, c\_22, c\_n1, c\_n4, c\_n5, c\_n10); none had fewer than eight rated probes. The sessions begin with instructions and a practice probe, and the first bell comes after 6.7~min on average; this initial segment is part of the fitted series.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig12_osf_profiles.pdf}
+\caption{Profile log-likelihoods of the three rate constants on the second dataset, as in \Cref{fig:real-profiles}. The profile of $\kinh$ is 1.38 times wider than the Fisher quadratic (95\,\% interval 0.110--0.175~min$^{-1}$), that of $\kd$ 1.4 times, and the profile of $\kappa$, which is negative, is asymmetric ($-0.50$ to $-0.23$).}
+\label{fig:osf-profiles}
+\end{figure}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Three error numbers on the second dataset, as in \Cref{tab:real-errors} (rates in min$^{-1}$; relative errors). Predicted CRB on the 58 real designs before the lock (F1), on the 48 retained designs, and on these with $\rA$ at the measured signal-to-noise ratio. The relative error of $\beta$ is large because $\hat\beta\approx0$.}
+\label{tab:osf-errors}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & & \multicolumn{3}{c}{Predicted CRB} & \multicolumn{2}{c}{SE at the MLE} & & \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-7}
+ & Estimate & 58 designs & 48 designs & measured SNR & Fisher & observed & RMSE & RMSE/SE \\
+\midrule
+$\kinh$  & 0.140    & 0.067 & 0.074 & 0.074 & 0.085 & 0.122 & 0.088 & 1.03 \\
+$\kappa$ & $-0.335$ & 0.079 & 0.088 & 0.088 & 0.146 & 0.208 & 0.157 & 1.07 \\
+$\kd$    & 1.58     & 0.104 & 0.115 & 0.115 & 0.129 & 0.187 & 0.132 & 1.02 \\
+$\alpha$ & 0.791    & 0.013 & 0.015 & 0.015 & 0.667 & 0.844 & 0.676 & 1.01 \\
+$\beta$  & 0.018    & 0.027 & 0.030 & 0.030 & 10.1  & 17.9  & 10.8  & 1.08 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Leave-one-session-out prediction of the ratings on the second dataset (1{,}838 probes, 48 sessions; hypothesis F-H2), as in \Cref{tab:real-loso}. The ratings run from $-7$ to $7$.}
+\label{tab:osf-loso}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Comparison & LPD M1 & LPD null & $\Delta$LPD [95\,\% CI] & MAE M1 & MAE null \\
+\midrule
+(a) M1 vs N2 & $-3.0746$ & $-3.0749$ & $+0.0004$ [$-0.0006$, $0.0014$] & 4.54 & 4.56 \\
+(b) M1 vs N1 & $-3.0746$ & $-3.0740$ & $-0.0006$ [$-0.0018$, $0.0006$] & 4.54 & 4.55 \\
+(b) M1 vs N3 & $-3.0746$ & $-3.1445$ & $+0.0712$ [$0.0609$, $0.0815$] & 4.54 & 4.66 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Sensitivity analyses on the second dataset: pooled estimates, time constants in minutes. The six rows below the primary analysis are the locked variants that run; the seventh locked variant (at most 20\,\% missing epochs) retains no session. The last row is the post-registration variant, not counted in the robustness rule.}
+\label{tab:osf-sens}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Variant & Sessions & $\alpha$ & $\beta$ & $1/\kinh$ & $1/\kd$ \\
+\midrule
+Primary analysis (adaptive artefact rule) & 48 & 0.79 & $+0.018$ & 7.12 & 0.63 \\
+\midrule
+$y_A$: periodic alpha                     & 48 & 0.79 & $+0.069$ & 7.74 & 0.38 \\
+$y_A$: frontal theta                      & 48 & 0.76 & $-0.293$ & 16.76 & 1.63 \\
+$y_\Phi$: negative aperiodic exponent     & 48 & $-0.10$ & $-0.127$ & 7.91 & 1.09 \\
+Per-session z-score                       & 48 & 0.82 & $-0.108$ & 4.81 & 0.57 \\
+At most 20\,\% missing epochs             &  0 & -- & -- & -- & -- \\
+First 20 probes                           & 48 & 1.43 & $-0.096$ & 7.10 & 0.62 \\
+Fixed 150~$\mu$V artefact rule            & 24 & 0.36 & $-0.470$ & 5.74 & 0.28 \\
+\midrule
+EEG masked before the first probe (post-registration) & 48 & 1.02 & $+0.285$ & 16.00 & 0.20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Posterior predictive check of the signed-confidence ratings on the 48 retained sessions of the second dataset, as in \Cref{tab:real-ppc}, on the 15 levels $-7$ to $7$ (the level 0 cannot occur in the data). The data are bimodal; a Gaussian read-out with the fitted SD is not. Simulated: mean over 200 replicates with the 95\,\% band.}
+\label{tab:osf-ppc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Level & $-7$ & $-6$ & $-5$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$ \\
+\midrule
+Observed (\%)  & 12.6 & 11.3 & 5.4 & 2.0 & 1.5 & 0.5 & 1.0 & 0.0 \\
+Simulated (\%) & 7.0 & 2.7 & 3.4 & 4.1 & 4.9 & 5.6 & 6.1 & 6.7 \\
+95\,\% band    & 5.8--8.0 & 2.0--3.5 & 2.7--4.2 & 3.2--5.1 & 4.0--5.8 & 4.5--6.7 & 5.2--7.2 & 5.6--8.1 \\
+\midrule
+Level & $+1$ & $+2$ & $+3$ & $+4$ & $+5$ & $+6$ & $+7$ & \\
+\midrule
+Observed (\%)  & 1.3 & 0.9 & 1.7 & 4.5 & 11.8 & 19.8 & 25.8 & \\
+Simulated (\%) & 6.9 & 7.0 & 6.9 & 6.6 & 6.0 & 5.4 & 20.8 & \\
+95\,\% band    & 5.8--8.0 & 5.8--8.3 & 5.8--7.9 & 5.5--7.7 & 5.1--7.2 & 4.4--6.5 & 19.1--22.9 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Preregistered hypotheses and replication checks on the second dataset and their outcomes (intervals are 95\,\%).}
+\label{tab:osf-tests}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+Hypothesis & Result & Outcome \\
+\midrule
+F-H1: SE of $\kinh$ at most 20\,\% & Fisher 8.5\,\%; profile 11.8\,\%; RMSE/SE 1.03 & supported \\
+F-H2: M1 beats null models & $\Delta$LPD $+0.0004$ (N2), $-0.0006$ (N1) & not supported \\
+F-H3: $\alpha>0$ & $0.79$ [$-0.24$, $1.82$] & not supported \\
+F-H4: sign of $\beta$ & $0.02$ [$-0.34$, $0.38$] & undetermined \\
+F-H5a: $\kinh$ higher in experts & $+0.14$ [$-0.20$, $0.47$]; LR $p=0.10$ & not supported \\
+F-H5b: $\kinh$ lower in experts & same & not supported \\
+R1: $1/\kinh$ in 0.49--1.17 min & 7.1 min [5.7, 9.1] & not replicated \\
+R2: obs/exp SE $>1.5$, $\approx1$ simulated & 1.43, 1.39, 1.13; sim.\ 0.93--0.99 & not replicated \\
+R3: $1/\kd$ & 0.63 min [0.45, 0.91]; ds001787: 5.0 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Reproduction}
 \label{app:repro}
 
@@ -1129,6 +1314,20 @@ python main.py realdata check \quad \# E3: residuals, LOSO, sensitivity\\
 python main.py realdata paper \quad \# fig9, fig10, tables, summary.json
 \end{tcolorbox}
 On a two-core laptop preprocessing takes about nine hours, mostly for the 20 surrogates of the complexity measure, and the remaining steps a few hours in total. Every number quoted in \Cref{sec:res-real} and \Cref{app:realdata} is written to \path{outputs/paper/realdata/summary.json}.
+
+The second dataset (\Cref{sec:res-osf}) runs through the same steps under its own gates F0--F3 and its own lock; the comparison of \Cref{tab:real-compare} and the replication checks are produced by the last command:
+\begin{tcolorbox}[algbox]
+\small\ttfamily
+python main.py osf3uszv fetch \quad \# 174 archives from OSF, MD5-verified\\
+python main.py osf3uszv ratings \quad \# F0: decode the trigger column\\
+python main.py osf3uszv design-crb \quad \# F1: rank, predicted CRB, MDE\\
+python main.py osf3uszv preregister -{}-yes \quad \# SHA-256 lock\\
+python main.py osf3uszv preprocess \quad \# 512 Hz from the text, 256 Hz, ICA, features\\
+python main.py osf3uszv fit | boot | check \quad \# F2, F3\\
+python main.py osf3uszv paper \quad \# fig11, fig12, tables, summary.json\\
+python main.py osf3uszv compare \quad \# the two datasets side by side, R1--R3
+\end{tcolorbox}
+With 58 sessions of an hour, preprocessing takes about 15 minutes per session and the fit, bootstrap and check steps about two days on the same laptop; each step keeps checkpoints and resumes. The numbers of \Cref{sec:res-osf} are in \path{outputs/paper/osf3uszv/summary.json} and \path{outputs/paper/comparison/comparison.json}.
 
 %% ─────────────────────────────────────────────────────────────────────────────
 %% References
@@ -1305,6 +1504,11 @@ Information and the accuracy attainable in the estimation of statistical paramet
 Raue, A., Kreutz, C., Maiwald, T., Bachmann, J., Schilling, M., Klingm\"uller, U.\ and Timmer, J.\ (2009).
 Structural and practical identifiability analysis of partially observed dynamical models by exploiting the profile likelihood.
 \textit{Bioinformatics}, 25(15), 1923--1929.
+
+\bibitem[Rodriguez-Larios et al.(2021)]{RodriguezLarios2021}
+Rodriguez-Larios, J., Bracho Montes de Oca, E.\ A.\ and Alaerts, K.\ (2021).
+The EEG spectral properties of meditation and mind wandering differ between experienced meditators and novices.
+\textit{NeuroImage}, 245, 118669. Data: Open Science Framework, \path{https://osf.io/3uszv/}.
 
 \bibitem{Ros2020}
 Ros, T.\ et al.\ (2020).

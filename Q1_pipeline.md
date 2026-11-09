@@ -1,6 +1,8 @@
 # Fit mô hình M1 trên EEG thật: ví dụ ds001787 cho bài model
 
-> **Phiên bản 2.3 — 25/10/2026** (v2.2: 24/10, v2.1: 17/10). Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+> **Phiên bản 2.4 — 03/11/2026** (v2.3: 25/10, v2.2: 24/10, v2.1: 17/10). Thay cho v1.0 (trục mức-ý-thức với ANPHY/Chennu/ds003969), hoãn từ 03/10/2026 vì cần ~90 GB. Bản v1.0 còn trong lịch sử git; tóm tắt ở Phụ lục A.
+>
+> **v2.4 — bộ dữ liệu thứ hai (mục 16):** theo yêu cầu của thầy (02/11/2026) thêm OSF 3uszv (Rodriguez-Larios 2021, 29 thiền lâu năm + 29 mới, 58 phiên ~57 phút, 2258 probe, phòng thí nghiệm độc lập) để lặp lại kết quả ds001787 và có đủ lực cho so sánh nhóm (MDE 0,37 log thay vì 0,51). Cùng mã, cùng mô hình, cổng F0–F3 riêng, đăng ký trước riêng (`predictions_osf3uszv.md`, khoá 03/11/2026 09:21 UTC). **Trạng thái 09/11/2026: XONG, F0–F3 đều PASS; kết quả cuối (sau khi xử lý lại 17 phiên bằng ICLabel) đã viết vào bài, mục 4.8 và Phụ lục H.2, bản Anh và Việt.**
 >
 > **Trạng thái 25/10/2026: XONG, E0–E3 đều PASS.** Đăng ký trước khoá 19/10/2026 13:48 UTC, file EEG đầu tiên tải 13:49 UTC. 22/40 phiên giữ lại theo quy tắc đã khoá. Kết quả: 1/k_inh = 0,76 phút (CI profile 0,49–1,17); SE Fisher của k_inh 9,9 % (dự đoán 9,1–13,3 %) nhưng SE profile/Hessian 22 % → kênh alpha sai đặc tả; E-H1 đạt (Fisher), E-H2 không đạt, E-H3 đạt về dấu, E-H4 không xác định, E-H5 không đạt; quy tắc 4/5 chỉ đạt với α. Đã viết vào bài: mục 4.7, Hình 9–10, Bảng 9–10, Phụ lục H (`template_latex/`, bản Anh và Việt). Số liệu: `outputs/paper/realdata/summary.json`; tóm tắt cho thầy: `outputs/paper/realdata/TOM_TAT_GUI_THAY.md`.
 > **Vai trò:** mục "Application to an experience-sampling EEG dataset" của bài trong `Q1_pipeline_model.md`. Không phải bài riêng.
@@ -27,6 +29,7 @@
 13. Những chỗ hay hỏng
 14. Quy tắc liêm chính
 15. Checklist trước khi nộp
+16. Bộ dữ liệu thứ hai: OSF 3uszv (v2.4)
 - Phụ lục A. Hướng trục mức-ý-thức (v1.0, hoãn)
 
 ---
@@ -411,6 +414,66 @@ K4 cắt ở cuối tuần 6 nếu chưa qua E2.
 - [x] Tham số tiền xử lý và đặc trưng công bố trong `model/config.py` (khối REALDATA) và Phụ lục H
 - [x] Data availability có ds001787 và DOI
 - [x] Không còn số liệu nào từ các bảng BQI
+
+---
+
+## 16. Bộ dữ liệu thứ hai: OSF 3uszv (v2.4, 03/11/2026)
+
+**Vì sao.** Thầy yêu cầu thêm dữ liệu (02/11/2026). ds001787 có 22 phiên giữ lại của 16 người, không đủ lực để so sánh người thiền lâu năm với người mới (MDE 0,51 log) và chỉ là một phòng thí nghiệm. Các bộ đã xét: **OSF 3uszv** (chọn), OSF b6rn9 (25 người mới, cùng nhóm tác giả, có thể trùng người), ds003969 (98 người nhưng không có probe), ds007216 (EEG-fMRI, không thiền), ds004147 (tải nhầm: bài học tăng thưởng, không thiền, không tự chấm).
+
+**Dữ liệu.** OSF 3uszv / thành phần v8msp "RAW EEG DATA" (CC0): Rodriguez-Larios, Bracho Montes de Oca & Alaerts 2021, *NeuroImage* 245:118669. 29 người thiền > 3 năm (`m_`) và 29 người chưa từng thiền (`c_`, gồm `c_2…c_30` và `c_n1…c_n12`). Mỗi người: `task` (thiền hơi thở ~57 phút, chuông cách nhau ~77 s, 40 lần hỏi), `med` (10 phút liền), `rest` (5 phút). Chỉ `task` được phân tích. Đã tải đủ 174 file (15,35 GB) vào `data/osf3uszv/raw/`, kiểm MD5 theo OSF, manifest ghi giờ tải.
+
+**Định dạng (đã kiểm).** `.txt.cpgz` = gzip(cpio odc) chứa một CSV: 21 cột EEG (19 kênh 10-20 + A1, A2), 2 cột EOG, cột `Events`. File ghi **2048 dòng/giây nhưng mỗi mẫu lặp 4 lần** (xuất BioTrace+ ở tần số cao nhất của phiên): EEG thật 512 Hz; xác nhận bằng chuỗi 4 dòng giống hệt và đỉnh alpha 10 Hz. Trigger: `RS232 Trigger: 100` = chuông, rồi câu trả lời (1 hơi thở, 2 nghĩ chuyện khác, 3 bị phân tán), độ chắc chắn 1–7, buồn ngủ 1–7, rồi mức tập trung (1) hoặc mức cuốn theo / hình ảnh / âm thanh (2) hoặc cảm giác (3). Mã 0 là lỗi kỹ thuật, bỏ. Cột `Events` có byte không phải UTF-8 (đọc latin-1).
+
+**Rating.** r = +độ chắc chắn khi trả lời "hơi thở", −độ chắc chắn khi 2 hoặc 3: thang −7…7, không có 0, hai cực (88 % probe có |r| ≥ 5). Giống Q1 − Q2 của ds001787 về ý nghĩa (tập trung trừ lang thang) nhưng rộng hơn; α, β báo thêm dạng chia cho SD trong phiên để so sánh hai bộ.
+
+**Khác ds001787 (quyết định trước khi khoá, chi tiết ở `predictions_osf3uszv.md` §3–4):** hạ mẫu 512 → 256 Hz để LZc cùng tần số; y_A trên P3, Pz, P4, O1, O2; theta trên Fz, Cz; ICA ≤ 20 thành phần; **quy tắc biên độ chính là quy tắc thích nghi** (ds001787 mất 17/40 phiên vì quy tắc cố định 150 µV), quy tắc cố định thành phân tích nhạy thứ 7; mỗi người một phiên. Mọi thứ khác (lưới 10 s, cửa sổ che, chuẩn hoá, 6 điểm xuất phát, 200 bootstrap, N1–N3, profile, Ljung–Box) giữ nguyên.
+
+**Giả thuyết (khoá):** F-H1…F-H5 lặp lại E-H1…E-H5; F-H5 tách hai chiều (a: lý thuyết, expert > novice; b: chiều quan sát trên ds001787, expert < novice); R1: khoảng profile 1/k_inh chồng lên [0,49; 1,17] phút; R2: tỉ số SE Hessian/Fisher > 1,5 lặp lại; R3: 1/k_d (câu hỏi ước lượng).
+
+**Cổng và kết quả đến nay.**
+
+| Cổng | Kết quả |
+|---|---|
+| F0 giải mã | ✅ PASS 03/11: 58 phiên (29/29), 2258 chuông, 2233 rating hợp lệ (98,9 %), 3304 phút-người; thang đều 1–7; không phiên nào < 8 probe |
+| F1 cấu trúc | ✅ PASS 03/11: hạng 10/10 (trị riêng tương đối 0,20), 11/11 với r_AΦ; CRB k_inh 6,7 % gộp, 9,4 % mỗi nhóm; MDE hiệu nhóm 0,37 log |
+| Khoá | `predictions_osf3uszv.md` sha256 `158ad84d…`, 03/11/2026 09:21 UTC. Khai báo: file đã tải trước khi khoá, chỉ cột trigger + một đoạn 2 phút của m_task_2 (kiểm tần số) được đọc |
+| F2 | ✅ PASS 08/11 (sau ICLabel): RMSE bootstrap / SE Fisher 1,03 (k_inh), 1,02 (k_d), 1,01 (α), 1,08 (β); cả 10 tham số 1,00–1,08; profile đơn mốt |
+| F3 | ✅ PASS 09/11: Ljung–Box trung vị p 0,058 (y_A, 17/48 phiên < 0,01) và 0,42 (y_Φ); LOSO 48 phiên; 6/7 phân tích nhạy đã khoá chạy được + 1 biến thể ngoài đăng ký |
+
+**Kết quả cuối (09/11/2026; fit 07/11 sau khi xử lý lại 17 phiên bằng ICLabel, boot 08/11, check/paper/compare 09/11).** 48/58 phiên giữ (25 expert, 23 novice; loại m_6, m_13, m_20, m_33, c_15, c_22, c_n1, c_n4, c_n5, c_n10 vì > 40 % epoch thiếu), 1838 probe. 1/k_inh = **7,1 phút** (profile 5,7–9,1) so với 0,76 trên ds001787; 1/k_d = 0,63 phút (0,45–0,91) so với 5,0: **hai hằng số thời gian đổi chỗ**. κ = −0,33 (−0,50…−0,23), xác định được và âm. SNR_A 1,57 (danh nghĩa 1,58), SNR_Φ 0,54 (ds001787: 0,06). Sai số k_inh: CRB dự đoán 6,7 %, Fisher 8,5 %, Hessian 12,2 %, profile 11,8 %, RMSE boot 8,8 % → F-H1 đạt cả hai tiêu chí; tỉ số Hessian/Fisher 1,43/1,39/1,13 (k_inh, σ_A, r_A; mô phỏng 0,93–0,99) → R2 không đạt ngưỡng 1,5. α = 0,79 (−0,24…1,82; bootstrap 11/200 ≤ 0) → **F-H3 không đạt** (bản tạm 07/11 đạt sát ngưỡng); β = 0,02 (−0,34…0,38) → F-H4 không xác định. LOSO: ΔLPD +0,0004 với N2, −0,0006 với N1 → F-H2 không đạt; rating không có phụ thuộc chuỗi (lag-1 −0,01) và hai cực (88 % |r| ≥ 5) nên PPC không tái tạo được phân bố. Nhóm: hiệu log k_inh +0,14 (−0,20…0,47), LR 1 df χ² 2,67 p 0,10 → F-H5a/b đều không đạt, chiều −1,19 của ds001787 không lặp lại; hai nhóm khác nhau ở tham số khác (χ²₁₀ 256: novice 1/k_d 0,33 phút, α 2,0, β +0,75; expert 1/k_d 0,89, α −0,15, β −0,66). Meta 35/48 người (13 loại vì SE không hữu hạn, 11 do σ_Φ = 0): 1/k_inh 3,3 phút (2,0–5,7), τ 1,49, I² 0,92. Độ nhạy (6 biến thể đã khoá): dấu α 5/6 (đạt quy tắc 80 %), β 1/6, 1/k_inh trong CI 4/6 (theta trán 17 phút, z-score 4,8 phút); biến thể ngoài đăng ký che đoạn trước probe đầu: 1/k_inh 16 phút. R1 không lặp lại (tỉ số 9,4). Cách đọc: trên ds001787 LZc là nhiễu nên k_d đo độ trôi của rating; trên OSF LZc có tín hiệu 30 s ghim Φ, rating không trôi, còn alpha trôi theo phút trong phiên một giờ → OU trả về thang thời gian trội của đặc trưng, không phải của "DMN". Đã cập nhật số cuối vào bài (09/11): mục 4.8, Bảng so sánh hai bộ, Phụ lục H.2 (5 bảng + Hình 12), Hình 11, tóm tắt, thảo luận, hạn chế (Anh 50 trang, Việt 49 trang, 0 lỗi, 0 cảnh báo); các TODO trong tex đã bỏ.
+
+**Sai lệch sau khoá (phải ghi trong bài, đã ghi ở H.2):**
+1. Biến thể "≤ 20 % epoch thiếu" không giữ phiên nào (cửa sổ hỏi đã che 28–34 % mọi phiên) → sơ suất khi chép từ ds001787; quy tắc 80 % tính trên 6 biến thể.
+2. κ âm → khoảng profile lấy trên thang tuyến tính (sửa script tổng hợp 07/11).
+3. **17 phiên novice (c_24…c_30, c_n1…c_n12) được tiền xử lý ngày 06/11 trên máy không import được mne-icalabel → heuristic dự phòng loại trung vị 6 thành phần thay vì 2.** Lỗi trùng với nhóm (toàn novice) nên đã chạy lại toàn bộ: preprocess với ICLabel (07/11; cả 58 phiên nay ghi `iclabel`, trung vị 2 thành phần, 1–7) → fit (07/11) → boot (08/11) → check, paper, compare (09/11). Mọi con số trong bài là của lần chạy lại; ghi ở H.2 mục (iii).
+4. Bổ sung sau đăng ký (báo riêng, không tính vào quy tắc 80 %): biến thể `postreg_after_first_probe` bỏ EEG trước lần hỏi đầu tiên − 1 phút (đoạn hướng dẫn/tập dượt ~6,7 phút), để xem hằng số 7 phút có do đoạn đầu phiên không; chạy cùng `check`. Kết quả: 1/k_inh 16,0 phút, 1/k_d 0,20 → đoạn đầu phiên (alpha thấp rồi nhảy mức khi bắt đầu thiền) là phần nhanh nhất của đại diện; ghi ở H.2 mục (v) và dòng cuối Bảng độ nhạy.
+
+**Mã và lệnh.**
+
+```
+eeg/fetch_osf.py            tải từ OSF API (danh sách file + MD5), tải tiếp được, manifest
+eeg/loaders/osf3uszv.py     đọc cpio/gzip, cột Events theo khối, giải mã probe, gate_F0, thiết kế thật (dùng session_design của ds001787)
+eeg/osf_features.py         đọc 21 kênh (bỏ 3/4 dòng lặp, pha tự phát hiện), RawArray + montage, hạ 256 Hz → realdata_features.process_session
+model/osf_pipeline.py       gọi model/realdata.py với feature_dir/output_dir riêng, cổng F*, quy tắc thích nghi, MDE từ F1
+model/realdata.py           ĐÃ SỬA: design_crb(designs_info, gate, lock), run_fit/groups/boot/check(gate, artifact_rule, mde_log), PPC(rating_range)
+experiments/run_realdata.py ĐÃ SỬA: --dataset osf3uszv → outputs/paper/osf3uszv (fig11/12, table12/13, tableJ1/J2)
+tests/test_osf3uszv.py      6 test trên file .cpgz tự tạo (đọc, giải mã, pha lặp, NaN cuối, montage, cổng F*)
+```
+
+```bash
+python main.py osf3uszv fetch --conditions task med rest   # đã tải 174/174
+python main.py osf3uszv ratings          # F0 ✅
+python main.py osf3uszv design-crb       # F1 ✅
+python main.py osf3uszv preregister --yes   # đã khoá 03/11/2026
+set OMP_NUM_THREADS=1 && set MKL_NUM_THREADS=1
+python main.py osf3uszv preprocess       # 58 phiên → data/osf3uszv/derivatives/features (đang chạy)
+python main.py osf3uszv fit | boot | check   # F2, F3 → outputs/results/osf3uszv
+python main.py osf3uszv paper            # → outputs/paper/osf3uszv/summary.json
+python main.py osf3uszv compare [--joint]   # bảng hai bộ + R1–R3 (+ fit chung, khám phá) → outputs/paper/comparison
+```
+
+**Đưa vào bài.** Mục 4.7 hiện tại thành 4.7 (ds001787) + 4.8 (OSF 3uszv, lặp lại và so sánh nhóm); Phụ lục H thêm phần H.2; Bảng so sánh hai bộ (1/k_inh, 1/k_d, α/SD_r, β/SD_r, hiệu nhóm, tỉ số Hessian/Fisher). Fit chung hai bộ với k_inh riêng từng bộ là khám phá.
 
 ---
 

@@ -1,0 +1,27 @@
+{
+  "gate": "F2",
+  "description": "Xác định thực hành trên OSF 3uszv: RMSE bootstrap / SE trong [0.5, 2]",
+  "passed": true,
+  "time_utc": "2026-11-08T11:15:40+00:00",
+  "details": {
+    "ratio_rmse_over_se": {
+      "k_inh": 1.0259243882124087,
+      "k_int": 1.0719452251092656,
+      "k_d": 1.021398547453111,
+      "sigma_A": 1.0449338885499244,
+      "sigma_Phi": 1.0429957313489018,
+      "alpha": 1.0139961698510722,
+      "beta": 1.0756227969649643,
+      "r_A": 1.020035278293881,
+      "r_Phi": 1.030792526488073,
+      "r_Q": 0.9985083813171081
+    },
+    "inside": {
+      "k_inh": true,
+      "k_d": true,
+      "alpha": true,
+      "beta": true
+    },
+    "profiles_unimodal": true
+  }
+}

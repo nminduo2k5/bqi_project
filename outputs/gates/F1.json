@@ -1,0 +1,27 @@
+{
+  "gate": "F1",
+  "description": "Xác định cấu trúc M1-dev trên lịch probe thật của OSF 3uszv (Rothenberg) + CRB dự đoán",
+  "passed": true,
+  "time_utc": "2026-11-03T09:18:56+00:00",
+  "details": {
+    "rank_10": 10,
+    "rank_11_with_rho": 11,
+    "min_rel_eigenvalue_10": 0.1984903673219737,
+    "min_rel_eigenvalue_11": 0.19854524425708797,
+    "crb_pooled": {
+      "k_inh": 0.06654334081844535,
+      "k_int": 0.07944275390673358,
+      "k_d": 0.10410476472322681,
+      "sigma_A": 0.022659140330840075,
+      "sigma_Phi": 0.026565208993520082,
+      "alpha": 0.013398465123124514,
+      "beta": 0.026630431907099496,
+      "r_A": 0.008309789965009832,
+      "r_Phi": 0.007071603197557708,
+      "r_Q": 0.01806761157048341
+    },
+    "n_sessions": 58,
+    "n_probes": 2258,
+    "predictions_locked": false
+  }
+}

@@ -190,6 +190,34 @@ REALDATA = RealData()
 
 
 @dataclass(frozen=True)
+class OsfData:
+    """Second real dataset (Q1_pipeline.md v2.4): OSF 3uszv / v8msp, Rodriguez-Larios
+    et al. 2021, 29 experienced meditators + 29 novices, breath-focus meditation
+    with experience sampling. Everything not listed here (epoch, features, bands,
+    starts, bootstrap, gates E2/E3 thresholds, nominal parameters) is shared with
+    ds001787 through REALDATA."""
+    dataset: str = "osf3uszv"
+    data_dir: str = os.path.join("data", "osf3uszv")         # raw/*.txt.cpgz, docs/, derivatives/
+    results_dir: str = os.path.join("outputs", "results", "osf3uszv")
+    target_sfreq: float = 256.0                # EEG resampled from 512 Hz so that LZc is computed as in ds001787
+    # ratings: r = +confidence when the answer is "breath focus" (1), -confidence when
+    # "thinking about something else" (2) or "distracted by something else" (3)
+    answers_focus: tuple = (1,)
+    answers_away: tuple = (2, 3)
+    confidence_range: tuple = (1, 7)
+    rating_range: int = 7                      # ordinal levels -7..7 for the posterior predictive check
+    probe_window_s: float = 60.0               # responses later than this after the bell are logged, not used
+    artifact_rule: str = "adaptive"            # primary epoch rule (ds001787 Sec 4 v2.2); "locked" = fixed 150 uV, a sensitivity variant
+    # gate F0 (probe decoding from the trigger column)
+    f0_min_decoded: float = 0.90               # bells with a valid answer + confidence
+    f0_min_sessions: int = 40
+    group_names: tuple = (("m", "expert"), ("c", "novice"))
+
+
+OSF = OsfData()
+
+
+@dataclass(frozen=True)
 class Gates:
     m0_residual_tol: float = 1e-6
     m0_p2_min_attenuation: float = 1e4
@@ -221,6 +249,7 @@ def as_dict() -> dict:
             "target_rel_error": TARGET_REL_ERROR, "reference": asdict(REFERENCE), "structural": asdict(STRUCTURAL),
             "grid": asdict(GRID), "schedule": asdict(SCHEDULE), "control": asdict(CONTROL),
             "sensitivity": asdict(SENSITIVITY), "gates": asdict(GATES), "realdata": asdict(REALDATA),
+            "osf": asdict(OSF),
             "theory": {"p2_omegas": P2_OMEGAS, "p2_step_xi": P2_STEP_XI, "p2_t_end_min": P2_T_END_MIN,
                        "p5_n_samples": P5_N_SAMPLES, "p5_n_chains": P5_N_CHAINS},
             "profiles": {"params": PROFILE_PARAMS, "log_half_range": PROFILE_LOG_HALF_RANGE, "n_grid": PROFILE_N_GRID}}

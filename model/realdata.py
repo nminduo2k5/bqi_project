@@ -64,10 +64,13 @@ def fisher_sum(model: DeviationDMN, designs: list[IrregularDesign], names) -> np
     return I
 
 
-def design_crb(output_dir: str | None = None, verbose: bool = True, max_sessions: int | None = None) -> dict:
-    """Gate E1 and the numbers for predictions_realdata.md."""
-    gates.require("E0")
-    trip = DS.all_designs()
+def design_crb(output_dir: str | None = None, verbose: bool = True, max_sessions: int | None = None,
+               designs_info: list | None = None, gate: tuple = ("E0", "E1"), lock: str | None = None) -> dict:
+    """Gate E1 and the numbers for predictions_realdata.md. For the second
+    dataset: `designs_info` = (session, design, info) triples of its loader,
+    gate = ("F0", "F1"), lock = its predictions lock."""
+    gates.require(gate[0])
+    trip = designs_info if designs_info is not None else DS.all_designs()
     if max_sessions:
         trip = trip[:max_sessions]
     designs = [d for _, d, _ in trip]
@@ -78,7 +81,7 @@ def design_crb(output_dir: str | None = None, verbose: bool = True, max_sessions
     m0 = nominal_model(0.0)
     m_rho = nominal_model(RD.rho_generic)
     if verbose:
-        print(f"E1: Fisher on {len(designs)} real sessions ({sum(i['n_probes'] for i in infos)} probes)...", flush=True)
+        print(f"{gate[1]}: Fisher on {len(designs)} real sessions ({sum(i['n_probes'] for i in infos)} probes)...", flush=True)
     I10 = fisher_sum(m0, designs, names10)
     I11 = fisher_sum(m_rho, designs, names11)
     spec10 = identifiability_spectrum(I10, names10, tol=RD.e1_eig_tol)
@@ -108,9 +111,9 @@ def design_crb(output_dir: str | None = None, verbose: bool = True, max_sessions
     details = {"rank_10": spec10["rank"], "rank_11_with_rho": spec11["rank"],
                "min_rel_eigenvalue_10": spec10["min_rel_eigenvalue"], "min_rel_eigenvalue_11": spec11["min_rel_eigenvalue"],
                "crb_pooled": out["crb"]["pooled"], "n_sessions": len(designs), "n_probes": out["n_probes"],
-               "predictions_locked": os.path.isfile(gates.LOCK_REALDATA)}
-    gates.record("E1", passed, details)
-    out["gate_E1"] = {"passed": passed, **details}
+               "predictions_locked": os.path.isfile(lock or gates.LOCK_REALDATA)}
+    gates.record(gate[1], passed, details)
+    out["gate_E1"] = {"gate": gate[1], "passed": passed, **details}
     _save("e1_design_crb.json", out, output_dir)
     if verbose:
         p = out["crb"]["pooled"]
@@ -125,7 +128,7 @@ def design_crb(output_dir: str | None = None, verbose: bool = True, max_sessions
             gd = out["group_difference_log_k_inh"]
             print(f"  MDE for log k_inh expert-novice (80% power): {gd['mde_80pct_alpha05']:.2f} log units "
                   f"(factor {gd['mde_factor']:.2f})")
-        print(f"E1 {'PASS' if passed else 'FAIL'}")
+        print(f"{gate[1]} {'PASS' if passed else 'FAIL'}")
     return out
 
 
@@ -184,7 +187,10 @@ def design_of(session: dict) -> IrregularDesign:
 def normalise_sessions(raw: list[dict], zscore_per_session: bool = False) -> tuple[list[dict], dict]:
     """Deviation form (Sec 5): subtract the session mean of y_A, y_Phi and
     rating; divide y_A, y_Phi by one pooled within-session SD per feature
-    (or by the session SD when `zscore_per_session`)."""
+    (or by the session SD when `zscore_per_session`). An empty list (a
+    sensitivity variant that keeps no session) gives an empty list."""
+    if not raw:
+        return [], {"pooled_sd": [float("nan"), float("nan")], "zscore_per_session": zscore_per_session}
     out = []
     dev = []
     for s in raw:
@@ -378,14 +384,15 @@ def crb_on_sessions(model: DeviationDMN, sessions: list[dict], names=None) -> di
 
 
 def posterior_predictive_ratings(model: DeviationDMN, sessions: list[dict], n_rep: int = 200,
-                                 seed: int = CFG.SEED) -> dict:
+                                 seed: int = CFG.SEED, rating_range: int = 3) -> dict:
     """Posterior predictive check of the ordinal ratings (predictions_realdata.md
     Sec 3 item 8; Q1_pipeline.md Sec 7): ratings simulated from theta_hat on the
     real designs, the session mean of the observed ratings added back, rounded
-    and clipped to -3..3, compared with the data on (i) the distribution of the
-    seven levels, (ii) the median lag-1 autocorrelation between consecutive
-    probes, (iii) the expert - novice difference in within-session SD."""
-    levels = np.arange(-3, 4)
+    and clipped to -rating_range..rating_range (3 for ds001787, 7 for OSF 3uszv),
+    compared with the data on (i) the distribution of the levels, (ii) the
+    median lag-1 autocorrelation between consecutive probes, (iii) the
+    expert - novice difference in within-session SD."""
+    levels = np.arange(-rating_range, rating_range + 1)
     designs = [design_of(s) for s in sessions]
     groups = [s.get("group") for s in sessions]
     offsets = [float(s.get("rating_offset", 0.0)) for s in sessions]
@@ -406,7 +413,8 @@ def posterior_predictive_ratings(model: DeviationDMN, sessions: list[dict], n_re
     P, AC, DSD = [], [], []
     for b in range(n_rep):
         sims = simulate_sessions(model, designs, seed + 7919 * b)
-        rs = [np.clip(np.rint(np.asarray(x["rating"]) + o), -3, 3).astype(int) for x, o in zip(sims, offsets)]
+        rs = [np.clip(np.rint(np.asarray(x["rating"]) + o), -rating_range, rating_range).astype(int)
+              for x, o in zip(sims, offsets)]
         p, a, d = stats(rs)
         P.append(p); AC.append(a); DSD.append(d)
     P, AC, DSD = np.array(P), np.array(AC), np.array(DSD)
@@ -483,14 +491,14 @@ def rmse_same_scale(boots: list[dict], model: DeviationDMN, names) -> dict:
     return out
 
 
-def gate_E2(ratio: dict, profiles_ok: bool, verbose: bool = True) -> dict:
+def gate_E2(ratio: dict, profiles_ok: bool, verbose: bool = True, gate: str = "E2") -> dict:
     lo, hi = RD.e2_ratio_bounds
     inside = {k: bool(lo <= r <= hi) for k, r in ratio.items() if k in RD.key_params}
     passed = bool(sum(inside.values()) >= RD.e2_min_params and profiles_ok)
     details = {"ratio_rmse_over_se": ratio, "inside": inside, "profiles_unimodal": profiles_ok}
-    gates.record("E2", passed, details)
+    gates.record(gate, passed, details)
     if verbose:
-        print(f"E2 {'PASS' if passed else 'FAIL'}: RMSE/SE " + ", ".join(f"{k} {v:.2f}" for k, v in ratio.items() if k in RD.key_params))
+        print(f"{gate} {'PASS' if passed else 'FAIL'}: RMSE/SE " + ", ".join(f"{k} {v:.2f}" for k, v in ratio.items() if k in RD.key_params))
     return {"passed": passed, **details}
 
 
@@ -626,15 +634,15 @@ def summarise_loso(recs: list[dict], seed: int, n_boot: int = RD.n_loso_boot) ->
     return out
 
 
-def gate_E3(resid: dict, loso_done: bool, n_sensitivity: int, verbose: bool = True) -> dict:
+def gate_E3(resid: dict, loso_done: bool, n_sensitivity: int, verbose: bool = True, gate: str = "E3") -> dict:
     p_ok = min(resid["ljung_box_p_A_median"], resid["ljung_box_p_Phi_median"]) > RD.e3_min_lb_p
     passed = bool(p_ok and loso_done and n_sensitivity >= 5)
     details = {"ljung_box_p_median": [resid["ljung_box_p_A_median"], resid["ljung_box_p_Phi_median"]],
                "innovation_corr": resid["innovation_corr_A_Phi_median"], "loso_done": loso_done,
                "n_sensitivity_variants": n_sensitivity}
-    gates.record("E3", passed, details)
+    gates.record(gate, passed, details)
     if verbose:
-        print(f"E3 {'PASS' if passed else 'FAIL'}: Ljung-Box median p {details['ljung_box_p_median']}, LOSO {loso_done}, "
+        print(f"{gate} {'PASS' if passed else 'FAIL'}: Ljung-Box median p {details['ljung_box_p_median']}, LOSO {loso_done}, "
               f"sensitivity variants {n_sensitivity}")
     return {"passed": passed, **details}
 
@@ -686,7 +694,7 @@ def fit_group_k_inh(sessions: list[dict], pooled: DeviationDMN, group_k: dict, l
 
 
 def group_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: int,
-               verbose: bool = False, ckpt=None, prev: dict | None = None) -> dict:
+               verbose: bool = False, ckpt=None, prev: dict | None = None, mde_log: float = EH5_MDE_LOG) -> dict:
     """E-H5 (Q1_pipeline.md Sec 7.3 (b)): a separate fit per group; the Wald
     CI of the difference in log k_inh between the two group fits (Fisher SE of
     each, as in the preregistered MDE); the likelihood-ratio test of a
@@ -732,7 +740,7 @@ def group_fits(sessions: list[dict], pooled: DeviationDMN, n_starts: int, seed: 
         out["E_H5"] = {"prediction": f"k_inh {a} > {b}", "diff": d, "ci95": ci,
                        "supported": bool(finite and ci[0] > 0),
                        "opposite_direction": bool(finite and ci[1] < 0),
-                       "ci_contains_0": bool(finite and ci[0] <= 0 <= ci[1]), "mde_log": EH5_MDE_LOG}
+                       "ci_contains_0": bool(finite and ci[0] <= 0 <= ci[1]), "mde_log": mde_log}
     return out
 
 
@@ -829,11 +837,13 @@ def stop_checks(sessions: list[dict], n_total: int, verbose: bool = True) -> dic
 # =============================================================================
 def run_fit(seed: int = CFG.SEED, fast: bool = False, n_starts: int | None = None, output_dir: str | None = None,
             feature_dir: str = FEATURES, sessions: list[dict] | None = None, verbose: bool = True,
-            force: bool = False) -> dict:
-    gates.require("E1")
+            force: bool = False, gate: str = "E1", artifact_rule: str = "locked", mde_log: float = EH5_MDE_LOG) -> dict:
+    """`gate`, `artifact_rule`, `mde_log`: "E1", "locked", 0.51 for ds001787;
+    "F1", the primary rule and the MDE of its own F1 for the second dataset."""
+    gates.require(gate)
     n_starts = n_starts or (2 if fast else RD.n_starts)
     if sessions is None:
-        sessions, load_info = load_feature_sessions(feature_dir)
+        sessions, load_info = load_feature_sessions(feature_dir, artifact_rule=artifact_rule)
         n_total = load_info["n_loaded"] + len(load_info["dropped"])
     else:
         load_info = {"n_loaded": len(sessions), "synthetic": True}
@@ -876,7 +886,7 @@ def run_fit(seed: int = CFG.SEED, fast: bool = False, n_starts: int | None = Non
     out["profiles"] = prof
     if verbose:
         print("  [3/4] fit theo nhom", flush=True)
-    out["groups"] = group_fits(sessions, m, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt)
+    out["groups"] = group_fits(sessions, m, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt, mde_log=mde_log)
     if verbose:
         print_groups(out["groups"])
     if not fast:
@@ -891,23 +901,25 @@ def run_fit(seed: int = CFG.SEED, fast: bool = False, n_starts: int | None = Non
 
 
 def run_groups(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None = None, feature_dir: str = FEATURES,
-               sessions: list[dict] | None = None, verbose: bool = True) -> dict:
+               sessions: list[dict] | None = None, verbose: bool = True, gate: str = "E1",
+               artifact_rule: str = "locked", mde_log: float = EH5_MDE_LOG) -> dict:
     """Redo the group analysis (E-H5) on an existing fit_results.json and update
     it in place: the saved pooled and per-group fits are reused, only the
     group SEs, the CI and the 1-df likelihood-ratio fit are computed."""
-    gates.require("E1")
+    gates.require(gate)
     d = output_dir or RESULTS
     with open(os.path.join(d, "fit_results.json"), encoding="utf-8") as f:
         fitres = json.load(f)
     pooled = DeviationDMN(**fitres["pooled"]["params"])
     if sessions is None:
-        sessions, _ = load_feature_sessions(feature_dir)
+        sessions, _ = load_feature_sessions(feature_dir, artifact_rule=artifact_rule)
     ckpt = _checkpoint("groups", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, fast,
                        verbose=verbose)
     if verbose:
         print(f"Phan tich theo nhom (E-H5) tren {len(sessions)} phien", flush=True)
     prev = (fitres.get("groups") or {}).get("groups")
-    fitres["groups"] = group_fits(sessions, pooled, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt, prev=prev)
+    fitres["groups"] = group_fits(sessions, pooled, 1 if fast else 2, seed, verbose=verbose, ckpt=ckpt, prev=prev,
+                                  mde_log=mde_log)
     path = _save("fit_results.json", fitres, output_dir)
     ckpt.clear()
     if verbose:
@@ -917,14 +929,15 @@ def run_groups(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None 
 
 
 def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None, output_dir: str | None = None,
-             feature_dir: str = FEATURES, sessions: list[dict] | None = None, verbose: bool = True) -> dict:
-    gates.require("E1")
+             feature_dir: str = FEATURES, sessions: list[dict] | None = None, verbose: bool = True,
+             gate: str = "E1", gate_record: str = "E2", artifact_rule: str = "locked") -> dict:
+    gates.require(gate)
     d = output_dir or RESULTS
     with open(os.path.join(d, "fit_results.json"), encoding="utf-8") as f:
         fitres = json.load(f)
     model = DeviationDMN(**fitres["pooled"]["params"])
     if sessions is None:
-        sessions, _ = load_feature_sessions(feature_dir)
+        sessions, _ = load_feature_sessions(feature_dir, artifact_rule=artifact_rule)
     n_boot = n_boot or (RD.n_boot_fast if fast else RD.n_boot)
     # n_boot is not in the fingerprint: replicate b is the same whatever the total
     ckpt = _checkpoint("boot", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, verbose=verbose)
@@ -933,8 +946,8 @@ def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None
     se = fitres["pooled"]["rel_se"]
     ratio = {k: rmse[k] / se[k] if se[k] and np.isfinite(se[k]) and se[k] > 0 else float("nan") for k in rmse}
     profiles_ok = all(v["unimodal"] for v in fitres["profiles"].values())
-    gate = gate_E2(ratio, profiles_ok, verbose)
-    out = {"n_boot": n_boot, "rmse_bootstrap": rmse, "se_at_mle": se, "ratio_rmse_over_se": ratio, "gate_E2": gate,
+    g2 = gate_E2(ratio, profiles_ok, verbose, gate=gate_record)
+    out = {"n_boot": n_boot, "rmse_bootstrap": rmse, "se_at_mle": se, "ratio_rmse_over_se": ratio, "gate_E2": g2,
            "boot_params": boots}
     _save("boot_results.json", out, output_dir)
     ckpt.clear()
@@ -942,15 +955,16 @@ def run_boot(seed: int = CFG.SEED, fast: bool = False, n_boot: int | None = None
 
 
 def run_check(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None = None, feature_dir: str = FEATURES,
-              sessions: list[dict] | None = None, sensitivity_loaders: dict | None = None, verbose: bool = True) -> dict:
+              sessions: list[dict] | None = None, sensitivity_loaders: dict | None = None, verbose: bool = True,
+              gate: str = "E2", gate_record: str = "E3", artifact_rule: str = "locked") -> dict:
     """Residuals, LOSO with null models and the five locked sensitivity variants."""
-    gates.require("E2")
+    gates.require(gate)
     d = output_dir or RESULTS
     with open(os.path.join(d, "fit_results.json"), encoding="utf-8") as f:
         fitres = json.load(f)
     model = DeviationDMN(**fitres["pooled"]["params"])
     if sessions is None:
-        sessions, _ = load_feature_sessions(feature_dir)
+        sessions, _ = load_feature_sessions(feature_dir, artifact_rule=artifact_rule)
     ckpt = _checkpoint("check", output_dir, sessions_key(sessions), fitres["pooled"]["params"], seed, fast, verbose=verbose)
     if verbose:
         print("  [1/3] phan du", flush=True)
@@ -960,7 +974,8 @@ def run_check(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None =
         print(f"  [2/3] LOSO tren {len(sessions)} phien", flush=True)
     out["loso"] = loso(sessions, nominal_model(), n_starts=1 if fast else 2, seed=seed, verbose=verbose, ckpt=ckpt)
     # sensitivity variants (Sec 7): each returns a session list
-    variants = sensitivity_loaders if sensitivity_loaders is not None else default_sensitivity_loaders(feature_dir)
+    variants = (sensitivity_loaders if sensitivity_loaders is not None
+                else default_sensitivity_loaders(feature_dir, artifact_rule))
     sens = {}
     for i, (name, loader) in enumerate(variants.items()):
         saved = ckpt.get(f"sens/{name}")
@@ -987,24 +1002,32 @@ def run_check(seed: int = CFG.SEED, fast: bool = False, output_dir: str | None =
             ckpt.put(f"sens/{name}", sens[name])
     out["sensitivity"] = sens
     n_ok = sum(1 for k, v in sens.items() if "params" in v and not k.startswith("postreg_"))
-    out["gate_E3"] = gate_E3(resid, True, n_ok, verbose)
+    out["gate_E3"] = gate_E3(resid, True, n_ok, verbose, gate=gate_record)
     _save("check_results.json", out, output_dir)
     ckpt.clear()
     return out
 
 
-def default_sensitivity_loaders(feature_dir: str) -> dict:
+def default_sensitivity_loaders(feature_dir: str, artifact_rule: str = "locked") -> dict:
+    """The locked variants, each with the primary artifact rule, plus the other
+    rule: post-registration for ds001787 (primary "locked", reported apart),
+    a locked variant for the second dataset (primary "adaptive")."""
     alt = RD.feature_alternatives
-    return {
-        "alt_yA_" + alt[0]: lambda: load_feature_sessions(feature_dir, y_A=alt[0])[0],
-        "alt_yA_" + alt[1]: lambda: load_feature_sessions(feature_dir, y_A=alt[1])[0],
-        "alt_yPhi_" + alt[2]: lambda: load_feature_sessions(feature_dir, y_Phi=alt[2])[0],
-        "zscore_per_session": lambda: load_feature_sessions(feature_dir, zscore_per_session=True)[0],
-        "missing_le_20pct": lambda: load_feature_sessions(feature_dir, max_missing=0.20)[0],
-        "first_20_probes": lambda: [_first_probes(s, 20) for s in load_feature_sessions(feature_dir)[0]],
-        # post-registration (Q1_pipeline.md v2.2): reported separately, not part of the 4/5 rule
-        "postreg_adaptive_artifact_rule": lambda: load_feature_sessions(feature_dir, artifact_rule="adaptive")[0],
+    load = lambda **kw: load_feature_sessions(feature_dir, artifact_rule=artifact_rule, **kw)[0]
+    out = {
+        "alt_yA_" + alt[0]: lambda: load(y_A=alt[0]),
+        "alt_yA_" + alt[1]: lambda: load(y_A=alt[1]),
+        "alt_yPhi_" + alt[2]: lambda: load(y_Phi=alt[2]),
+        "zscore_per_session": lambda: load(zscore_per_session=True),
+        "missing_le_20pct": lambda: load(max_missing=0.20),
+        "first_20_probes": lambda: [_first_probes(s, 20) for s in load()],
     }
+    if artifact_rule == "locked":
+        # post-registration (Q1_pipeline.md v2.2): reported separately, not part of the 4/5 rule
+        out["postreg_adaptive_artifact_rule"] = lambda: load_feature_sessions(feature_dir, artifact_rule="adaptive")[0]
+    else:
+        out["alt_artifact_rule_locked"] = lambda: load_feature_sessions(feature_dir, artifact_rule="locked")[0]
+    return out
 
 
 def _first_probes(s: dict, n: int) -> dict:

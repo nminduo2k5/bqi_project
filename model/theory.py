@@ -1,4 +1,4 @@
-﻿"""
+"""
 Goi ket qua 1 -- Propositions P1-P5: correcting the original DMN model.
 
 P1: Correct steady states of M0 (A*=0, Phi*=k_int/k_d, QoC*=0).
@@ -168,8 +168,7 @@ def qoc_stationary_distribution(model: StateSpaceDMN, n_samples: int = CFG.P5_N_
     P = model.stationary_cov()
     qoc_mean_theory = ss["QoC_star"]
     qoc_std_theory = float(np.sqrt(h @ P @ h))
-    ks_stat, ks_p = sps.kstest(qoc_sim, "norm",
-                                args=(qoc_mean_theory, qoc_std_theory))
+    ks_stat, ks_p = sps.kstest(qoc_sim, sps.norm(loc=qoc_mean_theory, scale=qoc_std_theory).cdf)
     emp_mean = float(qoc_sim.mean())
     emp_std = float(qoc_sim.std())
     n = len(qoc_sim)

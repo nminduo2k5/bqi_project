@@ -3,7 +3,8 @@ Figures, tables and numbers for the real-data section of the model paper
 (Q1_pipeline.md Sec 11: Sec. 4.7, Fig. 9-10, Tables 10-11, Appendix I).
 
     python main.py realdata paper           # after fit, groups, boot and check
-    python experiments/run_realdata.py [--out outputs/paper/realdata] [--n-ppc 200]
+    python main.py osf3uszv paper           # the same for the second dataset -> outputs/paper/osf3uszv
+    python experiments/run_realdata.py [--dataset ds001787|osf3uszv] [--out DIR] [--n-ppc 200]
 
 Inputs: outputs/results/realdata/{fit,boot,check}_results.json, e1_design_crb.json,
 the feature files and outputs/gates/E*.json. Nothing is refitted. The script adds
@@ -41,6 +42,28 @@ from model import realdata as R
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DEFAULT_OUT = os.path.join(ROOT, "outputs", "paper", "realdata")
 KEY = list(R.RD.key_params)                       # k_inh, k_d, alpha, beta
+# the two real datasets: where their results live, their gates and lock, the rating range
+DATASETS = {
+    "ds001787": {"results": R.RESULTS, "features": R.FEATURES, "gates": ("E0", "E1", "E2", "E3"),
+                 "predictions": gates.PREDICTIONS_REALDATA, "lock": gates.LOCK_REALDATA,
+                 "manifest": os.path.join(ROOT, R.RD.data_dir, "manifest.csv"), "rating_range": 3,
+                 "artifact_rule": "locked", "out": DEFAULT_OUT, "tag": "realdata",
+                 "fig_session": "fig9_realdata_session", "fig_profiles": "fig10_realdata_profiles",
+                 "tab_errors": "table10_errors", "tab_loso": "table11_loso",
+                 "tab_sens": "tableI1_sensitivity", "tab_ppc": "tableI2_ppc_levels"},
+}
+
+
+def _osf_dataset() -> dict:
+    from model import osf_pipeline as OP
+    return {"results": OP.RESULTS, "features": OP.FEATURES, "gates": ("F0", "F1", "F2", "F3"),
+            "predictions": gates.PREDICTIONS_OSF, "lock": gates.LOCK_OSF,
+            "manifest": os.path.join(ROOT, CFG.OSF.data_dir, "manifest.csv"), "rating_range": CFG.OSF.rating_range,
+            "artifact_rule": CFG.OSF.artifact_rule, "out": os.path.join(ROOT, "outputs", "paper", "osf3uszv"),
+            "loaders": OP.sensitivity_loaders,
+            "tag": "osf3uszv", "fig_session": "fig11_osf_session", "fig_profiles": "fig12_osf_profiles",
+            "tab_errors": "table12_errors_osf", "tab_loso": "table13_loso_osf",
+            "tab_sens": "tableJ1_sensitivity_osf", "tab_ppc": "tableJ2_ppc_levels_osf"}
 TEX = {"k_inh": r"$k_{\mathrm{inh}}$", "k_int": r"$\kappa$", "k_d": r"$k_d$", "alpha": r"$\alpha$",
        "beta": r"$\beta$", "sigma_A": r"$\sigma_A$", "sigma_Phi": r"$\sigma_\Phi$", "r_A": r"$r_A$",
        "r_Phi": r"$r_\Phi$", "r_Q": r"$r_Q$"}
@@ -67,21 +90,29 @@ def _f(x):
 # =============================================================================
 def profile_interval(prof: dict, level_drop: float = 1.92) -> dict:
     """95 % profile-likelihood interval (drop of chi2_1(0.95)/2 from the maximum),
-    interpolated on the log grid; open ends are reported as None."""
+    interpolated on the log grid, or on the linear grid when the grid is not
+    all positive (kappa has a free sign); open ends are reported as None.
+    The grid is sorted first (a negative MLE gives a decreasing linear grid)."""
     g = np.asarray(prof["grid"], float)
     ll = np.asarray(prof["loglik"], float)
+    order = np.argsort(g)
+    g, ll = g[order], ll[order]
     drop = ll.max() - ll
     i0 = int(np.argmin(drop))
-    x = np.log(g)
-    lo = float(np.exp(np.interp(level_drop, drop[:i0 + 1][::-1], x[:i0 + 1][::-1]))) if drop[0] >= level_drop else None
-    hi = float(np.exp(np.interp(level_drop, drop[i0:], x[i0:]))) if drop[-1] >= level_drop else None
-    se_log = (np.log(hi) - np.log(lo)) / (2 * 1.96) if lo and hi else None
-    return {"mle_grid": float(g[i0]), "ci95": [lo, hi], "se_log": se_log, "max_drop": float(drop.max()),
-            "unimodal": bool(prof.get("unimodal"))}
+    log_scale = bool(np.all(g > 0))
+    x = np.log(g) if log_scale else g
+    back = np.exp if log_scale else (lambda v: v)
+    lo = float(back(np.interp(level_drop, drop[:i0 + 1][::-1], x[:i0 + 1][::-1]))) if drop[0] >= level_drop else None
+    hi = float(back(np.interp(level_drop, drop[i0:], x[i0:]))) if drop[-1] >= level_drop else None
+    both = lo is not None and hi is not None
+    se_log = (np.log(hi) - np.log(lo)) / (2 * 1.96) if both and log_scale else None
+    se_lin = (hi - lo) / (2 * 1.96) if both and not log_scale else None
+    return {"mle_grid": float(g[i0]), "ci95": [lo, hi], "se_log": se_log, "se_linear": se_lin,
+            "scale": "log" if log_scale else "linear", "max_drop": float(drop.max()), "unimodal": bool(prof.get("unimodal"))}
 
 
-def prep_summary() -> dict:
-    logs = [_json(p) for p in sorted(glob.glob(os.path.join(R.FEATURES, "*_prep_log.json")))]
+def prep_summary(feature_dir: str = R.FEATURES) -> dict:
+    logs = [_json(p) for p in sorted(glob.glob(os.path.join(feature_dir, "*_prep_log.json")))]
     nb = [len(l.get("bad_channels") or []) for l in logs]
     nr = [len(l.get("ica_rejected") or []) for l in logs]
     return {"n_sessions": len(logs), "bad_channels": {"median": float(np.median(nb)), "max": int(max(nb))},
@@ -91,8 +122,10 @@ def prep_summary() -> dict:
             "missing_frac_adaptive": {"median": float(np.median([l["missing_frac_adaptive"] for l in logs]))}}
 
 
-def summarise(fr, br, cr, e1, sessions, info, model, n_ppc: int, seed: int, verbose: bool = True) -> dict:
-    S: dict = {}
+def summarise(fr, br, cr, e1, sessions, info, model, n_ppc: int, seed: int, verbose: bool = True,
+              ds: dict | None = None) -> dict:
+    ds = ds or DATASETS["ds001787"]
+    S: dict = {"dataset": ds["tag"]}
     pooled = fr["pooled"]
     # ---- data, stop criteria, gates, lock -------------------------------------
     kept = {g: sum(s["group"] == g for s in sessions) for g in ("expert", "novice")}
@@ -106,18 +139,18 @@ def summarise(fr, br, cr, e1, sessions, info, model, n_ppc: int, seed: int, verb
                  "dropped_list": [{"session": f"{d['sub']} {d['ses']}", "group": d["group"],
                                    "missing_frac": d["missing_frac"], "n_rated": d["n_probes_rated"]}
                                   for d in info["dropped"]]}
-    S["prep"] = prep_summary()
+    S["prep"] = prep_summary(ds["features"])
     S["stop_checks"] = {k: v for k, v in fr["stop_checks"].items() if k != "per_session_lag1"}
     S["gates"] = {}
-    for g in ("E0", "E1", "E2", "E3"):
+    for g in ds["gates"]:
         p = os.path.join(gates.GATE_DIR, f"{g}.json")
         if os.path.isfile(p):
             j = _json(p)
             S["gates"][g] = {"passed": j.get("passed"), "time_utc": j.get("time_utc")}
-    lock = gates.read_lock(gates.LOCK_REALDATA)
-    man = pd.read_csv(os.path.join(ROOT, R.RD.data_dir, "manifest.csv"))
+    lock = gates.read_lock(ds["lock"])
+    man = pd.read_csv(ds["manifest"])
     S["lock"] = {"locked_utc": lock["locked_utc"], "first_bdf_download_utc": str(man["downloaded_utc"].min()),
-                 "sha256_matches": lock["sha256"] == gates._sha256(gates.PREDICTIONS_REALDATA)}
+                 "sha256_matches": lock["sha256"] == gates._sha256(ds["predictions"])}
     # ---- pooled fit -------------------------------------------------------------
     S["theta_hat"] = pooled["params"]
     S["loglik"] = pooled["loglik"]
@@ -210,13 +243,15 @@ def summarise(fr, br, cr, e1, sessions, info, model, n_ppc: int, seed: int, verb
                       "threshold": thr}
     if verbose:
         print(f"  posterior predictive check of the ratings ({n_ppc} replicates)...", flush=True)
-    S["ppc"] = R.posterior_predictive_ratings(model, sessions, n_rep=n_ppc, seed=seed)
+    S["ppc"] = R.posterior_predictive_ratings(model, sessions, n_rep=n_ppc, seed=seed, rating_range=ds["rating_range"])
     # ---- sensitivity -----------------------------------------------------------
-    loaders = R.default_sensitivity_loaders(R.FEATURES)
+    loaders = ds["loaders"]() if ds.get("loaders") else R.default_sensitivity_loaders(ds["features"], ds["artifact_rule"])
     ci_k = S["profiles"]["k_inh"]["time_constant_ci_min"]
     sens = {}
     for name, v in cr["sensitivity"].items():
         e = {"n_sessions": len(loaders[name]()) if name in loaders else None, **v}
+        if "params" not in v and e["n_sessions"] == 0:
+            e["not_run"] = "no session meets the variant's keep criterion"
         if "params" in v:
             e["sign_alpha_same"] = bool(np.sign(v["params"]["alpha"]) == np.sign(a))
             e["sign_beta_same"] = bool(np.sign(v["params"]["beta"]) == np.sign(b))
@@ -241,7 +276,7 @@ def example_session(sessions: list[dict]) -> dict:
     return sorted(sessions, key=lambda s: (-int(np.isfinite(s["rating"]).sum()), s["sub"], s["ses"]))[0]
 
 
-def fig9_session(w: Writer, model: DeviationDMN, sessions: list[dict]) -> dict:
+def fig9_session(w: Writer, model: DeviationDMN, sessions: list[dict], name: str = "fig9_realdata_session") -> dict:
     s = example_session(sessions)
     _, inf_b = kalman_filter_irregular(model, s, return_innovations=True)                     # EEG + ratings
     _, inf_a = kalman_filter_irregular(model, s, return_innovations=True, use_rating=False)   # EEG only
@@ -280,13 +315,13 @@ def fig9_session(w: Writer, model: DeviationDMN, sessions: list[dict]) -> dict:
     ax[0].set_title(f"{s['sub']} {s['ses']} ({s['group']}): {int(np.isfinite(s['rating']).sum())} rated probes, "
                     f"{100 * s['missing_frac']:.0f} % missing epochs", fontsize=9)
     fig.tight_layout()
-    w.fig(fig, "fig9_realdata_session")
+    w.fig(fig, name)
     return {"session": f"{s['sub']} {s['ses']}", "group": s["group"], "n_rated": int(np.isfinite(s["rating"]).sum()),
             "missing_frac": s["missing_frac"], "duration_min": float(te[-1]), "n_yPhi_outside_axis": n_clip,
             "yPhi_axis": list(lim_p)}
 
 
-def fig10_profiles(w: Writer, fr: dict) -> None:
+def fig10_profiles(w: Writer, fr: dict, name: str = "fig10_realdata_profiles") -> None:
     from matplotlib.ticker import NullFormatter
     pooled = fr["pooled"]
     params = list(R.RD.profile_params)
@@ -312,7 +347,7 @@ def fig10_profiles(w: Writer, fr: dict) -> None:
     axes[0].set_ylabel(r"$\ell_p - \ell_{\max}$")
     axes[0].legend(frameon=False, loc="lower center", fontsize=7)
     fig.tight_layout()
-    w.fig(fig, "fig10_realdata_profiles")
+    w.fig(fig, name)
 
 
 def _csv(w: Writer, df: pd.DataFrame, name: str) -> None:
@@ -321,8 +356,9 @@ def _csv(w: Writer, df: pd.DataFrame, name: str) -> None:
     print(f"  {name}.csv")
 
 
-def tables(w: Writer, S: dict) -> None:
-    _csv(w, pd.DataFrame(S["errors"]).T, "table10_errors")
+def tables(w: Writer, S: dict, ds: dict | None = None) -> None:
+    ds = ds or DATASETS["ds001787"]
+    _csv(w, pd.DataFrame(S["errors"]).T, ds["tab_errors"])
     L = S["E_H2"]
     rows = []
     for name, (a, b) in {"a_M1_vs_N2": ("lpd_M1_a", "lpd_N2"), "b_M1_vs_N1": ("lpd_M1_b", "lpd_N1"),
@@ -331,30 +367,33 @@ def tables(w: Writer, S: dict) -> None:
         rows.append({"comparison": name, "lpd_M1": L["mean_lpd"][a], "lpd_null": L["mean_lpd"][b],
                      "delta": dl["mean"], "ci_lo": dl["ci95"][0], "ci_hi": dl["ci95"][1], "wins": dl["wins"],
                      "mae_M1": L["mae"][a.replace("lpd", "ae")], "mae_null": L["mae"][b.replace("lpd", "ae")]})
-    _csv(w, pd.DataFrame(rows).set_index("comparison"), "table11_loso")
+    _csv(w, pd.DataFrame(rows).set_index("comparison"), ds["tab_loso"])
     sens = pd.DataFrame({k: {"n_sessions": v.get("n_sessions"), **(v.get("params") or {}),
                              "1/k_inh": v.get("1/k_inh"), "1/k_d": v.get("1/k_d")}
                          for k, v in S["sensitivity"]["variants"].items()}).T
-    _csv(w, sens, "tableI1_sensitivity")
+    _csv(w, sens, ds["tab_sens"])
     p = S["ppc"]["level_prop"]
     _csv(w, pd.DataFrame({"level": S["ppc"]["levels"], "observed": p["observed"], "sim_mean": p["sim_mean"],
-                          "sim_lo": p["sim_lo"], "sim_hi": p["sim_hi"]}).set_index("level"), "tableI2_ppc_levels")
+                          "sim_lo": p["sim_lo"], "sim_hi": p["sim_hi"]}).set_index("level"), ds["tab_ppc"])
 
 
 # =============================================================================
-def run(out: str = DEFAULT_OUT, n_ppc: int = 200, seed: int = CFG.SEED, verbose: bool = True) -> dict:
-    gates.require("E3")
-    d = R.RESULTS
+def run(out: str | None = None, n_ppc: int = 200, seed: int = CFG.SEED, verbose: bool = True,
+        dataset: str = "ds001787") -> dict:
+    ds = DATASETS[dataset] if dataset in DATASETS else _osf_dataset()
+    out = out or ds["out"]
+    gates.require(ds["gates"][3])
+    d = ds["results"]
     fr, br, cr = (_json(os.path.join(d, f"{n}_results.json")) for n in ("fit", "boot", "check"))
     e1 = _json(os.path.join(d, "e1_design_crb.json"))
-    sessions, info = R.load_feature_sessions()
+    sessions, info = R.load_feature_sessions(ds["features"], artifact_rule=ds["artifact_rule"])
     model = DeviationDMN(**fr["pooled"]["params"])
     w = Writer(out)
-    print(f"Hinh/bang phan du lieu that -> {out}", flush=True)
-    S = summarise(fr, br, cr, e1, sessions, info, model, n_ppc, seed, verbose)
-    S["fig9_session"] = fig9_session(w, model, sessions)
-    fig10_profiles(w, fr)
-    tables(w, S)
+    print(f"Hinh/bang phan du lieu that ({dataset}) -> {out}", flush=True)
+    S = summarise(fr, br, cr, e1, sessions, info, model, n_ppc, seed, verbose, ds)
+    S["fig9_session"] = fig9_session(w, model, sessions, ds["fig_session"])
+    fig10_profiles(w, fr, ds["fig_profiles"])
+    tables(w, S, ds)
     with open(os.path.join(out, "summary.json"), "w", encoding="utf-8") as f:
         json.dump(S, f, indent=2, ensure_ascii=False)
     manifest = {"made": w.made + ["summary"], "skipped": w.skipped, "seed": seed, "n_ppc": n_ppc,
@@ -367,11 +406,12 @@ def run(out: str = DEFAULT_OUT, n_ppc: int = 200, seed: int = CFG.SEED, verbose:
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="Figures/tables for the real-data section of the model paper.")
-    p.add_argument("--out", default=DEFAULT_OUT)
+    p.add_argument("--out", default=None, help="mặc định outputs/paper/<realdata|osf3uszv>")
     p.add_argument("--n-ppc", type=int, default=200)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--dataset", choices=["ds001787", "osf3uszv"], default="ds001787")
     a = p.parse_args(argv)
-    run(a.out, a.n_ppc, a.seed)
+    run(a.out, a.n_ppc, a.seed, dataset=a.dataset)
 
 
 if __name__ == "__main__":

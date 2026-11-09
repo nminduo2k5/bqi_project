@@ -1,0 +1,15 @@
+{
+  "gate": "F3",
+  "description": "Đủ tốt để diễn giải (OSF 3uszv): phần dư trắng, LOSO, phân tích nhạy đã chạy",
+  "passed": true,
+  "time_utc": "2026-11-09T09:59:07+00:00",
+  "details": {
+    "ljung_box_p_median": [
+      0.05781774183356836,
+      0.4242225718379482
+    ],
+    "innovation_corr": 0.05287188755853059,
+    "loso_done": true,
+    "n_sensitivity_variants": 6
+  }
+}

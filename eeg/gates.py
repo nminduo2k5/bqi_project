@@ -31,11 +31,18 @@ GATES = {
     "E1": "X\u00e1c \u0111\u1ecbnh c\u1ea5u tr\u00fac M1-dev tr\u00ean l\u1ecbch probe th\u1eadt (Rothenberg) + CRB d\u1ef1 \u0111o\u00e1n",
     "E2": "X\u00e1c \u0111\u1ecbnh th\u1ef1c h\u00e0nh tr\u00ean d\u1eef li\u1ec7u th\u1eadt: RMSE bootstrap / SE trong [0.5, 2]",
     "E3": "\u0110\u1ee7 t\u1ed1t \u0111\u1ec3 di\u1ec5n gi\u1ea3i: ph\u1ea7n d\u01b0 tr\u1eafng, LOSO, ph\u00e2n t\u00edch nh\u1ea1y \u0111\u00e3 ch\u1ea1y",
+    # Second real dataset (Q1_pipeline.md v2.4, OSF 3uszv): the same four gates
+    "F0": "Gi\u1ea3i m\u00e3 rating OSF 3uszv t\u1eeb c\u1ed9t trigger: chu\u00f4ng + c\u00e2u tr\u1ea3 l\u1eddi + \u0111\u1ed9 ch\u1eafc ch\u1eafn h\u1ee3p l\u1ec7",
+    "F1": "X\u00e1c \u0111\u1ecbnh c\u1ea5u tr\u00fac M1-dev tr\u00ean l\u1ecbch probe th\u1eadt c\u1ee7a OSF 3uszv (Rothenberg) + CRB d\u1ef1 \u0111o\u00e1n",
+    "F2": "X\u00e1c \u0111\u1ecbnh th\u1ef1c h\u00e0nh tr\u00ean OSF 3uszv: RMSE bootstrap / SE trong [0.5, 2]",
+    "F3": "\u0110\u1ee7 t\u1ed1t \u0111\u1ec3 di\u1ec5n gi\u1ea3i (OSF 3uszv): ph\u1ea7n d\u01b0 tr\u1eafng, LOSO, ph\u00e2n t\u00edch nh\u1ea1y \u0111\u00e3 ch\u1ea1y",
 }
 REQUIRES = {"G1": ["G0"], "G2": ["G1"], "G3": ["G0"], "M1": ["M0"], "M2": ["M1"],
-            "E1": ["E0"], "E2": ["E1"], "E3": ["E2"]}
+            "E1": ["E0"], "E2": ["E1"], "E3": ["E2"], "F1": ["F0"], "F2": ["F1"], "F3": ["F2"]}
 PREDICTIONS_REALDATA = os.path.join(PREREG_DIR, "predictions_realdata.md")
 LOCK_REALDATA = os.path.join(PREREG_DIR, "predictions_realdata.lock")
+PREDICTIONS_OSF = os.path.join(PREREG_DIR, "predictions_osf3uszv.md")
+LOCK_OSF = os.path.join(PREREG_DIR, "predictions_osf3uszv.lock")
 
 
 class GateError(RuntimeError):

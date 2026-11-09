@@ -117,6 +117,21 @@ python main.py realdata paper          # Hình 9–10, bảng, summary.json → 
 
 Các bước dài in tiến độ và lưu checkpoint trong `outputs/results/realdata/checkpoints/`, ngắt giữa chừng thì chạy lại cùng lệnh. Kết quả chính (22/40 phiên giữ lại): 1/k_inh = 0,76 phút (CI profile 0,49–1,17); SE Fisher của k_inh 9,9 % nhưng SE theo profile 22 %, dấu hiệu kênh alpha bị sai đặc tả; EEG không cải thiện dự đoán điểm tự chấm ngoài mẫu (E-H2 không đạt); E-H5 không đạt. Tóm tắt cho thầy: [`outputs/paper/realdata/TOM_TAT_GUI_THAY.md`](outputs/paper/realdata/TOM_TAT_GUI_THAY.md). Số liệu thô: `outputs/results/realdata/` (`fit_results.json`, `boot_results.json`, `check_results.json`); mọi con số trích trong bài: `outputs/paper/realdata/summary.json`. Metadata OpenNeuro clone vào `ds001787/` (không vào git), dữ liệu tải vào `data/ds001787/`.
 
+### Bộ dữ liệu thứ hai: OSF 3uszv ([`Q1_pipeline.md`](Q1_pipeline.md) §16, v2.4) — F0–F3 PASS, kết quả cuối 09/11/2026 đã viết vào bài (mục 4.8, Phụ lục H.2)
+
+Kết quả (số cuối 09/11/2026, sau khi xử lý lại 17 phiên novice bằng ICLabel): 48/58 phiên giữ; 1/k_inh = 7,1 phút (5,7–9,1) so với 0,76 trên ds001787, 1/k_d = 0,63 so với 5,0 phút — hai hằng số thời gian đổi chỗ; sai số Fisher của k_inh 8,5 % (dự đoán 6,7 %, profile 11,8 %); EEG lại không cải thiện dự đoán điểm tự chấm; α = 0,79 với CI chứa 0 (F-H3 không đạt); không khác biệt nhóm về k_inh (+0,14 log, CI −0,20…0,47). Bảng so sánh hai bộ: `python main.py osf3uszv compare` → `outputs/paper/comparison/`.
+
+Theo yêu cầu thêm dữ liệu của thầy: bộ EEG thiền của Rodriguez-Larios et al. 2021 (*NeuroImage*; OSF 3uszv, CC0), 29 người thiền lâu năm + 29 người mới, mỗi người ~57 phút thiền hơi thở với 40 lần hỏi (2258 probe, 55 giờ EEG, 21 kênh Nexus-32 512 Hz) — phòng thí nghiệm độc lập với ds001787 và đủ lực cho so sánh nhóm (MDE 0,37 log). Cùng mô hình, cùng mã (`model/realdata.py` tham số hoá), cổng F0–F3 và đăng ký trước riêng ([`preregistration/predictions_osf3uszv.md`](preregistration/predictions_osf3uszv.md), khoá 03/11/2026 09:21 UTC; file đã tải trước khi khoá nhưng chỉ cột trigger được đọc — khai báo trong file).
+
+```bash
+python main.py osf3uszv fetch --conditions task med rest   # 174 file, 15,35 GB từ OSF, kiểm MD5, tải tiếp được (đã xong)
+python main.py osf3uszv ratings        # F0 ✅ 2233/2258 probe hợp lệ (98,9 %); rating = ±độ chắc chắn, −7…7
+python main.py osf3uszv design-crb     # F1 ✅ hạng 10/10; CRB(k_inh) 6,7 % gộp, 9,4 % mỗi nhóm
+python main.py osf3uszv preregister --yes   # đã khoá
+python main.py osf3uszv preprocess     # 58 phiên (đọc 1/4 dòng lặp → 512 Hz, hạ 256 Hz, ICA + ICLabel, đặc trưng)
+python main.py osf3uszv fit | boot | check | paper   # F2, F3 → outputs/results/osf3uszv, outputs/paper/osf3uszv
+```
+
 ### Hướng tiếp theo: "neural design" — mạch neural dấu chấm tĩnh + VHDL ([`hw/README.md`](hw/README.md))
 
 Vòng kín Kalman + LQG của Gói 4 được viết lại thành mạch neural 3 lớp, 6 nơ-ron tuyến tính (làm tròn + bão hoà), chạy một lần mỗi epoch 10 s, mô hình hoá bằng VHDL để chạy neurofeedback thời gian thực trên FPGA.
@@ -175,7 +190,9 @@ bqi_project/
 │                                  model_fit.py (Kalman bước thay đổi), gates.py (E0–E3); phần v1.0 (axis, metrics) giữ nguyên
 ├── preregistration/               predictions_realdata.md (ds001787, đã khoá 19/10/2026); predictions.md (v1.0, hoãn)
 ├── ds001787/, data/ds001787/      metadata OpenNeuro (clone) và dữ liệu tải về — cả hai ngoài git
-├── tests/                         pytest (104 test; test_model.py bài Q1, test_hardware.py mạch, test_realdata.py ds001787)
+├── data/osf3uszv/                 bộ thứ hai (OSF 3uszv): raw/*.txt.cpgz, docs/, derivatives/ — ngoài git; mã ở eeg/loaders/osf3uszv.py,
+│                                  eeg/osf_features.py, eeg/fetch_osf.py, model/osf_pipeline.py
+├── tests/                         pytest (114 test; test_model.py bài Q1, test_hardware.py mạch, test_realdata.py ds001787, test_osf3uszv.py và test_compare_realdata.py OSF)
 ├── dashboard/                     Giao diện trực quan Streamlit (python main.py dashboard)
 │   ├── app.py                     Điểm vào: điều hướng giữa các trang
 │   ├── core.py                    Dùng chung: đăng ký module, màu, chạy CLI/pytest, scorecard
