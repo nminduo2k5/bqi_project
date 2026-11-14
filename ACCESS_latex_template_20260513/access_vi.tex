@@ -1,0 +1,37 @@
+\documentclass{ieeeaccessvi}
+%% Bản tiếng Việt của bài 2 (IEEE Access). Chỉ là file khung; nội dung ở các file con:
+%%   ieeeaccessvi.cls        bản sao của ieeeaccess.cls với mã chữ T5 (vntex) và nhãn tiếng Việt
+%%   t5times.fd, t5formata.fd, t5helvetica.fd, t5giovannistd.fd   ánh xạ font của template sang font T5
+%%   preamble.tex            dùng chung với bản tiếng Anh (gói, macro, đường dẫn hình)
+%%   frontmatter_vi.tex      tiêu đề, tác giả, tóm tắt, từ khoá
+%%   sections_vi/1_introduction.tex, 2_literature_review, 3_theoretical_framework (BQI),
+%%   4_methodology, 5_results, 6_discussion (incl. limitations), 7_conclusion, 8_appendices
+%%   references.bib          dùng chung với bản tiếng Anh (IEEEtran.bst, thứ tự trích dẫn)
+%%   biography_vi.tex        tiểu sử tác giả
+%% Không dùng \PARstart (chữ hoa đầu đoạn) vì macro đó cắt rời byte của chữ có dấu.
+%% Biên dịch trong thư mục này:
+%%   pdflatex access_vi && bibtex access_vi && pdflatex access_vi && pdflatex access_vi
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\input{preamble}
+
+\begin{document}
+\input{frontmatter_vi}
+
+\input{sections_vi/1_introduction}
+\input{sections_vi/2_literature_review}
+\input{sections_vi/3_theoretical_framework}
+\input{sections_vi/4_methodology}
+\input{sections_vi/5_results}
+\input{sections_vi/6_discussion}
+\input{sections_vi/7_conclusion}
+\input{sections_vi/8_appendices}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\input{biography_vi}
+
+\EOD
+
+\end{document}

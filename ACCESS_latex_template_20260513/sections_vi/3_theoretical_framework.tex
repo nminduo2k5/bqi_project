@@ -1,0 +1,162 @@
+%% III. Khung lý thuyết: mô hình BQI của Vũ Quang Dũng (paper/bqi_paper.pdf), các phương trình,
+%% dẫn xuất mô hình ước lượng được M1 và các dự đoán lý thuyết. Được access_vi.tex \input.
+%% Số phương trình, mục, bảng và thuật toán trong \cite[...]{BQI} là số của bài đó.
+\section{Khung lý thuyết}
+\label{sec:theory}
+Nền tảng lý thuyết của nghiên cứu này là mô hình Bộ não như một giao diện truy vấn (BQI) của Vũ \cite{BQI}. Mục này trình bày các phần của BQI mà phân tích dựa vào, kèm số phương trình, mục, bảng và thuật toán của \cite{BQI}, dẫn ra từ đó mô hình không gian trạng thái ước lượng được M1, và liệt kê các dự đoán mà BQI đưa ra cho các đại lượng được ước lượng ở đây.
+
+\subsection{Luận đề giao diện truy vấn}
+\label{sec:theory-bqi}
+BQI cho rằng nhận thức gồm ba thao tác: bộ não mã hoá trạng thái $B$ và ngữ cảnh $C$ của nó thành một truy vấn, truy vấn được giải trên một Không gian thông tin siêu thần kinh $\mathcal S$, mô hình hoá như một không gian Hilbert khả ly, và câu trả lời được giải mã vào không gian tri giác \cite[Mục~3.2]{BQI}. Với bộ mã hoá truy vấn $\Phi_E$, toán tử tìm kiếm $\Sigma$ và bộ giải mã tri giác $\Phi_D$ \cite[pt.~(10)--(12)]{BQI}, tri giác là
+\begin{equation}
+  \mathrm{Perception}(t)=\Phi_D\bigl(\Sigma(\Phi_E(B(t),C(t)),\,\mathcal S)\bigr)
+  \label{eq:bqi-perception}
+\end{equation}
+\cite[pt.~(13)]{BQI}, trong đó $\Sigma$ được cài đặt bằng cơ chế chú ý tích vô hướng có chuẩn hoá, $\Sigma(Q,K,V)=\mathrm{softmax}\bigl(QK^\top/\sqrt{d_k}\bigr)V$ \cite[Mục~3.3, pt.~(16)]{BQI}. Bộ não chỉ truy cập được không gian con $\mathcal H_{\mathcal B}$ mà phép chiếu $P_{\mathcal B}$ chiếu lên, và lượng thông tin bị mất là
+\begin{equation}
+  \begin{split}
+  I_{\mathrm{lost}}&\triangleq\|\psi_{\mathrm{world}}\|^2-\|P_{\mathcal B}\psi_{\mathrm{world}}\|^2\\
+  &=\|(I-P_{\mathcal B})\psi_{\mathrm{world}}\|^2\ge 0
+  \end{split}
+  \label{eq:bqi-loss}
+\end{equation}
+\cite[pt.~(14)]{BQI}. Thiền được mô tả như sự mở rộng không gian con truy cập được: nếu nó làm tăng hạng của $P_{\mathcal B}$ thì $I_{\mathrm{lost}}$ giảm đơn điệu \cite[Hệ quả~3.1, pt.~(15)]{BQI}. Bên trong bộ não, niềm tin được cập nhật bằng mã hoá dự đoán Bayes: với quan sát $o$ và nguyên nhân ẩn $s$, bộ não duy trì một hậu nghiệm xấp xỉ $q(s;\mu)$ và cực tiểu hoá năng lượng tự do biến phân
+\begin{equation}
+  \begin{split}
+  \mathcal F(\mu)&\triangleq\KL\bigl[q(s;\mu)\,\|\,p(s\mid o)\bigr]-\ln p(o)\\
+  &=\KL\bigl[q\,\|\,p(s)\bigr]-\mathbb E_q\bigl[\ln p(o\mid s)\bigr],
+  \end{split}
+  \label{eq:bqi-free-energy}
+\end{equation}
+tức độ phức tạp trừ độ chính xác \cite[Mục~3.1, Định nghĩa~3.1, pt.~(3)]{BQI}, bằng phép hạ gradient $\dot\mu^{(l)}=-\nabla_{\mu^{(l)}}\mathcal F$ ở mỗi tầng $l$ của hệ thứ bậc \cite[pt.~(7)]{BQI}. Theo ngôn ngữ BQI, việc DMN bị ức chế khi thiền là dấu hiệu thực nghiệm của một $P_{\mathcal B}$ được mở rộng, và mức tăng về tích hợp và về chất lượng trải nghiệm có ý thức đi kèm là điều mà mô hình thiền của BQI định lượng \cite[Mục~6.3, 7 và 11.1]{BQI}.
+
+\subsection{Tích hợp và đại diện thực nghiệm của nó}
+\label{sec:theory-phi}
+Theo lý thuyết thông tin tích hợp, BQI định nghĩa thông tin tích hợp ở mức hệ của một hệ $X$ gồm $n$ phần tử nhị phân là
+\begin{equation}
+  \Phi(X)=\Phi(\mathcal C(X))=\sum_{\substack{M\subseteq X\\ \phi(M)>0}}\phi(M)\cdot\mathbf 1_{M\in\text{MIP-complex}},
+  \label{eq:bqi-phi}
+\end{equation}
+trong đó $\phi(M)$ là thông tin tích hợp nội tại của cơ chế $M$, tức cực tiểu theo các phân hoạch của nó \cite[pt.~(47)]{BQI}, và tổng được tính trên phức hợp bất khả quy cực đại (MIP-complex) \cite[Mục~6.1, pt.~(48)]{BQI}. Vì tính $\Phi$ chính xác đòi hỏi duyệt $2^n-2$ cách phân hoạch, nên chi phí tính chính xác là $\mathcal O(2^n)$ và bài toán tối ưu là NP-khó \cite[Mệnh đề~6.1]{BQI}, BQI dùng chỉ số độ phức tạp nhiễu loạn làm đại diện thực nghiệm,
+\begin{equation}
+  \PCI=\frac{K(s)}{L(s)},\qquad K(s)\approx\LZC(s)=\frac{|C(s)|\,\log_2|s|}{|s|},
+  \label{eq:bqi-pci}
+\end{equation}
+trong đó $s$ là ma trận nguồn nhị phân của EEG gợi bởi kích thích từ xuyên sọ (TMS), $|s|=n_{\mathrm{channels}}\times n_{\mathrm{timepoints}}$, $C(s)$ là từ điển Lempel--Ziv và $\LZC$ là độ phức tạp Lempel--Ziv \cite[Mục~6.3, pt.~(49)]{BQI}. BQI báo cáo chỉ số này cao hơn ở người thiền lâu năm so với lúc tỉnh táo (0,623 so với 0,567) và đọc việc chỉ số cao hơn đi cùng hoạt động DMN thấp hơn là dấu hiệu của một $P_{\mathcal B}$ được mở rộng \cite[Bảng~4 và Nhận xét~6.1]{BQI}; BQI cũng lưu ý rằng chỉ số này nắm bắt độ phức tạp chứ không phải tích hợp theo nghĩa chặt \cite[Mục~11.3]{BQI}.
+
+\subsection{Động lực DMN khi thiền}
+\label{sec:theory-dmn}
+BQI mô hình hoá hoạt động của DMN, với các trung tâm chính mPFC, PCC, IPL và MTL, như một sự suy giảm với tốc độ ức chế phụ thuộc trạng thái cộng một dao động quá trình Gauss,
+\begin{equation}
+  \begin{gathered}
+  \ADMN(t)=A_0\,e^{-\lambda(t)\,t}+\xi(t),\\
+  \xi(t)\sim\mathcal{GP}\bigl(0,k(t,t')\bigr),
+  \end{gathered}
+  \label{eq:bqi-dmn}
+\end{equation}
+trong đó $\lambda(t)=\lambda_0+\Delta\lambda\cdot\mathbf 1_{[\text{task/meditation}]}$ là tốc độ ức chế phụ thuộc trạng thái và $k(t,t')$ là nhân hiệp phương sai Mat\'ern \cite[Mục~7.1, pt.~(51)]{BQI}: thiền làm tăng tốc độ ức chế. Dạng ngẫu nhiên của động lực niềm tin~\cite[pt.~(7)]{BQI} trong BQI là phương trình Langevin quá cản
+\begin{equation}
+  \dd\mu_t=-\nabla_\mu\mathcal F(\mu_t)\,\dd t+\sqrt{2\beta_{\mathrm n}^{-1}}\,\dd W_t
+  \label{eq:bqi-langevin}
+\end{equation}
+\cite[Mục~12.2.1, pt.~(83)]{BQI}, trong đó $W_t$ là quá trình Wiener chuẩn và BQI viết nghịch đảo nhiệt độ (mức nhiễu thần kinh) là $\beta>0$; ở đây chúng tôi viết $\beta_{\mathrm n}$ để tránh trùng với hệ số $\beta$ ở dưới. Mật độ dừng của nó là độ đo Gibbs (Boltzmann) $\rho^*(\mu)=Z^{-1}\exp(-\beta_{\mathrm n}\mathcal F(\mu))$ với hàm phân hoạch $Z=\int\exp(-\beta_{\mathrm n}\mathcal F(\mu))\dd\mu$ \cite[pt.~(85)]{BQI}; BQI diễn giải thiền là sự giảm nhiễu thần kinh $\beta_{\mathrm n}^{-1}$ thông qua việc ức chế các dao động tự phát của DMN \cite[Hệ quả~12.1]{BQI}. Với thế bậc hai $\mathcal F(\mu)=\tfrac12\lambda\mu^2$, động lực~\eqref{eq:bqi-langevin} là một quá trình Ornstein--Uhlenbeck, trường hợp mà BQI dùng để tính thời gian vượt ngưỡng trung bình đến bừng hiểu (insight) \cite[Mục~12.2.2, pt.~(86)--(87)]{BQI}.
+
+\subsection{Hệ DMN--tích hợp--QoC}
+\label{sec:theory-ode}
+Mô hình thiền của BQI nối mức DMN, độ tích hợp $\Phi$ và chất lượng ý thức (QoC) qua hệ ODE
+\begin{align}
+  \frac{\dd\ADMN}{\dd t}&=-\kinh\,\ADMN(t)+\kspont\,\xi(t), \label{eq:bqi-ode-a}\\
+  \frac{\dd\Phi}{\dd t}&=\kint\Bigl(1-\frac{\ADMN(t)}{\Amax}\Bigr)-\kd\,\Phi(t), \label{eq:bqi-ode-phi}\\
+  \frac{\dd\,\QoC}{\dd t}&=\alpha\frac{\dd\Phi}{\dd t}-\beta\frac{\dd\ADMN}{\dd t}-\gamma\,\QoC(t) \label{eq:bqi-ode-q}
+\end{align}
+\cite[Mục~7.2, pt.~(52)--(54)]{BQI}. Đặt $\dot A_{\mathrm{DMN}}=\dot\Phi=\dot{\QoC}=0$, BQI cho các nghiệm dừng
+\begin{align}
+  A^*_{\mathrm{DMN}}&=\frac{\kspont}{\kinh}\sqrt{2\pi\sigma_\xi^2}, \label{eq:bqi-ss-a}\\
+  \Phi^*&=\frac{\kint}{\kd}\Bigl(1-\frac{A^*_{\mathrm{DMN}}}{\Amax}\Bigr), \label{eq:bqi-ss-phi}\\
+  \QoC^*&=\frac1\gamma\Bigl(\alpha\kint\,\frac{\Amax-A^*_{\mathrm{DMN}}}{\Amax\,\kd}\notag\\
+  &\qquad\quad+\beta\,\frac{\kspont}{\kinh}\sqrt{2\pi\sigma_\xi^2}\Bigr) \label{eq:bqi-ss-q}
+\end{align}
+\cite[pt.~(55)--(57)]{BQI}, với $\sigma_\xi$ là thang đo của dao động $\xi$. Các tham số của hệ được ước lượng bằng bình phương tối thiểu từ dữ liệu phân tích gộp ($N=3\,241$) \cite[Bảng~5]{BQI}: $\kinh=0{,}043~\text{phút}^{-1}$ (CI 95\,\% 0,038--0,048), $\kspont=0{,}027$, $\kint=0{,}081~\text{phút}^{-1}$, $\kd=0{,}034~\text{phút}^{-1}$, $\alpha=2{,}34\pm0{,}18$, $\beta=1{,}87\pm0{,}21$ và $\gamma=0{,}19\pm0{,}03$, với $R^2=0{,}83$. Cùng dữ liệu đó cho các tương quan
+\begin{equation}
+  \begin{gathered}
+  r(\ADMN,\QoC)=-0{,}89,\quad r(\PCI,\QoC)=+0{,}84,\\
+  r(\ADMN,\PCI)=-0{,}78,\quad\text{mọi } p<0{,}001,
+  \end{gathered}
+  \label{eq:bqi-corr}
+\end{equation}
+\cite[Mục~7.3, pt.~(58)]{BQI} và hồi quy
+\begin{equation}
+  \widehat{\QoC}=2{,}34\,\PCI-0{,}038\,\ADMN+3{,}12,\quad R^2=0{,}71
+  \label{eq:bqi-reg}
+\end{equation}
+\cite[pt.~(59)]{BQI}. Phân tích gộp 16 nghiên cứu của BQI cho mức giảm gộp của tín hiệu BOLD của DMN khi thiền là 39,4\,\% (CI 95\,\% 35,2--43,6\,\%, $d=1{,}70$, $I^2=31\,\%$) \cite[Mục~7.4, Bảng~6]{BQI}, và dữ liệu cắt ngang của nó cho thấy tín hiệu DMN giảm còn QoC và chỉ số độ phức tạp tăng đơn điệu theo số năm thực hành \cite[Bảng~7]{BQI}, với người thiền lâu năm có tín hiệu DMN thấp hơn 62\,\%, QoC cao hơn 105\,\% và chỉ số cao hơn 12,5\,\% so với nhóm đối chứng \cite[Mục~7.5]{BQI}. BQI lưu ý rằng các tham số của Bảng~5 đến từ dữ liệu cắt ngang gộp chứ không từ một thiết kế theo dõi dọc \cite[Mục~11.3]{BQI}.
+
+\subsection{Điều khiển vòng kín và hàm đọc ra của QoC}
+\label{sec:theory-com}
+BQI biến mô hình thành một giao diện não--máy vòng kín, Mô hình Tối ưu Ý thức (COM). Trong Thuật toán~2 của nó, một hệ số khuếch đại BCI vòng kín đặt kích thích theo sai số QoC, $u_{\mathrm{stim}}=K\bigl(\QoC_{\mathrm{target}}-\QoC(t)\bigr)$ (dòng~5), DMN bị ức chế bằng một bước gradient năng lượng tự do, $\ADMN(t)=\ADMN(t-1)\bigl(1-\eta_{\mathrm{DMN}}\nabla_{\mathrm{att}}\mathcal F\bigr)$ (dòng~6), độ tích hợp được xấp xỉ từ trạng thái niềm tin và mức DMN, $\Phi(t)=\text{IIT-approx}(\mu,\ADMN(t))$ (dòng~13 và~20), và QoC được đọc ra đại số là
+\begin{equation}
+  \QoC(t)=\alpha\,\Phi(t)-\beta\,\ADMN(t)+\gamma_0
+  \label{eq:bqi-readout}
+\end{equation}
+\cite[Mục~9.3, Thuật toán~2, dòng~21]{BQI}. Hàm mục tiêu COM là $\max_{\{u_t\}}\QoC(T)=\max_{\{u_t\}}\alpha\Phi(T)-\beta\ADMN(T)$, với ràng buộc là động lực DMN và tích hợp \eqref{eq:bqi-ode-a}--\eqref{eq:bqi-ode-phi}, cận kích thích $\|u_t\|\le\epsilon$ và $\ADMN(t),\Phi(t)\ge0$ \cite[Mục~9.4, pt.~(69)--(73)]{BQI}. Bài toán điều khiển BQI--BCI cực đại hoá QoC chiết khấu qua một phiên, $\max_{\pi\in\Pi}\mathbb E_\pi\bigl[\int_0^T e^{-\rho t}\QoC(t)\dd t\bigr]$, và nghiệm Pontryagin của nó là kích thích bang-bang $u^*(t)=\epsilon\,\mathrm{sign}(\lambda_A(t))$, với $\lambda_A$ là biến đồng trạng thái của $\ADMN$ \cite[Mục~10.1, pt.~(74)--(75)]{BQI}. BQI cũng mô hình hoá trầm cảm như $\kinh$ giảm và $\ADMN$ tăng mạnh, và nêu chánh niệm cùng CBT là các can thiệp làm tăng $\kinh$ \cite[Bảng~10]{BQI}.
+
+\subsection{Thông tin Fisher trong BQI}
+\label{sec:theory-fisher}
+BQI trang bị cho đa tạp các phân phối niềm tin metric thông tin Fisher
+\begin{equation}
+  g_{ij}(\theta)=\mathbb E_{p(\cdot;\theta)}\Bigl[\frac{\partial\ln p(x;\theta)}{\partial\theta^i}\,\frac{\partial\ln p(x;\theta)}{\partial\theta^j}\Bigr]
+  \label{eq:bqi-fisher}
+\end{equation}
+trong đó $\theta\in\mathbb R^d$ tham số hoá trạng thái niềm tin $q(s;\theta)$, và dẫn ra phép cập nhật niềm tin theo gradient tự nhiên $\dot\theta=-G(\theta)^{-1}\nabla_\theta\mathcal F(\theta)$, với $G(\theta)=[g_{ij}(\theta)]$ là ma trận thông tin Fisher \cite[Mục~12.1, pt.~(79)--(80)]{BQI}. Thông tin Fisher kỳ vọng mà phân tích thiết kế và các cận Cramér--Rao của nghiên cứu này dựa vào chính là đại lượng đó, chỉ khác là được tính cho các tham số của mô hình thiền thay vì cho một trạng thái niềm tin.
+
+\subsection{Từ hệ BQI đến mô hình ước lượng được M1}
+\label{sec:theory-m1}
+Ba bước biến \eqref{eq:bqi-ode-a}--\eqref{eq:bqi-ode-q} thành một mô hình fit được lên EEG và điểm tự chấm \cite{companion}. Thứ nhất, lực kích tự phát $\kspont\xi(t)$ của \eqref{eq:bqi-ode-a} được tách thành một mức nền không đổi và một dao động trắng, $\kspont\xi(t)=\kinh A_0+\sA\dot W_A(t)$, tức chính động lực Langevin~\eqref{eq:bqi-langevin} với thế bậc hai $\mathcal F(A)=\tfrac12\kinh(A-A_0)^2$ và $\beta_{\mathrm n}^{-1}=\sA^2/2$; DMN trở thành một quá trình Ornstein--Uhlenbeck có luật dừng là độ đo Gibbs $\mathcal N(A_0,\sA^2/(2\kinh))$ của \cite[pt.~(85)]{BQI}. Thứ hai, \eqref{eq:bqi-ode-phi} được giữ nguyên và thêm dao động riêng $\sPhi\,\dd W_\Phi$. Thứ ba, phương trình vi phân của QoC \eqref{eq:bqi-ode-q} được thay bằng hàm đọc ra đại số~\eqref{eq:bqi-readout} mà BQI dùng trong COM: lấy tích phân theo thời gian, \eqref{eq:bqi-ode-q} biến QoC thành bộ lọc thông cao của $\alpha\Phi-\beta\ADMN$, nên trạng thái dừng của nó bằng không với mọi giá trị tham số và nghiệm dừng~\eqref{eq:bqi-ss-q} \cite[pt.~(57)]{BQI} không phải điểm dừng của hệ \cite{companion}. Mô hình M1 thu được là
+\begin{align}
+  \dd A&=-\kinh(A-A_0)\,\dd t+\sA\,\dd W_A, \label{eq:m1-a}\\
+  \dd\Phi&=\Bigl[\kint\Bigl(1-\frac{A}{\Amax}\Bigr)-\kd\Phi\Bigr]\dd t+\sPhi\,\dd W_\Phi, \label{eq:m1-phi}\\
+  \QoC&=\alpha\Phi-\beta A+\gamma_0, \label{eq:m1-q}
+\end{align}
+với các trung bình dừng $A^*=A_0$, $\Phi^*=(\kint/\kd)(1-A_0/\Amax)$ và $\QoC^*=\alpha\Phi^*-\beta A_0+\gamma_0$, khác không với tham số tổng quát. Đặt $\tilde A=A-A^*$ và $\tilde\Phi=\Phi-\Phi^*$ ta được dạng độ lệch
+\begin{equation}
+  \begin{gathered}
+  \dd\tilde\xv=M\tilde\xv\,\dd t+G\,\dd\mathbf W,\\
+  M=\begin{pmatrix}-\kinh&0\\-\kappa&-\kd\end{pmatrix},\qquad
+  G=\diag(\sA,\sPhi),
+  \end{gathered}
+  \label{eq:m1}
+\end{equation}
+với $\tilde\xv=(\tilde A,\tilde\Phi)^\top$, quá trình Wiener hai chiều $\mathbf W$ và hệ số ghép $\kappa=\kint/\Amax$, cùng hàm đọc ra $\QoC-\QoC^*=\alpha\tilde\Phi-\beta\tilde A$. Bảng~\ref{tab:bqimap} ánh xạ các tham số của BQI sang các tham số của M1 và cho biết tham số nào ước lượng được từ đại diện EEG và điểm tự chấm đã quy tâm trong phiên (Mục~\ref{sec:prep}): các mức $A_0$, $\Phi^*$, $\gamma_0$ và mức trần $\Amax$ thì không, $\kspont$ chỉ còn lại qua cường độ nhiễu $\sA$, và hệ số suy giảm $\gamma$ biến mất cùng \eqref{eq:bqi-ode-q}. Các tốc độ $\kinh$ và $\kd$ không phụ thuộc thang nên so trực tiếp được với BQI; $\kappa$, $\alpha$ và $\beta$ phụ thuộc đơn vị của các đại diện và của điểm, nên chỉ so được dấu.
+
+\begin{table*}[t]
+\caption{\textbf{Từ tham số của BQI đến tham số của M1.} Giá trị BQI: fit bình phương tối thiểu từ dữ liệu phân tích gộp \cite[Bảng~5]{BQI}. Cột cuối cho biết tham số M1 có được ước lượng ở đây từ đại diện EEG và điểm tự chấm đã quy tâm trong phiên không, và điều gì so được với BQI.}
+\label{tab:bqimap}
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llllll}
+\toprule
+Ký hiệu BQI & Ý nghĩa trong BQI & Pt.\ BQI & Giá trị BQI & Trong M1 & Ước lượng ở đây \\
+\midrule
+$\kinh$ & tốc độ ức chế DMN & (52) & $0{,}043~\text{phút}^{-1}$ (23 phút) & $\kinh$, pt.~\eqref{eq:m1-a} & có; so được hằng số thời gian \\
+$\kspont\,\xi(t)$ & kích hoạt DMN tự phát & (52) & $\kspont=0{,}027$ & $\kinh A_0+\sA\dot W_A$ & chỉ $\sA$; $A_0$ mất khi quy tâm \\
+$\kint$ & tốc độ tích hợp & (53) & $0{,}081~\text{phút}^{-1}$ & $\kappa=\kint/\Amax$, pt.~\eqref{eq:m1} & có; so được dấu \\
+$\kd$ & tốc độ suy giảm tích hợp & (53) & $0{,}034~\text{phút}^{-1}$ (29 phút) & $\kd$ & có; so được hằng số thời gian \\
+$\alpha$ & hệ số $\Phi\to\QoC$ & (54), TT~2 & $2{,}34\pm0{,}18$ & $\alpha$, pt.~\eqref{eq:m1-q} & có; so được dấu \\
+$\beta$ & hệ số $\ADMN\to\QoC$ (tác động âm) & (54), TT~2 & $1{,}87\pm0{,}21$ & $\beta$, pt.~\eqref{eq:m1-q} & có; so được dấu \\
+$\gamma$ & tốc độ suy giảm QoC & (54) & $0{,}19\pm0{,}03$ & thay bằng hàm đọc ra & không \\
+$\Amax$ & mức trần DMN & (53) & -- & cố định đơn vị của $A$ & không \\
+-- & nhiễu của $\Phi$ và của quan sát & -- & -- & $\sPhi$, $\rA$, $\rPhi$, $\rQ$ & có \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Các dự đoán lý thuyết}
+\label{sec:theory-pred}
+BQI đưa ra năm dự đoán cho các đại lượng của M1, được kiểm bằng các giả thuyết ở Mục~\ref{sec:hyp} và phép so sánh ở Mục~\ref{sec:res-bqi}:
+\begin{enumerate}
+  \item[T1] \emph{Thang thời gian của DMN.} DMN hồi phục chậm, với hằng số thời gian $1/\kinh$ khoảng 23~phút \cite[Bảng~5]{BQI}.
+  \item[T2] \emph{Hệ số ghép.} Việc DMN rút lui nuôi tích hợp, $\kappa=\kint/\Amax>0$ \cite[pt.~(53)]{BQI}, phù hợp với tương quan âm giữa hoạt động DMN và chỉ số độ phức tạp \cite[pt.~(58) và Nhận xét~6.1]{BQI}.
+  \item[T3] \emph{Tích hợp làm tăng QoC}, $\alpha>0$ \cite[Bảng~5]{BQI}, phù hợp với $r(\PCI,\QoC)=+0{,}84$ và hệ số dương của chỉ số trong \eqref{eq:bqi-reg} \cite[pt.~(58)--(59)]{BQI} (giả thuyết H3).
+  \item[T4] \emph{Hoạt động DMN làm giảm QoC}, $\beta>0$ trong hàm đọc ra \eqref{eq:bqi-readout} \cite[Bảng~5]{BQI}, phù hợp với $r(\ADMN,\QoC)=-0{,}89$ và hệ số âm của DMN trong \eqref{eq:bqi-reg} \cite[pt.~(58)--(59)]{BQI} (giả thuyết H4).
+  \item[T5] \emph{Kinh nghiệm làm tăng tốc độ ức chế}, $\kinh$ cao hơn ở người thiền lâu năm so với người mới, vì thiền làm tăng tốc độ ức chế DMN trong \eqref{eq:bqi-dmn} \cite[pt.~(51)]{BQI}, tín hiệu DMN giảm theo số năm thực hành \cite[Bảng~7 và Mục~7.5]{BQI}, và BQI chỉ định chánh niệm để làm tăng $\kinh$ trong trầm cảm \cite[Bảng~10]{BQI} (giả thuyết H5).
+\end{enumerate}

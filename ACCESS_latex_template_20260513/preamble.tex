@@ -1,0 +1,56 @@
+%% Packages, bold-math set-up of the IEEE Access template, graphics path and macros.
+%% Input by access.tex before \begin{document}.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{bm}
+\makeatletter
+\AtBeginDocument{\DeclareMathVersion{bold}
+\SetSymbolFont{operators}{bold}{T1}{times}{b}{n}
+\SetSymbolFont{NewLetters}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathrm}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathit}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathbf}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathtt}{bold}{OT1}{pcr}{b}{n}
+\SetSymbolFont{symbols}{bold}{OMS}{cmsy}{b}{n}
+\renewcommand\boldmath{\@nomath\boldmath\mathversion{bold}}}
+\makeatother
+
+\graphicspath{{../outputs/paper/eeg/}{../outputs/paper/realdata/}{../outputs/paper/osf3uszv/}}
+
+\newcommand{\kinh}{k_{\mathrm{inh}}}
+\newcommand{\kd}{k_{d}}
+\newcommand{\sA}{\sigma_{A}}
+\newcommand{\sPhi}{\sigma_{\Phi}}
+\newcommand{\rA}{r_{A}}
+\newcommand{\rPhi}{r_{\Phi}}
+\newcommand{\rQ}{r_{Q}}
+\newcommand{\CRB}{\mathrm{CRB}}
+\newcommand{\RMSE}{\mathrm{RMSE}}
+\newcommand{\QoC}{\mathrm{QoC}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\thetav}{\boldsymbol{\theta}}
+\newcommand{\xv}{\mathbf{x}}
+\newcommand{\yv}{\mathbf{y}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\diag}{\operatorname{diag}}
+% notation of the BQI paper (D. Q. Vu, paper/bqi_paper.pdf)
+\newcommand{\ADMN}{A_{\mathrm{DMN}}}
+\newcommand{\kint}{k_{\mathrm{int}}}
+\newcommand{\kspont}{k_{\mathrm{spont}}}
+\newcommand{\Amax}{A_{\max}}
+\newcommand{\PCI}{\mathrm{PCI}}
+\newcommand{\LZC}{\mathrm{LZC}}
+\newcommand{\KL}{\mathrm{KL}}
+
+% Reference [BQI] (D. Q. Vu, paper/bqi_paper.pdf) has no DOI or preprint yet: its entry in the
+% reference list is printed in red until it does. Delete this block once the DOI is in references.bib.
+\makeatletter
+\def\BQI@key{BQI}
+\newcommand{\BQI@wrapbibitem}[1]{\normalcolor\BQI@origbibitem{#1}\def\BQI@this{#1}%
+  \ifx\BQI@this\BQI@key\color{red}\fi}
+\AtBeginDocument{\let\BQI@origbibitem\bibitem\let\bibitem\BQI@wrapbibitem}
+\makeatother

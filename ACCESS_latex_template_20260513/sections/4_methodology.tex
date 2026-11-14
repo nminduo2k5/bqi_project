@@ -1,0 +1,114 @@
+%% IV. Methodology: study design, observation model, predictions, hypotheses, datasets, preregistration,
+%% preprocessing, statistical analysis, simulation, software. Input by access.tex.
+\section{Methodology}
+\label{sec:methods}
+
+\subsection{Study Design}
+\label{sec:design}
+The study is a confirmatory, preregistered secondary analysis of two open experience-sampling EEG datasets, with one locked plan per dataset and the same code, model and features for both. For each dataset the analysis ran in a fixed order of steps, each of which refuses to start until the gate of the previous step has been recorded: (1) decoding of the self-report probes (gate E0/F0); (2) the structural analysis and the predicted CRB on the real probe schedules (gate E1/F1); (3) the SHA-256 lock of the preregistration; (4) preprocessing and feature extraction; (5) the pooled, group and per-subject fits; (6) the parametric bootstrap (gate E2/F2); (7) residual checks, leave-one-session-out prediction and sensitivity analyses (gate E3/F3); and, for the second dataset, (8) the preregistered replication checks against the first. Sections~\ref{sec:model}--\ref{sec:hyp} give the observation model, the design predictions and the hypotheses; Sections~\ref{sec:data}--\ref{sec:prereg} the datasets and the preregistrations; Sections~\ref{sec:prep}--\ref{sec:software} the analysis.
+
+\subsection{Observation Model and Likelihood}
+\label{sec:model}
+The state model is M1 in the deviation form~\eqref{eq:m1} derived from BQI in Section~\ref{sec:theory-m1}; its DMN component is an Ornstein--Uhlenbeck process \cite{UhlenbeckOrnstein1930} with time constant $1/\kinh$, and rates are per minute. Because every feature and every rating is centred within session (Section~\ref{sec:prep}), only the deviation form is estimable. A session of length $T$ is divided into epochs of $\Delta=10$~s. In every epoch an EEG feature vector is observed as a noisy direct measurement of the state,
+\begin{equation}
+  \yv_t=\tilde\xv_t+\boldsymbol\eta_t,\qquad \boldsymbol\eta_t\sim\mathcal N\bigl(0,\diag(\rA^2,\rPhi^2)\bigr),
+  \label{eq:obsEEG}
+\end{equation}
+and at the probe epochs the practitioner reports a rating, the read-out~\eqref{eq:m1-q} observed with noise,
+\begin{equation}
+  \mathrm{rating}_t=\alpha\tilde\Phi_t-\beta\tilde A_t+\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,\rQ^2).
+  \label{eq:obsRating}
+\end{equation}
+The ten free parameters are
+\begin{equation*}
+  \thetav=(\kinh,\kappa,\kd,\sA,\sPhi,\alpha,\beta,\rA,\rPhi,\rQ),
+\end{equation*}
+with free signs for $\kappa$, $\alpha$ and $\beta$. Sampling \eqref{eq:m1} at the epoch length gives the exact linear-Gaussian recursion $\tilde\xv_{k+1}=F\tilde\xv_k+\mathbf w_k$ with $F=e^{M\Delta}$ and $\Cov(\mathbf w_k)$ from Van Loan's construction \cite{VanLoan1978}; irregular steps between probes use the same formulas with the actual step. The log-likelihood of a session is evaluated by the Kalman filter \cite{Kalman1960,Harvey1989,Durbin2012} with sequential scalar updates, so that a missing epoch or an absent rating simply skips an update, and sessions contribute additively.
+
+\subsection{Design Predictions}
+\label{sec:predictions}
+Because M1 is linear-Gaussian and stationary, all observations of a session form a jointly Gaussian vector with closed-form moments, and the expected Fisher information $\mathcal I(\thetav)$ is available exactly, without simulation \cite{companion}. The relative CRB of a positive parameter is the square root of the corresponding diagonal element of $\mathcal I^{-1}$ on the log scale \cite{Rao1945,Cramer1946}. On a grid of 144 simulated designs the CRB predicted the root-mean-square error of maximum likelihood within a factor of two in 24 of 24 tested cells (median ratio 0.98), and $\kinh$ was the hardest parameter: about eight subject-hours of two-channel EEG are needed for a relative error of 20\,\%. Applied to the real probe schedules of the two datasets, with the nominal parameters of the companion paper, which take $k_{\mathrm{int}}$, $\kd$, $\alpha$ and $\beta$ from Table~5 of BQI \cite{BQI} (Table~\ref{tab:bqimap}) and set the DMN time constant to 5~min instead of the 23~min printed there, the bound predicts a relative error of 9.1\,\% for $\kinh$ on the 40 sessions of ds001787 and 6.7\,\% on the 58 sessions of OSF 3uszv, and a minimal detectable difference in $\log\kinh$ between experienced and novice meditators of 0.51 and 0.37 log units at 80\,\% power. These numbers were computed before the lock of each preregistration and are the predictions tested here (RQ1).
+
+\subsection{Hypotheses, Replication Checks and Gates}
+\label{sec:hyp}
+Each preregistration fixed five hypotheses, labelled E-H1 to E-H5 for ds001787 and F-H1 to F-H5 for OSF 3uszv; H1 answers RQ1, H2 answers RQ2, and H3--H5 together with the comparison of Section~\ref{sec:res-bqi} answer RQ3:
+\begin{itemize}
+  \item H1: the relative standard error of $\kinh$ is at most 20\,\%, with the parametric-bootstrap RMSE within a factor of two of the Fisher standard error;
+  \item H2: M1 predicts the ratings out of sample better than the null models of Section~\ref{sec:loso}, (a) from EEG alone and (b) from EEG and past ratings;
+  \item H3: $\alpha>0$ with a 95\,\% interval excluding zero (prediction T3 of BQI, Section~\ref{sec:theory-pred});
+  \item H4: the sign of $\beta$ is determined; BQI predicts $\beta>0$ (prediction T4);
+  \item H5: $\kinh$ is higher in experienced meditators than in novices (prediction T5); on the second dataset this was split into F-H5a (higher, the theoretical direction) and F-H5b (lower, the direction observed on ds001787).
+\end{itemize}
+The second preregistration added three replication checks, which answer RQ4 and were fixed before any EEG of that dataset was examined: R1, the 95\,\% profile interval of $1/\kinh$ overlaps the ds001787 interval of 0.49--1.17~min; R2, the observed-over-expected information ratio of the alpha channel again exceeds 1.5 on the data and is near 1 on data simulated from the fit; R3, the value of $1/\kd$ (no prediction). Two stop criteria protected against fitting a model to data that cannot support it: K2, the median lag-1 autocorrelation of the DMN feature below 0.3; K3, more than half of the sessions excluded. Four gates per dataset, E0--E3 and F0--F3, are recorded with time stamps: decoding of the probes (E0/F0), full rank of the Fisher matrix on the real probe schedules (E1/F1), practical identifiability (E2/F2: bootstrap RMSE within a factor of two of the Fisher SE for at least three of the four key parameters $\kinh,\kd,\alpha,\beta$, and unimodal profiles) and model checks (E3/F3: white innovations, leave-one-session-out prediction and sensitivity analyses completed).
+
+\subsection{Datasets}
+\label{sec:data}
+
+\subsubsection{ds001787}
+The first dataset \cite{Brandmeyer2018,Delorme2024ds} contains 40 sessions (16--60~min, median 45~min) from 24 practitioners of Himalayan Yoga mantra meditation, 12 experienced and 12 novices, with 64-channel EEG at 256~Hz and 983 experience-sampling probes at a median interval of 1.6 minutes. Each probe asks three questions on a 0--3 scale: depth of meditation (Q1), depth of mind wandering (Q2) and drowsiness (Q3). The preregistered rating, which stands in for the QoC of BQI, is $r=\mathrm{Q1}-\mathrm{Q2}$, from $-3$ to $3$. Key presses were decoded from the behavioural logs because a key of 0 leaves no trigger in the event files; 96.6\,\% of the probes were matched, and none of 741 zero-key presses has a trigger (gate E0). The reference design of the companion paper was patterned on this dataset.
+
+\subsubsection{OSF 3uszv}
+The second dataset \cite{RodriguezLarios2021} comes from a different laboratory, amplifier, montage, practice and rating scale: 29 practitioners with more than three years of meditation experience and 29 participants without any, each recorded once during about an hour of breath-focus meditation interrupted by a bell every 77~s on average (40 probes per session; 58 sessions, 2,258 probes, 55 subject-hours; 21-channel Nexus-32 EEG at 512~Hz). At each bell the participant reported whether they had been focusing on the breath, thinking about something else or distracted by something else, then rated their confidence, their sleepiness and the depth of focus or absorption, all on 1--7 scales. The preregistered rating is the signed confidence, $r=+c$ for breath focus and $-c$ otherwise, from $-7$ to $7$; it is bimodal (88\,\% of the ratings have $|r|\ge5$). The files are served as compressed text archives in which every EEG sample is written four times (2,048 rows per second at 512~Hz); decoding recovered a valid answer and confidence at 2,233 of 2,258 bells (gate F0: 98.9\,\%).
+
+\begin{table}[t]
+\caption{\textbf{The two datasets, the two preregistrations and the predictions fixed before each lock.}}
+\label{tab:datasets}
+\centering\scriptsize
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{lll}
+\toprule
+ & ds001787 & OSF 3uszv \\
+\midrule
+Source; practice & \cite{Brandmeyer2018}; mantra & \cite{RodriguezLarios2021}; breath focus \\
+Participants & 24 (12 exp., 12 novices) & 58 (29 exp., 29 novices) \\
+Sessions; length & 40; 16--60 min (median 45) & 58; about 57 min \\
+EEG & 64 channels, 256 Hz & 21 channels, 512 Hz \\
+Probes; median interval & 983; 1.6 min & 2,258; 77 s \\
+Rating & $\mathrm{Q1}-\mathrm{Q2}$, $-3$ to $3$ & signed confidence, $-7$ to $7$ \\
+Lock (UTC) & 19 Oct 2026, 13:48 & 3 Nov 2026, 09:21 \\
+EEG before lock & none downloaded & downloaded; triggers read \\
+Gates & E0--E3 & F0--F3 \\
+Predicted CRB of $\kinh$ & 9.1\,\% & 6.7\,\% \\
+Detectable group difference & 0.51 log units & 0.37 log units \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Preregistration and Disclosures}
+\label{sec:prereg}
+Table~\ref{tab:datasets} summarises the two datasets and the two locks. The first preregistration fixed the features (one primary pair and three alternatives), the artefact and retention rules, the model, the number of starting points and bootstrap replicates, the null models, the sensitivity analyses and the stop criteria; it was locked at 13:48 UTC on 19 October 2026, after the decoding and the structural analysis on the real probe schedules and 99 seconds before the first EEG file was downloaded, and the download script refuses EEG files without a valid lock. The second preregistration reused the plan with the differences listed in Sections~\ref{sec:prep} and~\ref{sec:artefact} and the additions of Section~\ref{sec:hyp}; it was locked at 09:21 UTC on 3 November 2026. Unlike ds001787, the OSF archives had been downloaded before the lock, because triggers and EEG are stored in the same file; the preregistration declares what had been read: the authors' analysis scripts, the trigger column of the 58 task files, and one two-minute segment of one file used to establish the sampling structure. No feature and no EEG--rating relation had been computed. All deviations from the two locked texts are listed in Appendix~\ref{app:deviations}.
+
+\subsection{Preprocessing and Feature Extraction}
+\label{sec:prep}
+Both datasets went through the same pipeline, implemented with MNE-Python \cite{Gramfort2013}. The EEG was band-passed at 1--40~Hz with a 50~Hz notch; bad channels were detected by a robust z-score of the log variance above 4 and interpolated by spherical splines (median 0 per session on both datasets); the data were re-referenced to the average. Eye and muscle components identified by ICLabel \cite{PionTonachini2019} with probability at least 0.8 were removed from an extended-infomax Picard decomposition \cite{Ablin2018} computed on a 1--100~Hz copy of the same data, the band on which ICLabel was trained (30 components on ds001787, median 2.5 removed; 18--20 on OSF 3uszv, one fewer than the good channels, median 2 removed). The 21 EEG columns of the OSF text archives (19 channels of the 10--20 system and both earlobes) were read taking one row of each group of four identical rows, converted to volts, given standard 10--20 positions and resampled from 512 to 256~Hz, so that the complexity feature is computed at the same rate on both datasets. Each session was cut into a continuous grid of 10-s epochs.
+
+The DMN proxy $y_A$ is the log 8--12~Hz power (Welch, 2-s windows, 50\,\% overlap) over nine posterior channels on ds001787 (Pz, POz, P3, P4, PO3, PO4, O1, O2, Oz) and the five available on OSF 3uszv (P3, Pz, P4, O1, O2). Following BQI, which takes the Lempel--Ziv complexity of the EEG as the empirical proxy for $\Phi$ (eq.~\eqref{eq:bqi-pci}; \cite[Sec.~6.3, eq.~(49)]{BQI}), the integration proxy $y_\Phi$ is the multichannel Lempel--Ziv complexity \cite{Schartner2015} of the 19 common 10--20 channels; unlike the perturbational complexity index it is computed on spontaneous rather than stimulation-evoked EEG. It is computed on binarised amplitude envelopes and standardised against 20 multichannel phase-randomised surrogates that preserve every channel's spectrum and the cross-spectra, which removes its spectral component. The three locked alternatives are the periodic alpha power (alpha power minus the aperiodic fit at 10~Hz \cite{Donoghue2020}) and the log 4--7~Hz frontal theta power for $y_A$ (elevated theta is the spectral signature of expert meditation in \cite[App.~B.2]{BQI}), and the negative aperiodic exponent over 1--40~Hz for $y_\Phi$. Both features are centred within each session and divided by one pooled within-session standard deviation; ratings are centred within session and enter the filter at the exact probe times.
+
+\subsection{Artefact Rules and Retention}
+\label{sec:artefact}
+An epoch that overlaps a probe window (from the bell or the first question to 3~s after the last response) or exceeds an amplitude threshold is marked missing rather than deleted, so that the time step of the model is preserved and the filter skips the update. The threshold locked for ds001787 is 150~$\mu$V peak-to-peak on any channel. An amplitude survey performed before any feature was computed showed that this rule would retain only 22 of 40 sessions; the locked rule was kept for the primary analysis, and a session-adaptive rule on the feature channels, $\max(150~\mu\mathrm V,\ \text{session median}+5\,\mathrm{MAD})$, was added as a post-registration sensitivity analysis. For OSF 3uszv the adaptive rule was locked as the primary rule and the fixed rule became a sensitivity variant. On both datasets a session is retained when it has at most 40\,\% missing epochs and at least eight rated probes.
+
+\subsection{Statistical Analysis}
+\label{sec:stats}
+
+\subsubsection{Estimation and the Three Error Numbers}
+\label{sec:errors}
+Positive parameters are estimated on the log scale and $\kappa$, $\alpha$, $\beta$ on the linear scale, by L-BFGS-B \cite{Byrd1995} from six starting points (moment-based initial values and perturbations of them); the best optimum is retained. For each dataset we report three preregistered error numbers for every parameter: (i) the CRB computed before the lock from the exact Fisher information at the nominal parameters on the real probe schedules, together with the same bound on the retained sessions and with $\rA$ set to the measured signal-to-noise ratio of the DMN channel; (ii) the Fisher standard error at the maximum-likelihood estimate, from the exact expected information at $\hat\thetav$; (iii) the root-mean-square error of 200 parametric-bootstrap refits \cite{Efron1993} on the real designs, with the ratio $\RMSE/\mathrm{SE}$ that defines gate E2/F2. Two further quantities are descriptive: the standard error from the observed information, the numerical Hessian of the log-likelihood at $\hat\thetav$, and the profile likelihood of the three rate constants \cite{Raue2009}, nine points over $\pm0.8$ log units with all other parameters re-optimised, from which a 95\,\% interval and a profile standard error are read. In a correctly specified model the observed and expected information agree to sampling error; a ratio of observed to expected standard error well above one, confined to the parameters of one channel and absent when the same statistic is computed on a dataset simulated from $\hat\thetav$ on the same designs, is the signature of misspecification of that channel \cite{White1982}. Because the bootstrap simulates from the model, it cannot detect this, which is why both likelihood-based and Fisher-based errors are reported.
+
+\subsubsection{Out-of-Sample Prediction}
+\label{sec:loso}
+Hypothesis H2 is tested by leave-one-session-out prediction of the ratings. For each held-out session the model is refitted on the others, and each rated probe is predicted one step ahead (a) from the EEG of that session alone and (b) from the EEG and the past ratings of that session. The score is the mean Gaussian log predictive density per probe (LPD) \cite{Vehtari2017} and the mean absolute error. Three null models are preregistered: N1, M1 with the rating channel only (the dynamics without EEG); N2, an instantaneous regression of the rating on $(y_A,y_\Phi)$ at the probe epoch (the EEG without dynamics); N3, the running mean of the session's past ratings. $\Delta\mathrm{LPD}$ is M1 minus the null model, averaged within session first, with a session-level bootstrap 95\,\% interval (2,000 resamples); H2 requires an interval above zero against N2 in (a) and against N1 and N3 in (b).
+
+\subsubsection{Groups, Subjects and Meta-Analysis}
+Hypothesis H5 is tested in two preregistered ways: the Wald interval of the difference of $\log\kinh$ between the two group fits, and a one-degree-of-freedom likelihood-ratio test in which only $\kinh$ is group-specific and all other parameters are shared, together with the ten-degree-of-freedom test with all parameters group-specific. Per-subject fits are summarised by a random-effects meta-analysis of $\log\kinh$ \cite{Viechtbauer2005} over the subjects with a finite standard error, which gives a pooled time constant and the between-subject standard deviation $\tau$.
+
+\subsubsection{Model Checks, Sensitivity Analyses and Robustness Rule}
+The innovations of the two EEG channels are tested for whiteness by the Ljung--Box statistic \cite{Ljung1978} (gate E3/F3 requires a median $p$ above 0.01) and for mutual correlation (a full observation covariance replaces the diagonal one if the median correlation exceeds 0.2). A posterior predictive check \cite{Gelman1996} simulates 200 replicate datasets from $\hat\thetav$ on the real designs, adds the session means back, rounds and clips the simulated ratings to the scale, and compares the frequency of each rating level, the lag-1 autocorrelation of the ratings and the difference in within-session rating spread between experienced and novice participants with the observed values. Six sensitivity variants were locked for ds001787 (the three alternative features, per-session z-scoring, sessions with at most 20\,\% missing epochs, and the first 20 probes of each session) and seven for OSF 3uszv (the same six and the fixed 150~$\mu$V rule). The robustness rule declares the sign of $\alpha$, the sign of $\beta$ and the time constant $1/\kinh$ robust when they are unchanged, the last meaning inside the 95\,\% profile interval of the primary analysis, in at least 80\,\% of the variants that run. Post-registration variants are reported separately and do not count.
+
+\subsection{Simulation of a Feature With Two Time Scales}
+\label{sec:simmethods}
+To interpret the rate constants we simulated a feature $y_t=s_t+f_t+e_t$ made of a slow Ornstein--Uhlenbeck component $s$ with time constant $\tau_s\in\{3,7,15\}$~min and variance share $p$, a fast component $f$ with $\tau_f=0.5$~min and variance $1-p$, and white noise $e$ with standard deviation 0.6 (a signal-to-noise ratio of 1.7, close to the fitted values), on the OSF design: 48 sessions of 342 epochs with two of every eight epochs missing (the probe windows) and a further 10\,\% missing at random. The feature was fitted with one Ornstein--Uhlenbeck process plus white noise, the DMN channel of M1, by exact maximum likelihood from two starting points, for $p=0,0.1,\dots,1$.
+
+\subsection{Software and Reproducibility}
+\label{sec:software}
+The pipeline is written in Python with NumPy and SciPy \cite{Harris2020,Virtanen2020}. Every step is one command, keeps checkpoints and refuses to run before its gate; 114 unit tests cover the model, the filter, the Fisher matrix, the gates and both data pipelines. The preregistrations, their locks, the gate records, the configuration snapshots and every number quoted below are in the repository (Appendix~\ref{app:repro}).

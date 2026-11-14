@@ -1,0 +1,114 @@
+%% IV. Phương pháp: thiết kế nghiên cứu, mô hình quan sát, dự đoán, giả thuyết, dữ liệu, đăng ký trước,
+%% tiền xử lý, phân tích thống kê, mô phỏng, phần mềm. Được access_vi.tex \input.
+\section{Phương pháp}
+\label{sec:methods}
+
+\subsection{Thiết kế nghiên cứu}
+\label{sec:design}
+Đây là một phân tích thứ cấp khẳng định, có đăng ký trước, trên hai bộ dữ liệu EEG lấy mẫu trải nghiệm mở, với một kế hoạch đã khoá cho mỗi bộ và cùng một mã, mô hình và đặc trưng cho cả hai. Với mỗi bộ, phân tích chạy theo một thứ tự bước cố định, mỗi bước từ chối bắt đầu cho đến khi cổng của bước trước đã được ghi: (1) giải mã các lần hỏi tự chấm (cổng E0/F0); (2) phân tích cấu trúc và CRB dự đoán trên lịch hỏi thật (cổng E1/F1); (3) khoá SHA-256 bản đăng ký trước; (4) tiền xử lý và trích đặc trưng; (5) fit gộp, theo nhóm và theo từng người; (6) bootstrap tham số (cổng E2/F2); (7) kiểm tra phần dư, dự đoán bỏ-một-phiên và các phân tích độ nhạy (cổng E3/F3); và, với bộ thứ hai, (8) các kiểm tra lặp lại đã đăng ký so với bộ thứ nhất. Các Mục~\ref{sec:model}--\ref{sec:hyp} trình bày mô hình quan sát, dự đoán của phân tích thiết kế và giả thuyết; các Mục~\ref{sec:data}--\ref{sec:prereg} dữ liệu và các bản đăng ký trước; các Mục~\ref{sec:prep}--\ref{sec:software} phần phân tích.
+
+\subsection{Mô hình quan sát và hàm hợp lý}
+\label{sec:model}
+Mô hình trạng thái là M1 ở dạng độ lệch~\eqref{eq:m1} dẫn ra từ BQI ở Mục~\ref{sec:theory-m1}; thành phần DMN của nó là một quá trình Ornstein--Uhlenbeck \cite{UhlenbeckOrnstein1930} với hằng số thời gian $1/\kinh$, và các tốc độ tính theo phút. Vì mọi đặc trưng và điểm tự chấm đều được quy tâm trong phiên (Mục~\ref{sec:prep}), chỉ dạng độ lệch là ước lượng được. Một phiên dài $T$ được chia thành các epoch $\Delta=10$~s. Ở mỗi epoch, một vectơ đặc trưng EEG được quan sát như phép đo trực tiếp có nhiễu của trạng thái,
+\begin{equation}
+  \yv_t=\tilde\xv_t+\boldsymbol\eta_t,\qquad \boldsymbol\eta_t\sim\mathcal N\bigl(0,\diag(\rA^2,\rPhi^2)\bigr),
+  \label{eq:obsEEG}
+\end{equation}
+và ở các epoch có hỏi, người tập báo một điểm, tức hàm đọc ra~\eqref{eq:m1-q} được quan sát kèm nhiễu,
+\begin{equation}
+  \text{điểm}_t=\alpha\tilde\Phi_t-\beta\tilde A_t+\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,\rQ^2).
+  \label{eq:obsRating}
+\end{equation}
+Mười tham số tự do là
+\begin{equation*}
+  \thetav=(\kinh,\kappa,\kd,\sA,\sPhi,\alpha,\beta,\rA,\rPhi,\rQ),
+\end{equation*}
+với dấu tự do cho $\kappa$, $\alpha$ và $\beta$. Lấy mẫu \eqref{eq:m1} ở độ dài epoch cho hồi quy tuyến tính--Gauss chính xác $\tilde\xv_{k+1}=F\tilde\xv_k+\mathbf w_k$ với $F=e^{M\Delta}$ và $\Cov(\mathbf w_k)$ theo cách dựng của Van Loan \cite{VanLoan1978}; các bước không đều giữa hai lần hỏi dùng cùng công thức với bước thật. Log-hợp lý của một phiên được tính bằng bộ lọc Kalman \cite{Kalman1960,Harvey1989,Durbin2012} với các cập nhật vô hướng tuần tự, nên một epoch thiếu hay một lần hỏi vắng chỉ đơn giản bỏ qua một cập nhật, và các phiên đóng góp cộng tính.
+
+\subsection{Dự đoán của phân tích thiết kế}
+\label{sec:predictions}
+Vì M1 tuyến tính--Gauss và dừng, mọi quan sát của một phiên lập thành một vectơ Gauss đồng thời với mô-men dạng đóng, và thông tin Fisher kỳ vọng $\mathcal I(\thetav)$ có sẵn chính xác, không cần mô phỏng \cite{companion}. CRB tương đối của một tham số dương là căn bậc hai của phần tử đường chéo tương ứng của $\mathcal I^{-1}$ trên thang log \cite{Rao1945,Cramer1946}. Trên lưới 144 thiết kế mô phỏng, CRB dự đoán sai số căn quân phương của ước lượng hợp lý cực đại trong hệ số hai ở 24 trong 24 ô thử (tỉ số trung vị 0,98), và $\kinh$ là tham số khó nhất: cần khoảng tám giờ-người EEG hai kênh để đạt sai số tương đối 20\,\%. Áp lên lịch hỏi thật của hai bộ dữ liệu, với tham số danh nghĩa của bài đồng hành, vốn lấy $k_{\mathrm{int}}$, $\kd$, $\alpha$ và $\beta$ từ Bảng~5 của BQI \cite{BQI} (Bảng~\ref{tab:bqimap}) và đặt hằng số thời gian DMN là 5~phút thay cho 23~phút in ở đó, cận dự đoán sai số tương đối 9,1\,\% cho $\kinh$ trên 40 phiên của ds001787 và 6,7\,\% trên 58 phiên của OSF 3uszv, và khác biệt nhỏ nhất phát hiện được của $\log\kinh$ giữa người thiền lâu năm và người mới là 0,51 và 0,37 đơn vị log ở lực 80\,\%. Các con số này được tính trước khi khoá mỗi bản đăng ký và là các dự đoán được kiểm định ở đây (RQ1).
+
+\subsection{Giả thuyết, kiểm tra lặp lại và cổng}
+\label{sec:hyp}
+Mỗi bản đăng ký cố định năm giả thuyết, gọi là E-H1 đến E-H5 cho ds001787 và F-H1 đến F-H5 cho OSF 3uszv; H1 trả lời RQ1, H2 trả lời RQ2, còn H3--H5 cùng phép so sánh ở Mục~\ref{sec:res-bqi} trả lời RQ3:
+\begin{itemize}
+  \item H1: sai số chuẩn tương đối của $\kinh$ không quá 20\,\%, với RMSE bootstrap tham số trong hệ số hai của sai số chuẩn Fisher;
+  \item H2: M1 dự đoán điểm tự chấm ngoài mẫu tốt hơn các mô hình rỗng của Mục~\ref{sec:loso}, (a) chỉ từ EEG và (b) từ EEG và điểm quá khứ;
+  \item H3: $\alpha>0$ với khoảng 95\,\% loại 0 (dự đoán T3 của BQI, Mục~\ref{sec:theory-pred});
+  \item H4: dấu của $\beta$ xác định được; BQI dự đoán $\beta>0$ (dự đoán T4);
+  \item H5: $\kinh$ cao hơn ở người thiền lâu năm so với người mới (dự đoán T5); trên bộ thứ hai giả thuyết này tách thành F-H5a (cao hơn, chiều lý thuyết) và F-H5b (thấp hơn, chiều quan sát được trên ds001787).
+\end{itemize}
+Bản đăng ký thứ hai thêm ba kiểm tra lặp lại, trả lời RQ4 và được cố định trước khi xem bất kỳ EEG nào của bộ đó: R1, khoảng profile 95\,\% của $1/\kinh$ chồng lên khoảng 0,49--1,17~phút của ds001787; R2, tỉ số thông tin quan sát trên kỳ vọng của kênh alpha lại vượt 1,5 trên dữ liệu và gần 1 trên dữ liệu mô phỏng từ fit; R3, giá trị của $1/\kd$ (không dự đoán). Hai tiêu chí dừng bảo vệ khỏi việc fit mô hình lên dữ liệu không chịu nổi nó: K2, trung vị tự tương quan trễ 1 của đặc trưng DMN dưới 0,3; K3, hơn nửa số phiên bị loại. Bốn cổng cho mỗi bộ, E0--E3 và F0--F3, được ghi kèm dấu thời gian: giải mã các lần hỏi (E0/F0), ma trận Fisher hạng đầy đủ trên lịch hỏi thật (E1/F1), khả năng xác định thực hành (E2/F2: RMSE bootstrap trong hệ số hai của SE Fisher ở ít nhất ba trong bốn tham số chính $\kinh,\kd,\alpha,\beta$, và profile đơn mốt) và kiểm tra mô hình (E3/F3: innovation trắng, dự đoán bỏ-một-phiên và các phân tích độ nhạy đã chạy xong).
+
+\subsection{Dữ liệu}
+\label{sec:data}
+
+\subsubsection{ds001787}
+Bộ thứ nhất \cite{Brandmeyer2018,Delorme2024ds} gồm 40 phiên (16--60~phút, trung vị 45~phút) của 24 người tập thiền mantra Himalayan Yoga, 12 lâu năm và 12 mới, với EEG 64 kênh ở 256~Hz và 983 lần hỏi lấy mẫu trải nghiệm cách nhau trung vị 1,6 phút. Mỗi lần hỏi gồm ba câu trên thang 0--3: độ sâu thiền (Q1), độ sâu lang thang tâm trí (Q2) và buồn ngủ (Q3). Điểm đã đăng ký, đứng thay cho QoC của BQI, là $r=\mathrm{Q1}-\mathrm{Q2}$, từ $-3$ đến $3$. Phím bấm được giải mã từ file hành vi vì phím 0 không để lại trigger trong file sự kiện; 96,6\,\% lần hỏi khớp, và không lần bấm phím 0 nào trong 741 lần có trigger (cổng E0). Thiết kế tham chiếu của bài đồng hành được dựng theo bộ này.
+
+\subsubsection{OSF 3uszv}
+Bộ thứ hai \cite{RodriguezLarios2021} đến từ một phòng thí nghiệm, bộ khuếch đại, montage, phương pháp tập và thang điểm khác: 29 người có trên ba năm kinh nghiệm thiền và 29 người chưa từng thiền, mỗi người được ghi một lần trong khoảng một giờ thiền tập trung hơi thở bị ngắt bởi tiếng chuông trung bình 77~s một lần (40 lần hỏi mỗi phiên; 58 phiên, 2\,258 lần hỏi, 55 giờ-người; EEG Nexus-32 21 kênh ở 512~Hz). Mỗi lần chuông, người tập báo mình đang tập trung vào hơi thở, đang nghĩ chuyện khác hay bị thứ khác làm phân tán, rồi chấm độ chắc chắn, mức buồn ngủ và độ sâu của sự tập trung hoặc cuốn theo, đều trên thang 1--7. Điểm đã đăng ký là độ chắc chắn có dấu, $r=+c$ khi tập trung vào hơi thở và $-c$ trong hai trường hợp còn lại, từ $-7$ đến $7$; phân phối của nó hai cực (88\,\% điểm có $|r|\ge5$). File được phát hành dưới dạng text nén trong đó mỗi mẫu EEG được ghi bốn lần (2\,048 dòng mỗi giây ở 512~Hz); giải mã thu được câu trả lời và độ chắc chắn hợp lệ ở 2\,233 trong 2\,258 lần chuông (cổng F0: 98,9\,\%).
+
+\begin{table}[t]
+\caption{\textbf{Hai bộ dữ liệu, hai bản đăng ký trước và các dự đoán cố định trước mỗi lần khoá.}}
+\label{tab:datasets}
+\centering\scriptsize
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{lll}
+\toprule
+ & ds001787 & OSF 3uszv \\
+\midrule
+Nguồn; phương pháp & \cite{Brandmeyer2018}; mantra & \cite{RodriguezLarios2021}; hơi thở \\
+Người tham gia & 24 (12 lâu năm, 12 mới) & 58 (29 lâu năm, 29 mới) \\
+Phiên; độ dài & 40; 16--60 phút (tr.\,vị 45) & 58; khoảng 57 phút \\
+EEG & 64 kênh, 256 Hz & 21 kênh, 512 Hz \\
+Lần hỏi; khoảng hỏi trung vị & 983; 1,6 phút & 2\,258; 77 s \\
+Điểm & $\mathrm{Q1}-\mathrm{Q2}$, $-3$ đến $3$ & $\pm$độ chắc chắn, $-7$ đến $7$ \\
+Khoá (UTC) & 19/10/2026, 13:48 & 3/11/2026, 09:21 \\
+EEG trước khi khoá & chưa tải & đã tải; đọc cột trigger \\
+Cổng & E0--E3 & F0--F3 \\
+CRB dự đoán của $\kinh$ & 9,1\,\% & 6,7\,\% \\
+Khác biệt nhóm phát hiện & 0,51 log & 0,37 log \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Đăng ký trước và khai báo}
+\label{sec:prereg}
+Bảng~\ref{tab:datasets} tóm tắt hai bộ dữ liệu và hai lần khoá. Bản đăng ký thứ nhất cố định các đặc trưng (một cặp chính và ba phương án thay thế), quy tắc nhiễu giả và giữ phiên, mô hình, số điểm xuất phát và số lần bootstrap, các mô hình rỗng, các phân tích độ nhạy và tiêu chí dừng; nó được khoá lúc 13:48 UTC ngày 19/10/2026, sau khi giải mã và phân tích cấu trúc trên lịch hỏi thật và 99 giây trước khi tải file EEG đầu tiên, và script tải từ chối file EEG khi chưa có khoá hợp lệ. Bản đăng ký thứ hai dùng lại kế hoạch đó với các khác biệt nêu ở Mục~\ref{sec:prep} và~\ref{sec:artefact} và các bổ sung ở Mục~\ref{sec:hyp}; nó được khoá lúc 09:21 UTC ngày 3/11/2026. Khác với ds001787, các file nén của OSF đã được tải về trước khi khoá, vì trigger và EEG nằm cùng một file; bản đăng ký khai báo những gì đã đọc: các script phân tích của tác giả, cột trigger của 58 file task, và một đoạn hai phút của một file dùng để xác lập cấu trúc lấy mẫu. Chưa đặc trưng nào và chưa liên hệ EEG--điểm nào được tính. Mọi sai lệch so với hai bản đã khoá được liệt kê ở Phụ lục~\ref{app:deviations}.
+
+\subsection{Tiền xử lý và trích đặc trưng}
+\label{sec:prep}
+Cả hai bộ đi qua cùng một pipeline, cài đặt bằng MNE-Python \cite{Gramfort2013}. EEG được lọc dải 1--40~Hz với notch 50~Hz; kênh xấu được phát hiện bằng z-score bền của log phương sai trên 4 và nội suy bằng spline cầu (trung vị 0 mỗi phiên trên cả hai bộ); dữ liệu được tham chiếu lại về trung bình. Các thành phần mắt và cơ do ICLabel \cite{PionTonachini2019} nhận diện với xác suất ít nhất 0,8 được loại khỏi phân tách Picard extended-infomax \cite{Ablin2018} tính trên bản sao 1--100~Hz của cùng dữ liệu, dải mà ICLabel được huấn luyện (30 thành phần trên ds001787, trung vị 2,5 bị loại; 18--20 trên OSF 3uszv, ít hơn số kênh tốt một, trung vị 2). 21 cột EEG của file text OSF (19 kênh hệ 10--20 và hai dái tai) được đọc bằng cách lấy một dòng trong mỗi nhóm bốn dòng giống hệt, đổi sang vôn, gán vị trí 10--20 chuẩn và hạ mẫu từ 512 về 256~Hz, để đặc trưng độ phức tạp được tính ở cùng tần số trên cả hai bộ. Mỗi phiên được cắt thành lưới liên tục các epoch 10~s.
+
+Đại diện DMN $y_A$ là log công suất 8--12~Hz (Welch, cửa sổ 2~s, chồng 50\,\%) trên chín kênh vùng sau ở ds001787 (Pz, POz, P3, P4, PO3, PO4, O1, O2, Oz) và năm kênh có sẵn ở OSF 3uszv (P3, Pz, P4, O1, O2). Theo BQI, vốn dùng độ phức tạp Lempel--Ziv của EEG làm đại diện thực nghiệm cho $\Phi$ (pt.~\eqref{eq:bqi-pci}; \cite[Mục~6.3, pt.~(49)]{BQI}), đại diện tích hợp $y_\Phi$ là độ phức tạp Lempel--Ziv đa kênh \cite{Schartner2015} của 19 kênh 10--20 chung; khác với chỉ số độ phức tạp nhiễu loạn, nó được tính trên EEG tự phát chứ không phải EEG gợi bởi kích thích. Nó được tính trên bao biên độ nhị phân hoá và chuẩn hoá theo 20 surrogate đa kênh ngẫu nhiên hoá pha giữ nguyên phổ của từng kênh và phổ chéo, nhờ đó loại thành phần phổ của nó. Ba phương án thay thế đã khoá là công suất alpha tuần hoàn (công suất alpha trừ phần aperiodic fit tại 10~Hz \cite{Donoghue2020}) và log công suất theta trán 4--7~Hz cho $y_A$ (theta tăng là dấu hiệu phổ của thiền lâu năm trong \cite[Phụ lục~B.2]{BQI}), và số mũ aperiodic đổi dấu trên 1--40~Hz cho $y_\Phi$. Cả hai đặc trưng được quy tâm trong phiên và chia cho một độ lệch chuẩn trong phiên gộp; điểm tự chấm được quy tâm trong phiên và vào bộ lọc tại đúng thời điểm hỏi.
+
+\subsection{Quy tắc nhiễu giả và giữ phiên}
+\label{sec:artefact}
+Một epoch chồng lên cửa sổ hỏi (từ tiếng chuông hoặc câu hỏi đầu đến 3~s sau câu trả lời cuối) hoặc vượt ngưỡng biên độ được đánh dấu thiếu thay vì xoá, nhờ đó bước thời gian của mô hình được giữ và bộ lọc bỏ qua cập nhật. Ngưỡng đã khoá cho ds001787 là 150~$\mu$V đỉnh-đỉnh ở bất kỳ kênh nào. Một khảo sát biên độ làm trước khi tính bất kỳ đặc trưng nào cho thấy quy tắc này chỉ giữ 22 trong 40 phiên; quy tắc đã khoá được giữ cho phân tích chính, và một quy tắc thích ứng theo phiên trên các kênh đặc trưng, $\max(150~\mu\mathrm V,\ \text{trung vị phiên}+5\,\mathrm{MAD})$, được thêm làm phân tích độ nhạy ngoài đăng ký. Với OSF 3uszv, quy tắc thích ứng được khoá làm quy tắc chính và quy tắc cố định trở thành biến thể độ nhạy. Trên cả hai bộ, một phiên được giữ khi có không quá 40\,\% epoch thiếu và ít nhất tám lần hỏi có điểm.
+
+\subsection{Phân tích thống kê}
+\label{sec:stats}
+
+\subsubsection{Ước lượng và ba con số sai số}
+\label{sec:errors}
+Các tham số dương được ước lượng trên thang log, $\kappa$, $\alpha$, $\beta$ trên thang tuyến tính, bằng L-BFGS-B \cite{Byrd1995} từ sáu điểm xuất phát (giá trị khởi đầu theo mô-men và các nhiễu loạn của chúng); cực trị tốt nhất được giữ. Với mỗi bộ, chúng tôi báo cáo ba con số sai số đã đăng ký cho mọi tham số: (i) CRB tính trước khi khoá từ thông tin Fisher chính xác tại tham số danh nghĩa trên lịch hỏi thật, cùng cận đó trên các phiên được giữ và với $\rA$ đặt theo tỉ số tín hiệu trên nhiễu đo được của kênh DMN; (ii) sai số chuẩn Fisher tại ước lượng hợp lý cực đại, từ thông tin kỳ vọng chính xác tại $\hat\thetav$; (iii) sai số căn quân phương của 200 lần fit lại bootstrap tham số \cite{Efron1993} trên thiết kế thật, với tỉ số $\RMSE/\mathrm{SE}$ định nghĩa cổng E2/F2. Hai đại lượng nữa mang tính mô tả: sai số chuẩn theo thông tin quan sát, tức Hessian số của log-hợp lý tại $\hat\thetav$, và hợp lý profile của ba hằng số tốc độ \cite{Raue2009}, chín điểm trong $\pm0{,}8$ đơn vị log với mọi tham số khác được tối ưu lại, từ đó đọc ra khoảng 95\,\% và một sai số chuẩn profile. Trong mô hình đặc tả đúng, thông tin quan sát và kỳ vọng khớp nhau đến sai số lấy mẫu; tỉ số sai số chuẩn quan sát trên kỳ vọng vượt hẳn 1, khu trú ở các tham số của một kênh và biến mất khi tính cùng thống kê trên dữ liệu mô phỏng từ $\hat\thetav$ trên cùng thiết kế, là dấu hiệu sai đặc tả của kênh đó \cite{White1982}. Vì bootstrap mô phỏng từ mô hình, nó không phát hiện được điều này, và đó là lý do báo cáo cả sai số dựa trên hàm hợp lý lẫn sai số Fisher.
+
+\subsubsection{Dự đoán ngoài mẫu}
+\label{sec:loso}
+Giả thuyết H2 được kiểm bằng dự đoán điểm tự chấm bỏ-một-phiên. Với mỗi phiên bị giữ lại, mô hình được fit lại trên các phiên còn lại, và mỗi lần hỏi có điểm được dự đoán một bước (a) chỉ từ EEG của phiên đó và (b) từ EEG và các điểm quá khứ của phiên đó. Điểm số là mật độ dự đoán log Gauss trung bình mỗi lần hỏi (LPD) \cite{Vehtari2017} và sai số tuyệt đối trung bình. Ba mô hình rỗng được đăng ký: N1, M1 chỉ với kênh điểm (động lực không có EEG); N2, hồi quy tức thời của điểm lên $(y_A,y_\Phi)$ tại epoch hỏi (EEG không có động lực); N3, trung bình chạy của các điểm quá khứ trong phiên. $\Delta\mathrm{LPD}$ là M1 trừ mô hình rỗng, lấy trung bình trong phiên trước, với khoảng bootstrap 95\,\% theo phiên (2\,000 lần lấy lại mẫu); H2 đòi hỏi khoảng này nằm trên 0 so với N2 ở (a) và so với N1 và N3 ở (b).
+
+\subsubsection{Nhóm, từng người và phân tích gộp}
+Giả thuyết H5 được kiểm theo hai cách đã đăng ký: khoảng Wald của hiệu $\log\kinh$ giữa hai fit theo nhóm, và kiểm định tỉ số hợp lý một bậc tự do trong đó chỉ $\kinh$ riêng theo nhóm còn mọi tham số khác dùng chung, cùng kiểm định mười bậc tự do với mọi tham số riêng theo nhóm. Các fit theo từng người được tóm tắt bằng phân tích gộp hiệu ứng ngẫu nhiên của $\log\kinh$ \cite{Viechtbauer2005} trên những người có sai số chuẩn hữu hạn, cho một hằng số thời gian gộp và độ lệch chuẩn giữa người $\tau$.
+
+\subsubsection{Kiểm tra mô hình, phân tích độ nhạy và quy tắc độ bền}
+Innovation của hai kênh EEG được kiểm tính trắng bằng thống kê Ljung--Box \cite{Ljung1978} (cổng E3/F3 đòi trung vị $p$ trên 0,01) và kiểm tương quan lẫn nhau (hiệp phương sai quan sát đầy đủ sẽ thay ma trận chéo nếu trung vị tương quan vượt 0,2). Một kiểm tra dự đoán hậu nghiệm \cite{Gelman1996} mô phỏng 200 bộ dữ liệu lặp từ $\hat\thetav$ trên thiết kế thật, cộng lại trung bình phiên, làm tròn và cắt điểm mô phỏng về thang, rồi so tần suất từng mức điểm, tự tương quan trễ 1 của điểm và hiệu độ phân tán điểm trong phiên giữa người lâu năm và người mới với giá trị quan sát. Sáu biến thể độ nhạy được khoá cho ds001787 (ba đặc trưng thay thế, z-score theo phiên, các phiên có không quá 20\,\% epoch thiếu, và 20 lần hỏi đầu của mỗi phiên) và bảy cho OSF 3uszv (sáu biến thể đó và quy tắc cố định 150~$\mu$V). Quy tắc độ bền tuyên bố dấu của $\alpha$, dấu của $\beta$ và hằng số thời gian $1/\kinh$ là bền khi chúng không đổi, với đại lượng cuối nghĩa là nằm trong khoảng profile 95\,\% của phân tích chính, ở ít nhất 80\,\% các biến thể chạy được. Các biến thể ngoài đăng ký được báo riêng và không tính.
+
+\subsection{Mô phỏng một đặc trưng có hai thang thời gian}
+\label{sec:simmethods}
+Để diễn giải các hằng số tốc độ, chúng tôi mô phỏng một đặc trưng $y_t=s_t+f_t+e_t$ gồm một thành phần Ornstein--Uhlenbeck chậm $s$ với hằng số thời gian $\tau_s$ bằng 3, 7 hoặc 15~phút và tỉ trọng phương sai $p$, một thành phần nhanh $f$ với $\tau_f=0{,}5$~phút và phương sai $1-p$, và nhiễu trắng $e$ với độ lệch chuẩn 0,6 (tỉ số tín hiệu trên nhiễu 1,7, gần các giá trị fit được), trên thiết kế của OSF: 48 phiên gồm 342 epoch với hai trong mỗi tám epoch bị thiếu (cửa sổ hỏi) và thêm 10\,\% thiếu ngẫu nhiên. Đặc trưng được fit bằng một quá trình Ornstein--Uhlenbeck cộng nhiễu trắng, tức kênh DMN của M1, bằng hợp lý cực đại chính xác từ hai điểm xuất phát, với $p=0;\,0{,}1;\dots;1$.
+
+\subsection{Phần mềm và tái tạo}
+\label{sec:software}
+Pipeline viết bằng Python với NumPy và SciPy \cite{Harris2020,Virtanen2020}. Mỗi bước là một lệnh, có checkpoint và từ chối chạy trước khi cổng của nó qua; 114 unit test bao phủ mô hình, bộ lọc, ma trận Fisher, các cổng và cả hai pipeline dữ liệu. Các bản đăng ký, khoá, hồ sơ cổng, bản chụp cấu hình và mọi con số trích dẫn dưới đây nằm trong kho mã (Phụ lục~\ref{app:repro}).

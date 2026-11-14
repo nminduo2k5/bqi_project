@@ -1,0 +1,14 @@
+\DeclareFontFamily{T5}{formata}{}
+\DeclareFontShape{T5}{formata}{n}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{formata}{n}{it}{<->ssub*phv/m/it}{}
+\DeclareFontShape{T5}{formata}{m}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{formata}{m}{it}{<->ssub*phv/m/it}{}
+\DeclareFontShape{T5}{formata}{m}{sl}{<->ssub*phv/m/sl}{}
+\DeclareFontShape{T5}{formata}{l}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{formata}{l}{it}{<->ssub*phv/m/it}{}
+\DeclareFontShape{T5}{formata}{b}{n}{<->ssub*phv/b/n}{}
+\DeclareFontShape{T5}{formata}{bx}{n}{<->ssub*phv/b/n}{}
+\DeclareFontShape{T5}{formata}{b}{it}{<->ssub*phv/b/it}{}
+\DeclareFontShape{T5}{formata}{bx}{it}{<->ssub*phv/b/it}{}
+\DeclareFontShape{T5}{formata}{cm}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{formata}{cm}{it}{<->ssub*phv/m/it}{}

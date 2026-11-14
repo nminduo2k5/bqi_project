@@ -14,7 +14,7 @@ Hai câu hỏi như ds001787, cộng ba kiểm tra lặp lại cố định trư
 |---|---|
 | Dữ liệu giữ lại | 48/58 phiên (25 người lâu năm, 23 người mới; 1 838 lần hỏi có điểm). 10 phiên loại vì hơn 40 % epoch thiếu. Riêng cửa sổ trả lời đã chiếm 34 % mỗi phiên. |
 | Cổng kiểm tra | F0 (giải mã 98,9 %), F1, F2, F3 đều PASS. |
-| Sai số của k_inh | CRB dự đoán trước khi khoá 6,7 %; đạt được: Fisher 8,5 %, Hessian 12,2 %, profile 11,8 %, bootstrap 8,8 %. Bản đồ thiết kế đúng lần thứ hai, trên phòng thí nghiệm khác, máy khác, thang điểm khác. |
+| Sai số của k_inh | CRB dự đoán trước khi khoá 6,7 %; đạt được: Fisher 8,5 %, Hessian 12,2 %, profile 11,8 %, bootstrap 8,8 %. Sai số Fisher vượt cận dự đoán 28 % (ds001787: 8 %), vẫn nằm gọn trong hệ số hai mà cận đã được kiểm chứng trên mô phỏng, trên phòng thí nghiệm khác, máy khác, thang điểm khác. |
 | F-H1 (SE k_inh ≤ 20 %) | Đạt theo cả hai tiêu chí (Fisher và profile). |
 | Hằng số thời gian | 1/k_inh = 7,1 phút (5,7–9,1), gấp chín lần 0,76 phút của ds001787; 1/k_d = 0,63 phút, so với 5,0 phút. Hai hằng số đổi chỗ cho nhau. R1 không lặp lại. |
 | Sai đặc tả kênh alpha | Tỉ số SE Hessian/Fisher 1,4 (ds001787: 2,3), dưới ngưỡng 1,5 đã đăng ký; R2 không lặp lại, nhưng dấu hiệu vẫn còn. |
@@ -31,7 +31,7 @@ Lặp lại trên cả hai bộ: (i) con số sai số theo Fisher chính xác; 
 
 Không lặp lại: (iv) α > 0; (v) các hằng số tốc độ và chiều khác biệt nhóm.
 
-Cách đọc đề xuất trong bài: fit Ornstein–Uhlenbeck trả về thang thời gian trội của đặc trưng được đưa vào. Trên ds001787, LZc là nhiễu nên k_d đo độ trôi 5 phút của điểm tự chấm; trên OSF, LZc có tín hiệu 30 s ghim Φ, điểm không trôi, còn alpha trôi theo phút trong phiên dài một giờ. Thang thời gian đó là tính chất của bản ghi và của đặc trưng, chưa phải của DMN. Tham số chỉ có nghĩa khi ánh xạ từ đặc trưng EEG sang biến trạng thái được hiệu chuẩn.
+Cách đọc đề xuất trong bài: fit Ornstein–Uhlenbeck trả về thang thời gian trội của đặc trưng được đưa vào. Trên ds001787, LZc là nhiễu nên k_d đo độ trôi 5 phút của điểm tự chấm; trên OSF, LZc có tín hiệu khoảng 40 s ghim Φ, điểm không trôi, còn alpha trôi theo phút trong phiên dài một giờ. Thang thời gian đó là tính chất của bản ghi và của đặc trưng, chưa phải của DMN. Tham số chỉ có nghĩa khi ánh xạ từ đặc trưng EEG sang biến trạng thái được hiệu chuẩn.
 
 ## 4. Đã cập nhật trong bản thảo (`template_latex/`)
 

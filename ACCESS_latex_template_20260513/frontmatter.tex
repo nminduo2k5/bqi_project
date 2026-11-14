@@ -1,0 +1,28 @@
+%% Title block, abstract and index terms. Input by access.tex right after \begin{document}.
+%% TODO: author list, e-mail and DOI before submission.
+\history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
+\doi{10.1109/ACCESS.2026.0000000}
+
+\title{From Equations to Electrodes: A Preregistered Test of the Brain-as-a-Query-Interface Model of Meditation on Two Open EEG Datasets}
+% TODO: confirm the author list and affiliations before submission (same block as the companion paper).
+\author{\uppercase{Dung Vu}\authorrefmark{1}}
+\address[1]{Phenikaa University, Hanoi 12116, Vietnam (e-mail: [institutional e-mail])}
+\tfootnote{This work was carried out at Phenikaa University, Hanoi. All computations were run on personal computers; no external funding was received.}
+
+\markboth
+{Vu: From Equations to Electrodes: Testing the BQI Model of Meditation on EEG}
+{Vu: From Equations to Electrodes: Testing the BQI Model of Meditation on EEG}
+
+\corresp{Corresponding author: Dung Vu (e-mail: [institutional e-mail]).}
+
+\begin{abstract}
+Dynamical models that link default-mode-network activity, information integration and a reported quality of meditation are increasingly proposed, and a design analysis based on the exact Fisher information of a linear-Gaussian state-space model has recently predicted how precisely such a model can be estimated from experience-sampling electroencephalography (EEG). Whether those predictions hold on real recordings had not been tested. We fitted the model to two open experience-sampling EEG datasets from different laboratories, ds001787 (24 practitioners, 40 sessions, 983 self-report probes) and OSF 3uszv (58 participants, 58 sessions, 2,258 probes), under two preregistrations locked with cryptographic hashes and four machine-checked verification gates each. On both datasets the relative error of the default-mode rate constant predicted before the lock was close to the Fisher standard error at the estimate and to the parametric-bootstrap error (9.1, 9.9 and 9.7 percent on ds001787; 6.7, 8.5 and 8.8 percent on OSF 3uszv), whereas the observed-information error of the alpha-power channel exceeded the Fisher value, a signature of misspecification that was absent in data simulated from the fit. Neither EEG proxy improved the out-of-sample prediction of the self-reports over null models on either dataset. The rate constants themselves did not replicate: the default-mode time constant was 0.76 minutes on ds001787 and 7.1 minutes on OSF 3uszv, and a simulation shows that an Ornstein--Uhlenbeck fit returns the dominant time scale of whatever feature it is given. Design analyses of this kind can be trusted for the precision they promise, but not for the meaning of parameters estimated from uncalibrated proxies.
+\end{abstract}
+
+\begin{keywords}
+Cram\'er--Rao bound, default mode network, EEG, experience sampling, Fisher information, Kalman filter, meditation, model misspecification, preregistration, state-space model.
+\end{keywords}
+
+\titlepgskip=-21pt
+
+\maketitle

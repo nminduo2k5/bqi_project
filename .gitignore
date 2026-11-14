@@ -33,3 +33,9 @@ VSTEP_so_tay_kien_thuc.html
 
 # wrong download (reward-learning task, not meditation); unused
 ds004147/
+
+# IEEE Access draft (paper 2) build files
+ACCESS_latex_template_20260513/*.log
+ACCESS_latex_template_20260513/*.aux
+ACCESS_latex_template_20260513/*.out
+ACCESS_latex_template_20260513/*.blg

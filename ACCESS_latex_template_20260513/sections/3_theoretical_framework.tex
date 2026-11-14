@@ -1,0 +1,162 @@
+%% III. Theoretical framework: the BQI model of D. Q. Vu (paper/bqi_paper.pdf), its equations,
+%% the derivation of the estimable model M1 and the theoretical predictions. Input by access.tex.
+%% Equation, section, table and algorithm numbers in \cite[...]{BQI} refer to that paper.
+\section{Theoretical Framework}
+\label{sec:theory}
+The theoretical foundation of this study is the Brain as a Query Interface (BQI) model of Vu \cite{BQI}. This section states the parts of BQI on which the analysis rests, with the equation, section, table and algorithm numbers of \cite{BQI}, derives from them the estimable state-space model M1, and lists the predictions that BQI makes for the quantities estimated here.
+
+\subsection{The Query-Interface Thesis}
+\label{sec:theory-bqi}
+BQI holds that cognition consists of three operations: the brain encodes its state $B$ and context $C$ into a query, the query is resolved against a Supra-Neural Information Space $\mathcal S$, modelled as a separable Hilbert space, and the answer is decoded into the perceptual space \cite[Sec.~3.2]{BQI}. With the query encoder $\Phi_E$, the search operator $\Sigma$ and the perception decoder $\Phi_D$ \cite[eqs.~(10)--(12)]{BQI}, perception is
+\begin{equation}
+  \mathrm{Perception}(t)=\Phi_D\bigl(\Sigma(\Phi_E(B(t),C(t)),\,\mathcal S)\bigr)
+  \label{eq:bqi-perception}
+\end{equation}
+\cite[eq.~(13)]{BQI}, where $\Sigma$ is implemented as scaled dot-product attention, $\Sigma(Q,K,V)=\mathrm{softmax}\bigl(QK^\top/\sqrt{d_k}\bigr)V$ \cite[Sec.~3.3, eq.~(16)]{BQI}. The brain accesses only the subspace $\mathcal H_{\mathcal B}$ onto which the projection $P_{\mathcal B}$ maps, and the information lost is
+\begin{equation}
+  \begin{split}
+  I_{\mathrm{lost}}&\triangleq\|\psi_{\mathrm{world}}\|^2-\|P_{\mathcal B}\psi_{\mathrm{world}}\|^2\\
+  &=\|(I-P_{\mathcal B})\psi_{\mathrm{world}}\|^2\ge 0
+  \end{split}
+  \label{eq:bqi-loss}
+\end{equation}
+\cite[eq.~(14)]{BQI}. Meditation is cast as an expansion of the accessible subspace: if it raises the rank of $P_{\mathcal B}$, $I_{\mathrm{lost}}$ decreases monotonically \cite[Corollary~3.1, eq.~(15)]{BQI}. Within the brain, beliefs are updated by Bayesian predictive coding: for observations $o$ and latent causes $s$, the brain maintains an approximate posterior $q(s;\mu)$ and minimises the variational free energy
+\begin{equation}
+  \begin{split}
+  \mathcal F(\mu)&\triangleq\KL\bigl[q(s;\mu)\,\|\,p(s\mid o)\bigr]-\ln p(o)\\
+  &=\KL\bigl[q\,\|\,p(s)\bigr]-\mathbb E_q\bigl[\ln p(o\mid s)\bigr],
+  \end{split}
+  \label{eq:bqi-free-energy}
+\end{equation}
+that is, complexity minus accuracy \cite[Sec.~3.1, Definition~3.1, eq.~(3)]{BQI}, by the gradient descent $\dot\mu^{(l)}=-\nabla_{\mu^{(l)}}\mathcal F$ at each level $l$ of the hierarchy \cite[eq.~(7)]{BQI}. In BQI terms, the suppression of the DMN during meditation is the empirical signature of an expanded $P_{\mathcal B}$, and the resulting gain in integration and in the quality of conscious experience is what the meditation model of BQI quantifies \cite[Sec.~6.3, 7 and 11.1]{BQI}.
+
+\subsection{Integration and Its Empirical Proxy}
+\label{sec:theory-phi}
+Following integrated information theory, BQI defines the system-level integrated information of a system $X$ of $n$ binary elements as
+\begin{equation}
+  \Phi(X)=\Phi(\mathcal C(X))=\sum_{\substack{M\subseteq X\\ \phi(M)>0}}\phi(M)\cdot\mathbf 1_{M\in\text{MIP-complex}},
+  \label{eq:bqi-phi}
+\end{equation}
+where $\phi(M)$ is the intrinsic integrated information of a mechanism $M$, the minimum over its partitions \cite[eq.~(47)]{BQI}, and the sum is computed over the maximum irreducibility complex (MIP-complex) \cite[Sec.~6.1, eq.~(48)]{BQI}. Because computing $\Phi$ exactly requires evaluating $2^n-2$ partitions, so that exact computation is $\mathcal O(2^n)$ and the optimisation NP-hard \cite[Proposition~6.1]{BQI}, BQI adopts the perturbational complexity index as its empirical proxy,
+\begin{equation}
+  \PCI=\frac{K(s)}{L(s)},\qquad K(s)\approx\LZC(s)=\frac{|C(s)|\,\log_2|s|}{|s|},
+  \label{eq:bqi-pci}
+\end{equation}
+where $s$ is the binary source matrix of the TMS-evoked EEG, $|s|=n_{\mathrm{channels}}\times n_{\mathrm{timepoints}}$, $C(s)$ is the Lempel--Ziv dictionary and $\LZC$ the Lempel--Ziv complexity \cite[Sec.~6.3, eq.~(49)]{BQI}. BQI reports a higher index in expert meditators than in alert wakefulness (0.623 against 0.567) and reads the combination of a higher index with a lower DMN activity as the signature of an expanded $P_{\mathcal B}$ \cite[Table~4 and Remark~6.1]{BQI}; it also notes that the index captures complexity rather than strict integration \cite[Sec.~11.3]{BQI}.
+
+\subsection{DMN Dynamics in Meditation}
+\label{sec:theory-dmn}
+BQI models the activity of the DMN, whose core hubs are mPFC, PCC, IPL and MTL, as a decay with a state-dependent suppression rate plus a Gaussian-process fluctuation,
+\begin{equation}
+  \begin{gathered}
+  \ADMN(t)=A_0\,e^{-\lambda(t)\,t}+\xi(t),\\
+  \xi(t)\sim\mathcal{GP}\bigl(0,k(t,t')\bigr),
+  \end{gathered}
+  \label{eq:bqi-dmn}
+\end{equation}
+where $\lambda(t)=\lambda_0+\Delta\lambda\cdot\mathbf 1_{[\text{task/meditation}]}$ is the state-dependent suppression rate and $k(t,t')$ is a Mat\'ern covariance kernel \cite[Sec.~7.1, eq.~(51)]{BQI}: meditation raises the suppression rate. The stochastic version of the BQI belief dynamics~\cite[eq.~(7)]{BQI} is the overdamped Langevin equation
+\begin{equation}
+  \dd\mu_t=-\nabla_\mu\mathcal F(\mu_t)\,\dd t+\sqrt{2\beta_{\mathrm n}^{-1}}\,\dd W_t
+  \label{eq:bqi-langevin}
+\end{equation}
+\cite[Sec.~12.2.1, eq.~(83)]{BQI}, where $W_t$ is a standard Wiener process and BQI writes the inverse temperature (neural noise level) as $\beta>0$; we write $\beta_{\mathrm n}$ to avoid a clash with the gain $\beta$ below. Its stationary density is the Gibbs (Boltzmann) measure $\rho^*(\mu)=Z^{-1}\exp(-\beta_{\mathrm n}\mathcal F(\mu))$ with partition function $Z=\int\exp(-\beta_{\mathrm n}\mathcal F(\mu))\dd\mu$ \cite[eq.~(85)]{BQI}; BQI interprets meditation as a reduction of the neural noise $\beta_{\mathrm n}^{-1}$ through the suppression of spontaneous DMN fluctuations \cite[Corollary~12.1]{BQI}. For a quadratic potential $\mathcal F(\mu)=\tfrac12\lambda\mu^2$ the dynamics~\eqref{eq:bqi-langevin} is an Ornstein--Uhlenbeck process, the case that BQI uses for the mean first-passage time to insight \cite[Sec.~12.2.2, eqs.~(86)--(87)]{BQI}.
+
+\subsection{The DMN--Integration--QoC System}
+\label{sec:theory-ode}
+The meditation model of BQI couples the DMN level, the integration $\Phi$ and the quality of consciousness (QoC) through the ODE system
+\begin{align}
+  \frac{\dd\ADMN}{\dd t}&=-\kinh\,\ADMN(t)+\kspont\,\xi(t), \label{eq:bqi-ode-a}\\
+  \frac{\dd\Phi}{\dd t}&=\kint\Bigl(1-\frac{\ADMN(t)}{\Amax}\Bigr)-\kd\,\Phi(t), \label{eq:bqi-ode-phi}\\
+  \frac{\dd\,\QoC}{\dd t}&=\alpha\frac{\dd\Phi}{\dd t}-\beta\frac{\dd\ADMN}{\dd t}-\gamma\,\QoC(t) \label{eq:bqi-ode-q}
+\end{align}
+\cite[Sec.~7.2, eqs.~(52)--(54)]{BQI}. Setting $\dot A_{\mathrm{DMN}}=\dot\Phi=\dot{\QoC}=0$, BQI gives the steady states
+\begin{align}
+  A^*_{\mathrm{DMN}}&=\frac{\kspont}{\kinh}\sqrt{2\pi\sigma_\xi^2}, \label{eq:bqi-ss-a}\\
+  \Phi^*&=\frac{\kint}{\kd}\Bigl(1-\frac{A^*_{\mathrm{DMN}}}{\Amax}\Bigr), \label{eq:bqi-ss-phi}\\
+  \QoC^*&=\frac1\gamma\Bigl(\alpha\kint\,\frac{\Amax-A^*_{\mathrm{DMN}}}{\Amax\,\kd}\notag\\
+  &\qquad\quad+\beta\,\frac{\kspont}{\kinh}\sqrt{2\pi\sigma_\xi^2}\Bigr) \label{eq:bqi-ss-q}
+\end{align}
+\cite[eqs.~(55)--(57)]{BQI}, with $\sigma_\xi$ the scale of the fluctuation $\xi$. The parameters of the system were estimated by least squares from meta-analytic data ($N=3{,}241$) \cite[Table~5]{BQI}: $\kinh=0.043~\mathrm{min^{-1}}$ (95\,\% CI 0.038--0.048), $\kspont=0.027$, $\kint=0.081~\mathrm{min^{-1}}$, $\kd=0.034~\mathrm{min^{-1}}$, $\alpha=2.34\pm0.18$, $\beta=1.87\pm0.21$ and $\gamma=0.19\pm0.03$, with $R^2=0.83$. The same data give the correlations
+\begin{equation}
+  \begin{gathered}
+  r(\ADMN,\QoC)=-0.89,\quad r(\PCI,\QoC)=+0.84,\\
+  r(\ADMN,\PCI)=-0.78,\quad\text{all } p<0.001,
+  \end{gathered}
+  \label{eq:bqi-corr}
+\end{equation}
+\cite[Sec.~7.3, eq.~(58)]{BQI} and the regression
+\begin{equation}
+  \widehat{\QoC}=2.34\,\PCI-0.038\,\ADMN+3.12,\quad R^2=0.71
+  \label{eq:bqi-reg}
+\end{equation}
+\cite[eq.~(59)]{BQI}. BQI's meta-analysis of 16 studies finds a pooled reduction of the DMN BOLD signal during meditation of 39.4\,\% (95\,\% CI 35.2--43.6\,\%, $d=1.70$, $I^2=31\,\%$) \cite[Sec.~7.4, Table~6]{BQI}, and its cross-sectional data show the DMN signal falling and the QoC and the complexity index rising monotonically with years of practice \cite[Table~7]{BQI}, with expert meditators at a 62\,\% lower DMN signal, a 105\,\% higher QoC and a 12.5\,\% higher index than controls \cite[Sec.~7.5]{BQI}. BQI notes that the parameters of Table~5 come from pooled cross-sectional data rather than from a longitudinal design \cite[Sec.~11.3]{BQI}.
+
+\subsection{Closed-Loop Control and the Read-Out of QoC}
+\label{sec:theory-com}
+BQI turns the model into a closed-loop brain--computer interface, the Consciousness Optimisation Model (COM). In its Algorithm~2, a closed-loop BCI gain sets the stimulation from the QoC error, $u_{\mathrm{stim}}=K\bigl(\QoC_{\mathrm{target}}-\QoC(t)\bigr)$ (line~5), the DMN is suppressed by a free-energy gradient step, $\ADMN(t)=\ADMN(t-1)\bigl(1-\eta_{\mathrm{DMN}}\nabla_{\mathrm{att}}\mathcal F\bigr)$ (line~6), integration is approximated from the belief state and the DMN level, $\Phi(t)=\text{IIT-approx}(\mu,\ADMN(t))$ (lines~13 and~20), and QoC is read out algebraically as
+\begin{equation}
+  \QoC(t)=\alpha\,\Phi(t)-\beta\,\ADMN(t)+\gamma_0
+  \label{eq:bqi-readout}
+\end{equation}
+\cite[Sec.~9.3, Alg.~2, line~21]{BQI}. The COM objective is $\max_{\{u_t\}}\QoC(T)=\max_{\{u_t\}}\alpha\Phi(T)-\beta\ADMN(T)$, subject to the DMN and integration dynamics \eqref{eq:bqi-ode-a}--\eqref{eq:bqi-ode-phi}, the stimulation bound $\|u_t\|\le\epsilon$ and $\ADMN(t),\Phi(t)\ge0$ \cite[Sec.~9.4, eqs.~(69)--(73)]{BQI}. The BQI--BCI control problem maximises the discounted QoC over a session, $\max_{\pi\in\Pi}\mathbb E_\pi\bigl[\int_0^T e^{-\rho t}\QoC(t)\dd t\bigr]$, and its Pontryagin solution is the bang-bang stimulation $u^*(t)=\epsilon\,\mathrm{sign}(\lambda_A(t))$, with $\lambda_A$ the co-state of $\ADMN$ \cite[Sec.~10.1, eqs.~(74)--(75)]{BQI}. BQI also models depression as a lowered $\kinh$ with a strongly raised $\ADMN$, and lists mindfulness and CBT as the interventions that raise $\kinh$ \cite[Table~10]{BQI}.
+
+\subsection{Fisher Information in BQI}
+\label{sec:theory-fisher}
+BQI equips the manifold of belief distributions with the Fisher information metric
+\begin{equation}
+  g_{ij}(\theta)=\mathbb E_{p(\cdot;\theta)}\Bigl[\frac{\partial\ln p(x;\theta)}{\partial\theta^i}\,\frac{\partial\ln p(x;\theta)}{\partial\theta^j}\Bigr]
+  \label{eq:bqi-fisher}
+\end{equation}
+where $\theta\in\mathbb R^d$ parameterises the belief state $q(s;\theta)$, and derives the natural-gradient belief update $\dot\theta=-G(\theta)^{-1}\nabla_\theta\mathcal F(\theta)$, with $G(\theta)=[g_{ij}(\theta)]$ the Fisher information matrix \cite[Sec.~12.1, eqs.~(79)--(80)]{BQI}. The expected Fisher information on which the design analysis and the Cram\'er--Rao bounds of this study rest is the same quantity, evaluated for the parameters of the meditation model rather than for a belief state.
+
+\subsection{From the BQI System to the Estimable Model M1}
+\label{sec:theory-m1}
+Three steps turn \eqref{eq:bqi-ode-a}--\eqref{eq:bqi-ode-q} into a model that can be fitted to EEG and self-reports \cite{companion}. First, the spontaneous drive $\kspont\xi(t)$ of \eqref{eq:bqi-ode-a} is split into a constant baseline and a white fluctuation, $\kspont\xi(t)=\kinh A_0+\sA\dot W_A(t)$, which is the Langevin dynamics~\eqref{eq:bqi-langevin} with the quadratic potential $\mathcal F(A)=\tfrac12\kinh(A-A_0)^2$ and $\beta_{\mathrm n}^{-1}=\sA^2/2$; the DMN becomes an Ornstein--Uhlenbeck process whose stationary law is the Gibbs measure $\mathcal N(A_0,\sA^2/(2\kinh))$ of \cite[eq.~(85)]{BQI}. Second, \eqref{eq:bqi-ode-phi} is kept and given its own fluctuation $\sPhi\,\dd W_\Phi$. Third, the differential QoC equation \eqref{eq:bqi-ode-q} is replaced by the algebraic read-out~\eqref{eq:bqi-readout} that BQI uses in COM: integrated over time, \eqref{eq:bqi-ode-q} makes QoC a high-pass filter of $\alpha\Phi-\beta\ADMN$, so that its steady state is zero for every parameter value and the steady state~\eqref{eq:bqi-ss-q} \cite[eq.~(57)]{BQI} is not a stationary point of the system \cite{companion}. The resulting model M1 is
+\begin{align}
+  \dd A&=-\kinh(A-A_0)\,\dd t+\sA\,\dd W_A, \label{eq:m1-a}\\
+  \dd\Phi&=\Bigl[\kint\Bigl(1-\frac{A}{\Amax}\Bigr)-\kd\Phi\Bigr]\dd t+\sPhi\,\dd W_\Phi, \label{eq:m1-phi}\\
+  \QoC&=\alpha\Phi-\beta A+\gamma_0, \label{eq:m1-q}
+\end{align}
+with stationary means $A^*=A_0$, $\Phi^*=(\kint/\kd)(1-A_0/\Amax)$ and $\QoC^*=\alpha\Phi^*-\beta A_0+\gamma_0$, which is non-zero for generic parameters. Writing $\tilde A=A-A^*$ and $\tilde\Phi=\Phi-\Phi^*$ gives the deviation form
+\begin{equation}
+  \begin{gathered}
+  \dd\tilde\xv=M\tilde\xv\,\dd t+G\,\dd\mathbf W,\\
+  M=\begin{pmatrix}-\kinh&0\\-\kappa&-\kd\end{pmatrix},\qquad
+  G=\diag(\sA,\sPhi),
+  \end{gathered}
+  \label{eq:m1}
+\end{equation}
+with $\tilde\xv=(\tilde A,\tilde\Phi)^\top$, a two-dimensional Wiener process $\mathbf W$ and the coupling $\kappa=\kint/\Amax$, and the read-out $\QoC-\QoC^*=\alpha\tilde\Phi-\beta\tilde A$. Table~\ref{tab:bqimap} maps the parameters of BQI onto those of M1 and states which of them can be estimated from EEG proxies and self-reports that are centred within session (Section~\ref{sec:prep}): the levels $A_0$, $\Phi^*$ and $\gamma_0$ and the ceiling $\Amax$ are not, $\kspont$ survives only through the noise intensity $\sA$, and the decay $\gamma$ disappears with \eqref{eq:bqi-ode-q}. The rates $\kinh$ and $\kd$ are scale-free and can be compared with BQI directly; $\kappa$, $\alpha$ and $\beta$ depend on the units of the proxies and the ratings, so only their signs can.
+
+\begin{table*}[t]
+\caption{\textbf{From the parameters of BQI to the parameters of M1.} BQI values: least-squares fit to meta-analytic data \cite[Table~5]{BQI}. The last column states whether the M1 parameter is estimated here from EEG proxies and self-reports centred within session, and what can be compared with BQI.}
+\label{tab:bqimap}
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llllll}
+\toprule
+BQI symbol & Meaning in BQI & BQI equation & BQI value & In M1 & Estimated here \\
+\midrule
+$\kinh$ & DMN suppression rate & (52) & $0.043~\mathrm{min^{-1}}$ (23 min) & $\kinh$, eq.~\eqref{eq:m1-a} & yes; time constant comparable \\
+$\kspont\,\xi(t)$ & spontaneous DMN activation & (52) & $\kspont=0.027$ & $\kinh A_0+\sA\dot W_A$ & $\sA$ only; $A_0$ centred out \\
+$\kint$ & integration rate & (53) & $0.081~\mathrm{min^{-1}}$ & $\kappa=\kint/\Amax$, eq.~\eqref{eq:m1} & yes; sign comparable \\
+$\kd$ & integration decay rate & (53) & $0.034~\mathrm{min^{-1}}$ (29 min) & $\kd$ & yes; time constant comparable \\
+$\alpha$ & gain $\Phi\to\QoC$ & (54), Alg.~2 & $2.34\pm0.18$ & $\alpha$, eq.~\eqref{eq:m1-q} & yes; sign comparable \\
+$\beta$ & gain $\ADMN\to\QoC$ (negative effect) & (54), Alg.~2 & $1.87\pm0.21$ & $\beta$, eq.~\eqref{eq:m1-q} & yes; sign comparable \\
+$\gamma$ & QoC decay rate & (54) & $0.19\pm0.03$ & replaced by the read-out & no \\
+$\Amax$ & DMN ceiling & (53) & -- & fixes the unit of $A$ & no \\
+-- & noise of $\Phi$ and of the observations & -- & -- & $\sPhi$, $\rA$, $\rPhi$, $\rQ$ & yes \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Theoretical Predictions}
+\label{sec:theory-pred}
+BQI makes five predictions for the quantities of M1, which the hypotheses of Section~\ref{sec:hyp} and the comparison of Section~\ref{sec:res-bqi} test:
+\begin{enumerate}
+  \item[T1] \emph{DMN time scale.} The DMN relaxes slowly, with a time constant $1/\kinh$ of about 23~min \cite[Table~5]{BQI}.
+  \item[T2] \emph{Coupling.} DMN disengagement feeds integration, $\kappa=\kint/\Amax>0$ \cite[eq.~(53)]{BQI}, consistent with the negative correlation between DMN activity and the complexity index \cite[eq.~(58) and Remark~6.1]{BQI}.
+  \item[T3] \emph{Integration raises QoC}, $\alpha>0$ \cite[Table~5]{BQI}, consistent with $r(\PCI,\QoC)=+0.84$ and the positive coefficient of the index in \eqref{eq:bqi-reg} \cite[eqs.~(58)--(59)]{BQI} (hypothesis H3).
+  \item[T4] \emph{DMN activity lowers QoC}, $\beta>0$ in the read-out \eqref{eq:bqi-readout} \cite[Table~5]{BQI}, consistent with $r(\ADMN,\QoC)=-0.89$ and the negative coefficient of the DMN in \eqref{eq:bqi-reg} \cite[eqs.~(58)--(59)]{BQI} (hypothesis H4).
+  \item[T5] \emph{Experience raises the inhibition rate}, $\kinh$ higher in experienced meditators than in novices, since meditation raises the DMN suppression rate in \eqref{eq:bqi-dmn} \cite[eq.~(51)]{BQI}, the DMN signal falls with years of practice \cite[Table~7 and Sec.~7.5]{BQI}, and BQI prescribes mindfulness to raise $\kinh$ in depression \cite[Table~10]{BQI} (hypothesis H5).
+\end{enumerate}

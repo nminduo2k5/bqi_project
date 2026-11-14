@@ -1,0 +1,64 @@
+%% VIII. Appendices A (deviations), B (posterior predictive checks), C (reproduction). Input by access.tex.
+\appendices
+
+\section{Deviations From the Preregistrations}
+\label{app:deviations}
+\textit{ds001787.} (i) The amplitude survey and the post-registration adaptive artefact rule described in Section~\ref{sec:methods}. (ii) The locked text specifies ICLabel at 0.8; because ICLabel was trained on extended-infomax decompositions of 1--100~Hz data, the decomposition was computed on a 1--100~Hz copy of each cleaned recording, whose content ends at the 52~Hz anti-aliasing limit of the amplifier, and applied to the 1--40~Hz data. (iii) The code for the interval of the group difference and the one-degree-of-freedom test of E-H5 was completed after the pooled fit; both tests are those specified before the lock. (iv) Seven of 16 subjects were excluded from the meta-analysis by the non-finite-standard-error rule fixed in the code before fitting. (v) The standard error from the observed information, bootstrap percentile intervals, profile intervals and the CRB at the measured signal-to-noise ratio were added as descriptive quantities. (vi) The locked text announces five sensitivity analyses but lists six variants, so the robustness rule is applied as a fraction, 80\,\%; ``unchanged'' is taken to mean inside the 95\,\% profile interval of the primary analysis. (vii) The exploratory analyses listed in the preregistration (drowsiness as a covariate, within-session trends, between-session differences within subjects, an age- and sex-adjusted group comparison) are not reported.
+
+\textit{OSF 3uszv.} (i) The variant restricted to sessions with at most 20\,\% missing epochs retains no session: with a probe every 77~s and a response of 17~s on average, the epochs that overlap a probe window make up 28--39\,\% of every session; the robustness rule is applied to the six variants that run. (ii) $\kappa$ is estimated negative, and the profile interval of a parameter with a free sign is taken on the linear grid rather than the log grid used for the rates. (iii) Seventeen of the 58 sessions (all novices) were first preprocessed on a machine on which ICLabel could not be imported, so that the documented fallback heuristic rejected a median of 6 components instead of 2; they were reprocessed with ICLabel before any fit, and every number reported here uses the reprocessed features. (iv) Thirteen of 48 subjects were excluded from the meta-analysis by the non-finite-standard-error rule (11 with $\sPhi$ at zero). (v) The post-registration variant that masks the EEG before the first probe was added after Fig.~\ref{fig:sessions} had been examined; it is reported separately. The exploratory analyses (sleepiness as a covariate, depth of focus in place of confidence, within-session trends) are not reported.
+
+\section{Posterior Predictive Checks of the Ratings}
+\label{app:ppc}
+Tables~\ref{tab:ppc1} and \ref{tab:ppc2} compare the observed frequency of each rating level with ratings simulated from $\hat\thetav$ on the real designs (200 replicates, session means added back, rounded and clipped to the scale). On ds001787 the Gaussian read-out reproduces the extreme levels but places too much mass at 0 and too little at $+1$. On OSF 3uszv the data are bimodal and the Gaussian read-out is not.
+
+\begin{table*}[t]
+\caption{\textbf{Posterior predictive check on ds001787 (22 sessions): frequency of each rating level in percent.}}
+\label{tab:ppc1}
+\centering\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Level & $-3$ & $-2$ & $-1$ & $0$ & $+1$ & $+2$ & $+3$ \\
+\midrule
+Observed   & 3.4 & 7.8 & 15.9 & 18.6 & 29.2 & 18.4 & 6.7 \\
+Simulated  & 2.0 & 7.6 & 17.8 & 24.7 & 23.5 & 15.7 & 8.7 \\
+95\,\% band & 0.9--3.6 & 4.9--10.5 & 14.1--21.8 & 20.6--28.7 & 19.3--27.1 & 12.1--19.5 & 5.6--12.3 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\caption{\textbf{Posterior predictive check on OSF 3uszv (48 sessions): frequency of each rating level in percent; the level 0 cannot occur in the data.}}
+\label{tab:ppc2}
+\centering\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Level & $-7$ & $-6$ & $-5$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$ \\
+\midrule
+Observed   & 12.6 & 11.3 & 5.4 & 2.0 & 1.5 & 0.5 & 1.0 & 0.0 \\
+Simulated  & 7.0 & 2.7 & 3.4 & 4.1 & 4.9 & 5.6 & 6.1 & 6.7 \\
+95\,\% band & 5.8--8.0 & 2.0--3.5 & 2.7--4.2 & 3.2--5.1 & 4.0--5.8 & 4.5--6.7 & 5.2--7.2 & 5.6--8.1 \\
+\midrule
+Level & $+1$ & $+2$ & $+3$ & $+4$ & $+5$ & $+6$ & $+7$ & \\
+\midrule
+Observed   & 1.3 & 0.9 & 1.7 & 4.5 & 11.8 & 19.8 & 25.8 & \\
+Simulated  & 6.9 & 7.0 & 6.9 & 6.6 & 6.0 & 5.4 & 20.8 & \\
+95\,\% band & 5.8--8.0 & 5.8--8.3 & 5.8--7.9 & 5.5--7.7 & 5.1--7.2 & 4.4--6.5 & 19.1--22.9 & \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Reproduction}
+\label{app:repro}
+Each dataset runs in gate order; every step refuses to start until the previous gate has passed, and the long steps keep checkpoints:
+\begin{flushleft}\footnotesize\ttfamily
+python main.py realdata ratings | design-crb\\
+\hspace*{1.5em}| preregister | fetch | preprocess\\
+\hspace*{1.5em}| fit | boot | check | paper\\
+python main.py osf3uszv fetch | ratings | design-crb\\
+\hspace*{1.5em}| preregister | preprocess | fit | boot\\
+\hspace*{1.5em}| check | paper | compare\\
+python experiments/eeg\_paper\_figs.py
+\end{flushleft}
+On a two-core laptop preprocessing takes about nine hours for ds001787 and 15 minutes per session for OSF 3uszv; the fit, bootstrap and check steps take a few hours and about two days respectively. The last command produces Figs.~\ref{fig:errors} and \ref{fig:sim}. The datasets are released under CC0 \cite{Delorme2024ds,RodriguezLarios2021}. The two preregistrations and their SHA-256 locks are in \texttt{preregistration/}; the gate records, configuration snapshots, raw results and every quoted number (\texttt{summary.json} and \texttt{comparison.json}) are in \texttt{outputs/}. The repository and a frozen archive with a DOI will be made public upon acceptance.

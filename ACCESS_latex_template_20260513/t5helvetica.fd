@@ -1,0 +1,9 @@
+\DeclareFontFamily{T5}{helvetica}{}
+\DeclareFontShape{T5}{helvetica}{n}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{helvetica}{m}{n}{<->ssub*phv/m/n}{}
+\DeclareFontShape{T5}{helvetica}{n}{it}{<->ssub*phv/m/it}{}
+\DeclareFontShape{T5}{helvetica}{m}{it}{<->ssub*phv/m/it}{}
+\DeclareFontShape{T5}{helvetica}{b}{n}{<->ssub*phv/b/n}{}
+\DeclareFontShape{T5}{helvetica}{bx}{n}{<->ssub*phv/b/n}{}
+\DeclareFontShape{T5}{helvetica}{b}{it}{<->ssub*phv/b/it}{}
+\DeclareFontShape{T5}{helvetica}{bx}{it}{<->ssub*phv/b/it}{}

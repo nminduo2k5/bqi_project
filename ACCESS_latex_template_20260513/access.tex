@@ -1,0 +1,36 @@
+\documentclass{ieeeaccess}
+%% Paper 2: "Can experience-sampling EEG identify a state-space model of meditation
+%% dynamics? A preregistered test on two open datasets" (IEEE Access template).
+%% This is the master file only; the content lives in the child files:
+%%   preamble.tex            packages, macros, graphics path
+%%   frontmatter.tex         title, authors, abstract, index terms
+%%   sections/1_introduction.tex, 2_literature_review, 3_theoretical_framework (BQI),
+%%   4_methodology, 5_results, 6_discussion (incl. limitations), 7_conclusion, 8_appendices
+%%   references.bib          BibTeX database (IEEEtran.bst, citation order)
+%%   biography.tex           author biography
+%% Figures are read from ../outputs/paper/{eeg,realdata,osf3uszv}/.
+%% The original sample of the template is kept as access_sample_original.tex.
+%% Compile from this folder:
+%%   pdflatex access && bibtex access && pdflatex access && pdflatex access
+\input{preamble}
+
+\begin{document}
+\input{frontmatter}
+
+\input{sections/1_introduction}
+\input{sections/2_literature_review}
+\input{sections/3_theoretical_framework}
+\input{sections/4_methodology}
+\input{sections/5_results}
+\input{sections/6_discussion}
+\input{sections/7_conclusion}
+\input{sections/8_appendices}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\input{biography}
+
+\EOD
+
+\end{document}

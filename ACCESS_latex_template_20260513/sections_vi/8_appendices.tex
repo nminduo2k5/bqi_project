@@ -1,0 +1,64 @@
+%% VIII. Phụ lục A (sai lệch), B (kiểm tra dự đoán hậu nghiệm), C (tái tạo). Được access_vi.tex \input.
+\appendices
+
+\section{Sai lệch so với các bản đăng ký trước}
+\label{app:deviations}
+\textit{ds001787.} (i) Khảo sát biên độ và quy tắc nhiễu giả thích ứng ngoài đăng ký mô tả ở Mục~\ref{sec:methods}. (ii) Bản đã khoá quy định ICLabel ở 0,8; vì ICLabel được huấn luyện trên phân tách extended-infomax của dữ liệu 1--100~Hz, phân tách được tính trên bản sao 1--100~Hz của mỗi bản ghi đã làm sạch, mà nội dung dừng ở giới hạn chống răng cưa 52~Hz của bộ khuếch đại, rồi áp lên dữ liệu 1--40~Hz. (iii) Mã tính khoảng của hiệu nhóm và kiểm định một bậc tự do của E-H5 được hoàn thiện sau fit gộp; cả hai kiểm định là những gì đã quy định trước khi khoá. (iv) Bảy trong 16 người bị loại khỏi phân tích gộp theo quy tắc sai số chuẩn không hữu hạn cố định trong mã trước khi fit. (v) Sai số chuẩn theo thông tin quan sát, khoảng phân vị bootstrap, khoảng profile và CRB tại tỉ số tín hiệu trên nhiễu đo được được thêm làm đại lượng mô tả. (vi) Bản đã khoá nêu năm phân tích độ nhạy nhưng liệt kê sáu biến thể, nên quy tắc độ bền được áp dụng theo tỉ lệ 80\,\%; ``không đổi'' được hiểu là nằm trong khoảng profile 95\,\% của phân tích chính. (vii) Các phân tích khám phá nêu trong bản đăng ký (buồn ngủ làm biến đồng biến, xu hướng trong phiên, khác biệt giữa các phiên của cùng người, so sánh nhóm có hiệu chỉnh tuổi và giới) không được báo cáo.
+
+\textit{OSF 3uszv.} (i) Biến thể chỉ giữ phiên có không quá 20\,\% epoch thiếu không giữ phiên nào: với một lần hỏi mỗi 77~s và một lần trả lời trung bình 17~s, các epoch chồng lên cửa sổ hỏi đã chiếm 28--39\,\% mọi phiên; quy tắc độ bền được áp dụng trên sáu biến thể chạy được. (ii) $\kappa$ được ước lượng âm, và khoảng profile của một tham số có dấu tự do được lấy trên lưới tuyến tính thay vì lưới log dùng cho các tốc độ. (iii) Mười bảy trong 58 phiên (đều của người mới) lúc đầu được tiền xử lý trên một máy không import được ICLabel, nên heuristic dự phòng đã ghi trong tài liệu loại trung vị 6 thành phần thay vì 2; chúng được xử lý lại bằng ICLabel trước mọi fit, và mọi con số báo cáo ở đây dùng đặc trưng đã xử lý lại. (iv) Mười ba trong 48 người bị loại khỏi phân tích gộp theo quy tắc sai số chuẩn không hữu hạn (11 người vì $\sPhi$ bằng 0). (v) Biến thể ngoài đăng ký che EEG trước lần hỏi đầu tiên được thêm sau khi xem Hình~\ref{fig:sessions}; nó được báo riêng. Các phân tích khám phá (buồn ngủ làm biến đồng biến, độ sâu tập trung thay cho độ chắc chắn, xu hướng trong phiên) không được báo cáo.
+
+\section{Kiểm tra dự đoán hậu nghiệm cho điểm tự chấm}
+\label{app:ppc}
+Bảng~\ref{tab:ppc1} và \ref{tab:ppc2} so tần suất quan sát của từng mức điểm với điểm mô phỏng từ $\hat\thetav$ trên thiết kế thật (200 lần, cộng lại trung bình phiên, làm tròn và cắt về thang). Trên ds001787 hàm đọc ra Gauss tái tạo được các mức cực trị nhưng đặt quá nhiều khối lượng ở 0 và quá ít ở $+1$. Trên OSF 3uszv dữ liệu hai cực còn hàm đọc ra Gauss thì không.
+
+\begin{table*}[t]
+\caption{\textbf{Kiểm tra dự đoán hậu nghiệm trên ds001787 (22 phiên): tần suất từng mức điểm, phần trăm.}}
+\label{tab:ppc1}
+\centering\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Mức & $-3$ & $-2$ & $-1$ & $0$ & $+1$ & $+2$ & $+3$ \\
+\midrule
+Quan sát   & 3,4 & 7,8 & 15,9 & 18,6 & 29,2 & 18,4 & 6,7 \\
+Mô phỏng   & 2,0 & 7,6 & 17,8 & 24,7 & 23,5 & 15,7 & 8,7 \\
+Dải 95\,\% & 0,9--3,6 & 4,9--10,5 & 14,1--21,8 & 20,6--28,7 & 19,3--27,1 & 12,1--19,5 & 5,6--12,3 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\caption{\textbf{Kiểm tra dự đoán hậu nghiệm trên OSF 3uszv (48 phiên): tần suất từng mức điểm, phần trăm; mức 0 không thể xuất hiện trong dữ liệu.}}
+\label{tab:ppc2}
+\centering\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Mức & $-7$ & $-6$ & $-5$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$ \\
+\midrule
+Quan sát   & 12,6 & 11,3 & 5,4 & 2,0 & 1,5 & 0,5 & 1,0 & 0,0 \\
+Mô phỏng   & 7,0 & 2,7 & 3,4 & 4,1 & 4,9 & 5,6 & 6,1 & 6,7 \\
+Dải 95\,\% & 5,8--8,0 & 2,0--3,5 & 2,7--4,2 & 3,2--5,1 & 4,0--5,8 & 4,5--6,7 & 5,2--7,2 & 5,6--8,1 \\
+\midrule
+Mức & $+1$ & $+2$ & $+3$ & $+4$ & $+5$ & $+6$ & $+7$ & \\
+\midrule
+Quan sát   & 1,3 & 0,9 & 1,7 & 4,5 & 11,8 & 19,8 & 25,8 & \\
+Mô phỏng   & 6,9 & 7,0 & 6,9 & 6,6 & 6,0 & 5,4 & 20,8 & \\
+Dải 95\,\% & 5,8--8,0 & 5,8--8,3 & 5,8--7,9 & 5,5--7,7 & 5,1--7,2 & 4,4--6,5 & 19,1--22,9 & \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Tái tạo}
+\label{app:repro}
+Mỗi bộ dữ liệu chạy theo thứ tự cổng; mỗi bước từ chối bắt đầu cho đến khi cổng trước đã qua, và các bước dài lưu checkpoint:
+\begin{flushleft}\footnotesize\ttfamily
+python main.py realdata ratings | design-crb\\
+\hspace*{1.5em}| preregister | fetch | preprocess\\
+\hspace*{1.5em}| fit | boot | check | paper\\
+python main.py osf3uszv fetch | ratings | design-crb\\
+\hspace*{1.5em}| preregister | preprocess | fit | boot\\
+\hspace*{1.5em}| check | paper | compare\\
+python experiments/eeg\_paper\_figs.py
+\end{flushleft}
+Trên laptop hai nhân, tiền xử lý mất khoảng chín giờ với ds001787 và 15 phút mỗi phiên với OSF 3uszv; các bước fit, bootstrap và check mất vài giờ và khoảng hai ngày tương ứng. Lệnh cuối tạo Hình~\ref{fig:errors} và \ref{fig:sim}. Hai bộ dữ liệu phát hành theo CC0 \cite{Delorme2024ds,RodriguezLarios2021}. Hai bản đăng ký trước và khoá SHA-256 của chúng nằm trong \texttt{preregistration/}; hồ sơ cổng, bản chụp cấu hình, kết quả thô và mọi con số trích dẫn (\texttt{summary.json} và \texttt{comparison.json}) nằm trong \texttt{outputs/}. Kho mã và bản lưu trữ đóng băng có DOI sẽ được công khai khi bài được chấp nhận.

@@ -1,0 +1,4 @@
+\DeclareFontFamily{T5}{giovannistd}{}
+\DeclareFontShape{T5}{giovannistd}{n}{it}{<->ssub*ptm/m/it}{}
+\DeclareFontShape{T5}{giovannistd}{m}{it}{<->ssub*ptm/m/it}{}
+\DeclareFontShape{T5}{giovannistd}{m}{n}{<->ssub*ptm/m/n}{}
